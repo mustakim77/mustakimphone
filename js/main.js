@@ -276,7 +276,8 @@ async function loadData() {
     try {
         const { data, error } = await dbClient
             .from('data_service')
-            .select('*');
+            .select('*')
+            .order('timestamp_asli', { ascending: false }); // Urutkan dari waktu terbaru
 
         if (error) throw error;
 

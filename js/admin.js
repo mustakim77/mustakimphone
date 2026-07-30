@@ -133,6 +133,7 @@ async function loadData() {
   });
 
   try {
+    // Ambil SEMUA data tanpa .limit(5) agar tabel utama tidak terpotong
     const { data, error } = await dbClient
         .from('data_service')
         .select('*');
@@ -148,9 +149,11 @@ async function loadData() {
         item.garansi,
         item.keterangan,
         item.status,
-        item.update
+        item.update,
+        item.timestamp_asli // Simpan juga timestamp jika diperlukan untuk sorting
     ]);
     
+    // Jika ingin tabel utama terurut rapi secara abjad (Merk & Type), biarkan sort di sini:
     globalData.sort((a, b) => {
         let merkA = String(a[1] || '').toUpperCase();
         let merkB = String(b[1] || '').toUpperCase();
@@ -170,6 +173,8 @@ async function loadData() {
     updateDashboard();
     setupDashboardShortcuts(); 
     renderTable();
+    
+    // Untuk "5 Data Terakhir Ditambahkan", buat fungsi terpisah yang mengambil data tersendiri berdasarkan waktu/id terbaru
     renderRecentActivity(globalData);
     renderChart(globalData);
     
