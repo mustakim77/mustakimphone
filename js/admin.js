@@ -70,6 +70,36 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
+// FUNGSI HELPER: PARSER TANGGAL INDONESIA
+// ==========================================
+function parseIndonesianDate(dateStr) {
+    if (!dateStr) return 0;
+    try {
+        const parts = dateStr.split(', ');
+        if (parts.length < 3) return 0;
+        
+        const dateParts = parts[1].split(' ');
+        const day = parseInt(dateParts[0], 10);
+        const monthName = dateParts[1];
+        const year = parseInt(dateParts[2], 10);
+        
+        const timeParts = parts[2].split('.');
+        const hour = parseInt(timeParts[0], 10) || 0;
+        const minute = parseInt(timeParts[1], 10) || 0;
+
+        const months = {
+            'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3,
+            'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7,
+            'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11
+        };
+
+        return new Date(year, months[monthName] || 0, day, hour, minute).getTime();
+    } catch (e) {
+        return 0;
+    }
+}
+
+// ==========================================
 // SIDEBAR & NAVIGASI
 // ==========================================
 function setupSidebar() {
@@ -133,7 +163,6 @@ async function loadData() {
   });
 
   try {
-    // Ambil SEMUA data tanpa .limit(5) agar tabel utama tidak terpotong
     const { data, error } = await dbClient
         .from('data_service')
         .select('*');
@@ -150,10 +179,9 @@ async function loadData() {
         item.keterangan,
         item.status,
         item.update,
-        item.timestamp_asli // Simpan juga timestamp jika diperlukan untuk sorting
+        item.timestamp_asli
     ]);
     
-    // Jika ingin tabel utama terurut rapi secara abjad (Merk & Type), biarkan sort di sini:
     globalData.sort((a, b) => {
         let merkA = String(a[1] || '').toUpperCase();
         let merkB = String(b[1] || '').toUpperCase();
@@ -173,8 +201,6 @@ async function loadData() {
     updateDashboard();
     setupDashboardShortcuts(); 
     renderTable();
-    
-    // Untuk "5 Data Terakhir Ditambahkan", buat fungsi terpisah yang mengambil data tersendiri berdasarkan waktu/id terbaru
     renderRecentActivity(globalData);
     renderChart(globalData);
     
@@ -646,12 +672,20 @@ function renderPagination() {
 window.changePage = function(page) { currentPage = page; renderTable(); }
 
 // ==========================================
-// CHARTS & ACTIVITY
+// CHARTS & ACTIVITY (DENGAN SORTING TANGGAL AKURAT)
 // ==========================================
 function renderRecentActivity(data) {
     const tbody = document.getElementById('recentActivityBody');
     if (!tbody) return;
-    const recentData = [...data].reverse().slice(0, 5);
+
+    // Urutkan data berdasarkan tanggal teks Indonesia terbaru (Descending) menggunakan parseIndonesianDate
+    const sortedData = [...data].sort((a, b) => {
+        const timeA = parseIndonesianDate(a[8]); // Kolom update berada di indeks ke-8
+        const timeB = parseIndonesianDate(b[8]);
+        return timeB - timeA;
+    });
+
+    const recentData = sortedData.slice(0, 5); // Ambil 5 data teratas
     if (recentData.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada aktivitas data.</td></tr>`; return; }
 
     tbody.innerHTML = recentData.map(row => {

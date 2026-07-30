@@ -92,6 +92,36 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
+// FUNGSI HELPER: PARSER TANGGAL INDONESIA
+// ==========================================
+function parseIndonesianDate(dateStr) {
+    if (!dateStr) return 0;
+    try {
+        const parts = dateStr.split(', ');
+        if (parts.length < 3) return 0;
+        
+        const dateParts = parts[1].split(' ');
+        const day = parseInt(dateParts[0], 10);
+        const monthName = dateParts[1];
+        const year = parseInt(dateParts[2], 10);
+        
+        const timeParts = parts[2].split('.');
+        const hour = parseInt(timeParts[0], 10) || 0;
+        const minute = parseInt(timeParts[1], 10) || 0;
+
+        const months = {
+            'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3,
+            'Mei': 4, 'Juni': 5, 'Juli': 6, 'Agustus': 7,
+            'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11
+        };
+
+        return new Date(year, months[monthName] || 0, day, hour, minute).getTime();
+    } catch (e) {
+        return 0;
+    }
+}
+
+// ==========================================
 // FUNGSI NOTIFIKASI (TOAST)
 // ==========================================
 function showToast(message) {
@@ -276,8 +306,7 @@ async function loadData() {
     try {
         const { data, error } = await dbClient
             .from('data_service')
-            .select('*')
-            .order('timestamp_asli', { ascending: false }); // Urutkan dari waktu terbaru
+            .select('*'); // Tanpa order timestamp agar data lengkap dan tidak null
 
         if (error) throw error;
 
@@ -290,7 +319,7 @@ async function loadData() {
             item.garansi,
             item.keterangan,
             item.status,
-            item.update || item.created_at
+            item.update
         ]);
 
         if (loader) loader.style.display = 'none';
@@ -455,7 +484,6 @@ function showDetail(idx) {
     const elWa = document.getElementById('detailWaBtn');
     if(elWa) elWa.href = `https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(waText)}`;
 
-    // Menyembunyikan menu utama dan menampilkan detail
     document.getElementById('appHeader').classList.add('d-none');
     document.getElementById('mainWorkspace').classList.add('d-none');
     document.getElementById('bottomNav').classList.add('d-none');
@@ -465,6 +493,9 @@ function showDetail(idx) {
     window.scrollTo(0,0);
 }
 
+// ==========================================
+// RENDER 6 PART TERBARU (DENGAN SORTING TANGGAL AKURAT)
+// ==========================================
 function renderLatestProducts() {
     const container = document.getElementById('latestProductsContainer');
     if (!container) return;
@@ -474,9 +505,20 @@ function renderLatestProducts() {
         return;
     }
     
-    let latestRows = globalData.slice(0, 6); // Ambil 6 data teratas
+    // Urutkan data berdasarkan tanggal teks Indonesia terbaru (Descending)
+    const sortedData = [...globalData].sort((a, b) => {
+        const timeA = parseIndonesianDate(a[8]); // Kolom update berada di indeks ke-8
+        const timeB = parseIndonesianDate(b[8]);
+        return timeB - timeA;
+    });
+    
+    let latestRows = sortedData.slice(0, 6); // Ambil 6 data teratas
     let html = '<div class="row g-2 px-1">';
-    latestRows.forEach((row, idx) => {
+    
+    latestRows.forEach((row) => {
+        // Cari indeks asli di globalData agar fungsi showDetail() membuka data yang tepat
+        const originalIndex = globalData.findIndex(item => item[0] === row[0]);
+
         const merk = row[1] || '';
         const type = row[2] || '';
         const service = row[3] ? row[3].toUpperCase() : '';
@@ -485,7 +527,7 @@ function renderLatestProducts() {
 
         html += `
         <div class="col-6 col-md-4">
-            <div class="card border-0 shadow-sm product-card h-100" style="border-radius: 8px; cursor: pointer;" onclick="showDetail(${idx})">
+            <div class="card border-0 shadow-sm product-card h-100" style="border-radius: 8px; cursor: pointer;" onclick="showDetail(${originalIndex})">
                 <div class="bg-light position-relative d-flex justify-content-center align-items-center" style="height: 100px; border-bottom: 1px solid #f0f0f0;">
                     <span class="badge bg-primary position-absolute top-0 start-0 m-1 shadow-sm" style="font-size: 0.55rem;">BARU</span>
                     <img src="${imageUrl}" style="max-height: 70px; max-width: 90%; object-fit: contain;">
@@ -638,7 +680,7 @@ function getProductImage(serviceName) {
 }
 
 // ==========================================
-// FUNGSI MEMBER & AKUN (TAMBAHAN WAJIB)
+// FUNGSI MEMBER & AKUN
 // ==========================================
 function cekSecretLogin(url) { window.location.href = url; }
 function bukaMenuDaftar() {
@@ -664,9 +706,6 @@ function kembaliKeProfilTamu() {
     document.getElementById('tampilanProfilTamu').style.display = 'block';
 }
 
-// ==========================================
-// FUNGSI CEK ENTER (MENDUKUNG LOGIN)
-// ==========================================
 function cekEnter(event) {
     if (event.key === "Enter") {
         if (event.target.id === "username") {
@@ -677,9 +716,6 @@ function cekEnter(event) {
     }
 }
 
-// ==========================================
-// 1. VERIFIKASI LOGIN MEMBER
-// ==========================================
 async function verifikasiLogin() {
     const usernameInput = document.getElementById('username').value.trim();
     const passwordInput = document.getElementById('password').value.trim();
@@ -717,7 +753,6 @@ async function verifikasiLogin() {
                     return;
                 }
 
-                // Jika bukan admin (member biasa), tampilkan dasbor member
                 document.getElementById('akunContainer').style.display = 'none';
                 document.getElementById('memberDashboardView').style.display = 'block';
                 
@@ -744,9 +779,6 @@ async function verifikasiLogin() {
     }
 }
 
-// ==========================================
-// 2. PENDAFTARAN MEMBER BARU
-// ==========================================
 async function prosesDaftar() {
     const regUsername = document.getElementById('regUsername').value.trim();
     const regPassword = document.getElementById('regPassword').value.trim();
@@ -795,14 +827,11 @@ async function prosesDaftar() {
 
     } catch (err) {
         console.error('Error Daftar:', err.message);
-        pesanDaftar.style.color = 'red';
+        pesanDsilat.style.color = 'red';
         pesanDaftar.innerText = 'Gagal mendaftar: ' + err.message;
     }
 }
 
-// ==========================================
-// 3. LOGOUT MEMBER
-// ==========================================
 function prosesLogout() {
     localStorage.removeItem('mustakimUser');
     document.getElementById('memberDashboardView').style.display = 'none';
@@ -810,9 +839,6 @@ function prosesLogout() {
     showToast('Berhasil Logout');
 }
 
-// ==========================================
-// 4. GANTI PASSWORD
-// ==========================================
 function bukaFormGantiPassword() {
     document.getElementById('memberDashboardView').style.display = 'none';
     document.getElementById('formGantiPassContainer').style.display = 'block';
@@ -859,7 +885,7 @@ async function simpanPasswordBaru() {
         showToast('Password berhasil diperbarui');
 
         userSession.password = passBaru;
-        localStorage.setItem('mustakimUser', JSON.stringify(userSession));
+        localStorage.setItem('mustakim`User', JSON.stringify(userSession));
 
         setTimeout(() => {
             tutupFormGantiPassword();
