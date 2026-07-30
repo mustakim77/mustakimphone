@@ -436,7 +436,7 @@ function filterAndDisplay(keyword) {
         html += `
         <div class="col-6 col-md-3">
             <div class="card h-100 border-0 shadow-sm product-card mb-2 me-2" style="border-radius: 8px; cursor: pointer;" onclick="showDetail(${idx})">
-              <div class="bg-light position-relative d-flex justify-content-center align-items-center" style="height: 100px; border-bottom: 1px solid #f0f0f0;">
+              <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 100px; border-bottom: 1px solid #f0f0f0;">
                     <img src="${imageUrl}" style="max-height: 70px; max-width: 90%; object-fit: contain;">
                 </div>
                 <div class="card-body p-2 d-flex flex-column bg-white">
@@ -528,7 +528,7 @@ function renderLatestProducts() {
         html += `
         <div class="col-6 col-md-4">
             <div class="card border-0 shadow-sm product-card h-100" style="border-radius: 8px; cursor: pointer;" onclick="showDetail(${originalIndex})">
-                <div class="bg-light position-relative d-flex justify-content-center align-items-center" style="height: 100px; border-bottom: 1px solid #f0f0f0;">
+                <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 100px; border-bottom: 1px solid #f0f0f0;">
                     <span class="badge bg-primary position-absolute top-0 start-0 m-1 shadow-sm" style="font-size: 0.55rem;">BARU</span>
                     <img src="${imageUrl}" style="max-height: 70px; max-width: 90%; object-fit: contain;">
                 </div>
