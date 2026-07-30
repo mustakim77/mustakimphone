@@ -1,0 +1,358 @@
+/* ====================================
+   CSS VARIABLES & BASE SETUP (PREMIUM)
+==================================== */
+:root {
+  --bg-body: #f4f7fe;
+  --bg-surface: #ffffff;
+  --text-main: #2b3674;
+  --text-muted: #a3aed1;
+  --primary: #4318ff;
+  --border-soft: rgba(226, 232, 240, 0.4);
+  --shadow-soft: 0px 18px 40px rgba(112, 144, 176, 0.12);
+  --shadow-hover: 0 20px 40px -10px rgba(67, 24, 255, 0.1);
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* CUSTOM SCROLLBAR ELEGAN */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ====================================
+   SIDEBAR MENU
+==================================== */
+#wrapper { display: flex; transition: var(--transition-smooth); position: relative; }
+
+#sidebar-wrapper {
+  min-height: 100vh;
+  width: 270px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-soft);
+  transition: var(--transition-smooth);
+  z-index: 1040;
+  display: flex;
+  flex-direction: column;
+}
+
+#wrapper.toggled #sidebar-wrapper { margin-left: -270px; }
+
+.sidebar-heading {
+  padding: 2rem 1.5rem;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.list-group-item {
+  border: none;
+  padding: 0 18px; 
+  margin: 6px 16px;
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: var(--transition-smooth);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  height: 50px; 
+}
+
+.list-group-item i { width: 34px; font-size: 1.15rem; transition: transform 0.3s ease; }
+.list-group-item:hover { background: rgba(67, 24, 255, 0.04); color: var(--primary); }
+.list-group-item:hover i { transform: scale(1.15) translateX(3px); }
+
+.list-group-item.active {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(67, 24, 255, 0.3);
+}
+.list-group-item.active i { color: #ffffff; }
+
+.list-group-item.text-danger:hover {
+  background: #fef2f2;
+  color: #ef4444 !important;
+  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.1);
+}
+
+/* ====================================
+   PAGE CONTENT & NAVBAR
+==================================== */
+#page-content-wrapper { width: 100%; padding: 24px; transition: var(--transition-smooth); min-width: 0; }
+
+.admin-navbar {
+  background: var(--bg-surface);
+  border-radius: 20px;
+  box-shadow: var(--shadow-soft);
+  padding: 14px 28px;
+  margin-bottom: 30px;
+  border: none;
+}
+
+.menu-btn {
+  background: #f4f7fe;
+  color: #2b3674;
+}
+
+/* ====================================
+   DASHBOARD STAT CARDS
+==================================== */
+.stat-card {
+  background: var(--bg-surface);
+  border-radius: 20px;
+  padding: 24px 12px;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: var(--transition-smooth);
+  border: none;
+  cursor: pointer;
+}
+
+.stat-card:hover { transform: translateY(-5px); }
+
+.stat-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+}
+
+.stat-details h3 {
+  color: var(--text-main);
+  font-size: 1.7rem;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1;
+}
+
+.stat-details h6 {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+/* ====================================
+   PREMIUM CARDS, TABLES, FORMS
+==================================== */
+.premium-card {
+  background: var(--bg-surface);
+  border-radius: 24px;
+  box-shadow: var(--shadow-soft);
+  padding: 28px;
+  margin-bottom: 24px;
+  border: none;
+}
+
+.chart-wrapper { position: relative; height: 250px; width: 100%; }
+
+.form-control, .form-select {
+  border-radius: 12px;
+  padding: 12px 16px;
+  border: 1.5px solid #e2e8f0;
+  background-color: var(--bg-body);
+  color: var(--text-main);
+  font-weight: 500;
+  font-size: 0.95rem;
+  box-shadow: none !important;
+}
+.form-control:focus, .form-select:focus {
+  background-color: var(--bg-surface);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(67, 24, 255, 0.1) !important;
+}
+
+.table { margin-bottom: 0; }
+.table thead th {
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.8px;
+  border-bottom: 2px solid #f4f7fe;
+  padding: 18px 16px;
+}
+.table tbody td {
+  padding: 18px 16px;
+  vertical-align: middle;
+  color: var(--text-main);
+  font-weight: 600;
+  border-bottom: 1px solid #f4f7fe;
+}
+
+/* STATUS BADGE */
+.status-badge {
+  padding: 6px 14px;         
+  border-radius: 20px;     
+  font-size: 0.7rem;        
+  font-weight: 700;          
+  display: inline-flex;
+  align-items: center;
+}
+.status-ready { background-color: #dcfce7; color: #15803d; }
+.status-preorder { background-color: #fef3c7; color: #b45309; }
+.status-kosong { background-color: #fee2e2; color: #b91c1c; }
+
+/* ====================================
+   MODAL PROFESIONAL (4 KOLOM DI LAPTOP)
+==================================== */
+@media (min-width: 992px) {
+  .modal-dialog {
+    max-width: 950px !important;
+    width: 100% !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .modal-dialog {
+    max-width: 1050px !important;
+  }
+}
+
+.modal-body {
+  max-height: 70vh !important;
+  overflow-y: auto !important;
+  padding: 24px !important;
+}
+
+/* Memaksa grid menjadi 4 kolom di Laptop/Desktop dengan spesifisitas tinggi */
+.modal-body .row > div,
+.modal-body .row > [class*="col-"] {
+  flex: 0 0 25% !important;
+  max-width: 25% !important;
+  width: 25% !important;
+}
+
+/* Responsif khusus HP (3 Kolom) */
+@media (max-width: 768px) {
+  .modal-dialog {
+    max-width: 94% !important;
+    margin: 1rem auto;
+  }
+  .modal-body .row > div,
+  .modal-body .row > [class*="col-"] {
+    flex: 0 0 33.333333% !important;
+    max-width: 33.333333% !important;
+    width: 33.333333% !important;
+  }
+  .modal-body {
+    max-height: 75vh !important;
+    padding: 12px !important;
+  }
+}
+
+/* ====================================
+   BRAND BOX (AMAN DARI TEKS KELUAR KOTAK)
+==================================== */
+.brand-box {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 14px 8px;
+  text-align: center;
+  cursor: pointer;
+  border: 1px solid var(--border-soft);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+  transition: var(--transition-smooth);
+  height: 100%;
+  min-height: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.brand-box:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: 0 8px 25px rgba(67, 24, 255, 0.12);
+}
+
+.brand-card-img-wrap {
+  width: 44px;
+  height: 44px;
+  background: #f4f7fe;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.brand-card-img-wrap img {
+  max-width: 75%;
+  max-height: 75%;
+  object-fit: contain;
+}
+
+.brand-box h5 {
+  font-size: 0.6rem !important;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 2px 0;
+  word-break: break-all !important;
+  overflow-wrap: break-word !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.25;
+  width: 100%;
+}
+
+.brand-badge {
+  background: #e0e7ff;
+  color: var(--primary);
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-size: 0.55rem;
+  font-weight: 700;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+/* Responsif Umum HP */
+@media (max-width: 768px) {
+  #wrapper.toggled::before {
+    content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 1030;
+  }
+  #sidebar-wrapper {
+    margin-left: -280px; width: 280px; position: fixed; height: 100vh; z-index: 1040;
+  }
+  #wrapper.toggled #sidebar-wrapper { margin-left: 0; }
+  #page-content-wrapper { padding: 12px; }
+  .stat-card { padding: 16px 8px; border-radius: 16px; }
+  .stat-icon { width: 44px; height: 44px; font-size: 1.2rem; }
+  .stat-details h3 { font-size: 1.3rem; }
+  .stat-details h6 { font-size: 0.6rem; margin-top: 6px; }
+}

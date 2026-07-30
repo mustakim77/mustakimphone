@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Mustakim Phone - Sparepart</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="app-body">
+  
+  <div class="app-wrapper">
+    <!-- HEADER UTAMA (HOME & PENCARIAN) -->
+    <header id="appHeader" class="app-header bg-white px-3 py-2 border-bottom sticky-top d-flex align-items-center gap-2">
+      <i id="backToHomeBtn" class="fa-solid fa-arrow-left text-primary fs-5 d-none me-1" onclick="clearAndGoHome()"></i>
+      
+      <div id="appLogo" class="d-flex align-items-center text-primary fw-bolder fs-3" style="white-space: nowrap;" onclick="clearAndGoHome()">
+        <span class="ms-1 text-dark" style="letter-spacing:-1px;">Mustakim</span><span class="text-primary" style="letter-spacing:-1px;">Phone&reg;</span>
+      </div>
+      
+      <div class="flex-grow-1 position-relative">
+        <i class="fa-solid fa-magnifying-glass position-absolute text-dark" style="left: 12px; top: 50%; transform: translateY(-50%);"></i>
+        <input type="text" id="liveSearch" class="form-control rounded-1 bg-light border-0" style="padding-left: 36px; padding-right: 30px; font-size: 0.9rem; height: 38px;" placeholder="Cari produk..." autocomplete="off">
+        <button id="clearSearch" class="btn position-absolute d-none" style="right: 2px; top: 50%; transform: translateY(-50%); color: #666; padding: 5px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      
+      <a href="https://wa.me/6285799860406?text=Halo%20MUSTAKIM%20PHONE,%20saya%20ingin%20tanya%20tentang%20layanan%20service." 
+         target="_blank" 
+         class="text-success text-decoration-none me-0" 
+         title="Hubungi Admin">
+         <i class="fa-brands fa-whatsapp fs-3"></i>
+      </a>
+
+      <i class="fa-solid fa-location-dot text-primary fs-3" 
+         onclick="window.open('https://maps.app.goo.gl/P8JnpSchEdeHymjt8', '_blank')" 
+         style="cursor: pointer;" 
+         title="Lokasi Outlet"></i>
+    </header>
+
+    <!-- HEADER DETAIL PRODUK (HIDDEN) -->
+    <header id="detailHeader" class="app-header bg-white px-3 py-3 border-bottom sticky-top d-flex align-items-center d-none">
+      <i class="fa-solid fa-arrow-left text-primary fs-5 me-3" onclick="closeDetail()" style="cursor: pointer;"></i>
+      <div class="flex-grow-1 text-start fw-medium fs-5 text-dark" style="letter-spacing: -0.5px;">Detail Produk</div>
+      <i id="shareBtn" class="fa-solid fa-share-nodes text-primary fs-5" style="cursor: pointer;"></i>
+    </header>
+
+    <!-- AREA KONTEN UTAMA -->
+    <main id="mainWorkspace" class="pb-5 mb-5">
+      
+      <!-- 1. DASHBOARD VIEW -->
+      <div id="homeView">
+        <div class="p-3 pb-2">
+          <div class="overflow-hidden position-relative" style="border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+            <div class="banner-slider d-flex" id="bannerSlider">
+              <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
+                <img src="https://i.ibb.co/5g0tbkGz/gantilcd.png" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
+                <img src="https://i.ibb.co/SDkfNhNr/gantibat.png" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
+                <img src="https://i.ibb.co/bRR2dZy4/software.png" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+              <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
+                <img src="https://i.ibb.co/whCWYvTv/atmmini.png" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+              </div>
+            </div>
+          </div>
+          <div class="d-flex justify-content-center gap-2 mt-3" id="bannerDots">
+            <div class="dot active" onclick="goToSlide(0)"></div>
+            <div class="dot" onclick="goToSlide(1)"></div>
+            <div class="dot" onclick="goToSlide(2)"></div>
+            <div class="dot" onclick="goToSlide(3)"></div> 
+          </div>
+        </div>
+
+        <!-- Kategori -->
+        <div class="px-3 mb-4">
+          <div class="d-flex justify-content-center gap-4">
+            <div class="category-item text-center" onclick="searchCategory('LCD')">
+              <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
+                <img src="https://i.ibb.co/whtJ0CKy/logo-lcd.png" alt="LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+              </div>
+              <span class="cat-title text-dark mt-1 d-block">GANTI LCD</span>
+            </div>
+            <div class="category-item text-center" onclick="searchCategory('BAT')">
+              <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
+                <img src="https://i.ibb.co/cXrYM3vL/logo-bat.png" alt="BAT" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+              </div>
+              <span class="cat-title text-dark mt-1 d-block">GANTI BAT</span>
+            </div>
+            <div class="category-item text-center" onclick="searchCategory('SERVICE')">
+              <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
+                <img src="https://i.ibb.co/ZRcxyg1m/logo-konektor.png" alt="SERVICE" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+              </div>
+              <span class="cat-title text-dark mt-1 d-block">SERVICE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- BANNER PREMIUM -->
+        <div class="px-2">
+          <div class="premium-banner">
+            <div class="badge bg-warning text-dark mb-2 fw-bold px-3 py-1 shadow-sm" style="font-style: italic; z-index: 2; position: relative; font-size: 0.7rem; border-radius: 4px;">
+              JAM BUKA 10:00
+            </div>
+            <div class="premium-title">MUSTAKIM PHONE</div>
+            <div class="premium-subtitle">SERVICE & MINI ATM</div>
+          </div>
+        </div>
+
+        <!-- LIST TERBARU -->
+        <div class="px-3 pb-4">
+            <h5 class="fw-bold text-dark" style="font-size:1.1rem;">Part Terbaru!</h5>
+            <div class="latest-products-container" id="latestProductsContainer"></div>
+        </div>
+      </div>
+
+      <!-- 2. SEARCH RESULT VIEW -->
+      <div id="searchView" class="d-none bg-light min-vh-100">
+        <div class="bg-white py-1 px-3 text-end border-bottom shadow-sm">
+           <span class="fw-medium text-dark text-uppercase" style="font-size: 0.7rem;">MUSTAKIM PHONE  <i class="fa-solid fa-location-dot"></i></span>
+        </div>
+        <div class="filter-toolbar d-flex overflow-auto px-2 py-2 bg-white border-bottom gap-2 d-none" id="filterToolbar">
+          <select id="filterService" class="form-select select-app flex-shrink-0" style="width: auto;">
+            <option value="ALL">Semua Layanan</option>
+            <option value="LCD">LCD</option>
+            <option value="BAT">Baterai</option>
+            <option value="SERVICE">Service</option>
+          </select>
+          <select id="filterStatus" class="form-select select-app flex-shrink-0" style="width: auto;">
+            <option value="ALL">Semua Stok</option>
+            <option value="tersedia">Ready</option>
+            <option value="preorder">Pre-Order</option>
+          </select>
+          <select id="sortPrice" class="form-select select-app flex-shrink-0" style="width: auto;">
+            <option value="DEFAULT">Urutkan Relevansi</option>
+            <option value="LOW">Harga Terendah</option>
+            <option value="HIGH">Harga Tertinggi</option>
+          </select>
+        </div>
+        <div class="p-2" id="resultContainer">
+          <div id="loadingState" class="text-center py-5">
+             <div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;"></div>
+             <p class="mt-3 fw-medium text-secondary">Sinkronisasi data...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. KATEGORI VIEW -->
+      <div id="kategoriView" class="d-none bg-light">
+        <div class="p-3 border-bottom bg-light">
+          <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-border-all text-primary me-2"></i>Semua Kategori</h6>
+        </div>
+        <div class="row g-0">
+          <div class="col-4 p-3 border-end border-bottom text-center" onclick="searchCategory('LCD')" style="cursor:pointer;">
+            <div class="cat-circle mx-auto mb-2 bg-white d-flex align-items-center justify-content-center shadow-sm border">
+              <img src="https://i.ibb.co/whtJ0CKy/logo-lcd.png" alt="LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+            </div>
+            <span class="fw-bold text-dark" style="font-size:0.8rem;">GANTI LCD</span>
+          </div>
+          <div class="col-4 p-3 border-end border-bottom text-center" onclick="searchCategory('BAT')" style="cursor:pointer;">
+            <div class="cat-circle mx-auto mb-2 bg-white d-flex align-items-center justify-content-center shadow-sm border">
+              <img src="https://i.ibb.co/cXrYM3vL/logo-bat.png" alt="BAT" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+            </div>
+            <span class="fw-bold text-dark" style="font-size:0.8rem;">BATERAI</span>
+          </div>
+          <div class="col-4 p-3 border-bottom text-center" onclick="searchCategory('SERVICE')" style="cursor:pointer;">
+            <div class="cat-circle mx-auto mb-2 bg-white d-flex align-items-center justify-content-center shadow-sm border">
+              <img src="https://i.ibb.co/ZRcxyg1m/logo-konektor.png" alt="SERVICE" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+            </div>
+            <span class="fw-bold text-dark" style="font-size:0.8rem;">SERVICE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. MEREK VIEW -->
+      <div id="merekView" class="d-none bg-white">
+        <div class="p-3 border-bottom bg-light">
+          <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-mobile-screen text-primary me-2"></i>Daftar Merek</h6>
+        </div>
+        <div class="row g-0" id="merekContainer"></div>
+      </div>
+
+     <!-- 5. KERANJANG VIEW -->
+      <div id="keranjangView" class="d-none bg-light d-flex flex-column" style="height: 100vh; position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden;">
+        
+        <!-- 1. Header Tetap di Atas -->
+        <div class="p-3 border-bottom bg-white flex-shrink-0 d-flex align-items-center shadow-sm" style="z-index: 10;">
+          <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-cart-shopping text-primary me-2"></i>Keranjang Belanja</h6>
+        </div>
+        
+        <!-- 2. Area Item Keranjang -->
+        <div id="cartItemsContainer" class="p-2 flex-grow-1" style="overflow-y: auto; padding-bottom: 140px;"></div>
+        
+        <!-- Kotak Checkout Melayang -->
+        <div id="cartCheckoutBar" class="bg-white p-3 d-none d-flex justify-content-between align-items-center shadow-lg flex-shrink-0" style="position: fixed; bottom: 80px; left: 15px; right: 15px; z-index: 1040; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06);">
+          <div>
+            <span class="text-muted fw-bold" style="font-size:0.7rem; text-transform:uppercase;">Total Belanja</span>
+            <h5 class="fw-bolder text-primary mb-0" id="cartTotalPrice" style="letter-spacing:-0.5px;">Rp0</h5>
+          </div>
+          <button class="btn btn-success fw-bold px-4 py-2 d-flex align-items-center shadow-sm" onclick="checkoutWA()" style="border-radius: 10px; background-color:#1fa91c; border-color:#1fa91c;">
+            <i class="fa-brands fa-whatsapp fs-5 me-2"></i> Checkout
+          </button>
+        </div>
+      </div>
+
+      <!-- 6. MEMBER VIEW -->
+      <div id="memberView" class="d-none bg-light">
+        <div id="tampilanProfilTamu">
+          <div class="bg-primary text-white p-4 d-flex align-items-center shadow-sm" style="border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
+            <i class="fa-solid fa-circle-user" style="font-size: 3.5rem; cursor: pointer;" onclick="cekSecretLogin('admin.html')"></i>
+            <div class="ms-3">
+              <h5 class="mb-0 fw-bold">Member</h5>
+              <span style="font-size:1rem; opacity:0.8;">Silakan Login</span>
+            </div>
+          </div>
+          <div class="p-4 mt-2">
+            <button class="btn btn-outline-primary w-100 fw-bold py-2 mb-3 bg-white" onclick="bukaMenuDaftar()">Daftar Member</button>
+            <button class="btn btn-primary w-100 fw-bold py-2 shadow-sm" onclick="bukaMenuLogin()">Login Akun</button>
+            <hr class="my-4">
+            <div class="d-flex align-items-center mb-3 text-dark" onclick="showToast('Silakan Hubungi WhatsApp')" style="cursor:pointer;">
+              <i class="fa-solid fa-headset text-primary fs-4 me-3"></i> <span class="fw-medium">Butuh Bantuan?</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="akunContainer" style="display: none; max-width: 400px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
+          <div id="formLoginContainer">
+            <h3 style="text-align: center; color: #0d6efd;">Login Member</h3>
+            <label for="username">Username</label>
+            <input type="text" id="username" class="form-control mb-3" placeholder=" " onkeypress="cekEnter(event)">
+            <label for="password">Password</label>
+            <input type="password" id="password" class="form-control mb-3" placeholder=" " onkeypress="cekEnter(event)">
+            <button onclick="verifikasiLogin()" class="btn btn-primary w-100" style="background-color: #0d6efd; border: none;">Login</button>
+            <div id="pesanLogin" class="mt-2 text-center" style="font-weight: bold;"></div>
+            <p style="text-align: center; margin-top: 15px; font-size: 14px;">
+              Belum punya akun? <a href="#" onclick="tampilkanDaftar()" style="color: #0d6efd; text-decoration: none; font-weight: bold;">Daftar di sini</a>
+            </p>
+            <button onclick="kembaliKeProfilTamu()" class="btn btn-outline-secondary w-100 mt-2">Batal / Kembali</button>
+          </div>
+
+          <div id="formDaftarContainer" style="display: none;">
+            <h3 style="text-align: center; color: #0d6efd;">Daftar Member</h3>
+            <label for="regUsername">Buat Username</label>
+            <input type="text" id="regUsername" class="form-control mb-3" placeholder=" ">
+            <label for="regPassword">Buat Password</label>
+            <input type="password" id="regPassword" class="form-control mb-3" placeholder=" ">
+            <button onclick="prosesDaftar()" class="btn btn-primary w-100" style="background-color: #0d6efd; border: none;">Daftar Sekarang</button>
+            <div id="pesanDaftar" class="mt-2 text-center" style="font-weight: bold;"></div>
+            <p style="text-align: center; margin-top: 15px; font-size: 14px;">
+              Sudah punya akun? <a href="#" onclick="tampilkanLogin()" style="color: #0d6efd; text-decoration: none; font-weight: bold;">Login di sini</a>
+            </p>
+            <button onclick="kembaliKeProfilTamu()" class="btn btn-outline-secondary w-100 mt-2">Batal / Kembali</button>
+          </div>
+        </div>
+
+        <div id="memberDashboardView" style="display: none;">
+          <div class="bg-primary text-white p-4 d-flex align-items-center shadow-sm">
+            <i class="fa-solid fa-circle-user" style="font-size: 4rem;"></i>
+            <div class="ms-3">
+              <h5 class="mb-0 fw-bold" id="namaMemberLogin">Member</h5>
+              <span style="font-size:0.8rem; opacity:0.8;">Akun Terverifikasi</span>
+            </div>
+          </div>
+          <div class="p-4 mt-2">
+            <button class="btn btn-outline-primary w-100 fw-bold py-2 mb-3 bg-white" onclick="bukaFormGantiPassword()">Ganti Password</button>
+            <button class="btn btn-primary w-100 fw-bold py-2 shadow-sm" onclick="prosesLogout()">Logout</button>
+          </div>
+        </div>
+
+        <div id="formGantiPassContainer" style="display: none; max-width: 400px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; border-radius: 10px; background-color: #f9f9f9;">
+          <h3 style="text-align: center; color: #0d6efd;">Ganti Password</h3>
+          <label for="passLama">Password Lama:</label>
+          <input type="password" id="passLama" class="form-control mb-3" placeholder="Masukkan password lama">
+          <label for="passBaru">Password Baru:</label>
+          <input type="password" id="passBaru" class="form-control mb-3" placeholder="Masukkan password baru">
+          <button onclick="simpanPasswordBaru()" class="btn btn-primary w-100" style="background-color: #0d6efd; border: none;">Simpan Password</button>
+          <div id="pesanGantiPass" class="mt-2 text-center" style="font-weight: bold;"></div>
+          <button onclick="tutupFormGantiPassword()" class="btn btn-outline-secondary w-100 mt-2">Kembali</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- AREA DETAIL PRODUK -->
+    <main id="detailWorkspace" class="d-none bg-light min-vh-100 pb-5 mb-5">
+      <div class="bg-white">
+        <div class="text-center py-3 border-bottom">
+          <div class="d-inline-flex align-items-center text-primary fw-bolder fs-4">
+            <i class="fa-solid fa-mobile-screen"></i> <span class="ms-1 text-dark" style="letter-spacing:-1px;">Mustakim</span><span class="text-primary" style="letter-spacing:-1px;">Phone&reg;</span>
+          </div>
+          <div class="text-muted fw-bold" style="font-size:0.7rem; margin-top:-5px;">Sparepart</div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-center bg-white py-4" style="height: 280px;">
+          <img id="detailLcdImg" src="https://i.ibb.co/whtJ0CKy/logo-lcd.png" alt="LCD" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
+          <img id="detailBatImg" src="https://i.ibb.co/cXrYM3vL/logo-bat.png" alt="BAT" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
+          <img id="detailSrcImg" src="https://i.ibb.co/ZRcxyg1m/logo-konektor.png" alt="SERVICE" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
+        </div>
+
+        <div class="p-3">
+          <h5 id="detailTitle" class="fw-bolder text-dark mb-4 text-center text-uppercase" style="line-height: 1.4; font-size:1.1rem;"></h5>
+          <p id="detailFullDesc" class="text-dark fw-medium mb-3" style="font-size: 0.95rem; line-height: 1.4;"></p>
+          <div class="d-flex align-items-center gap-2 mb-3 fw-bold text-secondary text-uppercase" style="font-size: 0.75rem;">
+            <i class="fa-solid fa-boxes-stacked"></i> <span id="detailService"></span>
+            <i class="fa-solid fa-tag ms-2"></i> <span id="detailTag"></span>
+          </div>
+          <div class="text-muted text-decoration-line-through mb-0 fw-medium" style="font-size: 0.85rem;" id="detailCrossPrice"></div>
+          <div class="fw-bolder text-dark mb-4" style="font-size: 1.8rem; letter-spacing: -1px;" id="detailPrice"></div>
+
+          <div class="d-flex align-items-center gap-2 mb-4">
+          <button onclick="addToCart()" class="btn btn-outline-primary fw-bold d-flex justify-content-center align-items-center py-2 px-3" style="border-radius: 8px; white-space: nowrap;">
+            <i class="fa-solid fa-cart-shopping fs-5 me-2"></i> Keranjang
+          </button>
+            
+          <a id="detailWaBtn" href="#" target="_blank" class="btn text-white flex-grow-1 fw-bold py-2 d-flex justify-content-center align-items-center" style="border-radius: 8px; background-color:#1fa91c; border-color:#1fa91c; font-size:1.1rem;">
+            <i class="fa-brands fa-whatsapp fs-4 me-2"></i> HUBUNGI ADMIN
+            </a>
+        </div>
+        
+        <div class="border-top bg-white">
+          <div class="px-3 py-3 border-bottom d-flex justify-content-between">
+            <span class="text-dark" style="font-size: 0.85rem;">Kode Barang : </span>
+            <span class="text-dark fw-medium" style="font-size: 0.85rem;" id="detailCode"></span>
+          </div>
+          <div class="px-3 py-3 d-flex justify-content-between">
+            <span class="text-dark" style="font-size: 0.85rem;">Stok : </span>
+            <span class="text-dark fw-medium" style="font-size: 0.85rem;" id="detailStock"></span>
+          </div>
+        </div>
+
+        <div class="bg-light px-3 py-2 text-end mt-4">
+          <span class="text-dark text-uppercase fw-bold" style="font-size: 0.8rem;">Mustakim Phone  <i class="fa-solid fa-location-dot text-primary"></i></span>
+        </div>
+      </div>
+    </main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav id="bottomNav" class="app-bottom-nav fixed-bottom bg-white border-top d-flex justify-content-around py-2 shadow-lg">
+      <div class="nav-item active text-center d-flex flex-column align-items-center" onclick="switchNav('home', this)">
+        <i class="fa-solid fa-house mb-1"></i><span>Home</span>
+      </div>
+      <div class="nav-item text-center d-flex flex-column align-items-center" onclick="switchNav('Kategori', this)">
+        <i class="fa-solid fa-border-all mb-1"></i><span>Kategori</span>
+      </div>
+      <div class="nav-item text-center d-flex flex-column align-items-center" onclick="switchNav('Merek', this)">
+        <i class="fa-solid fa-mobile-screen mb-1"></i><span>Merek</span>
+      </div>
+      <div class="nav-item text-center d-flex flex-column align-items-center" onclick="switchNav('Keranjang', this)">
+        <i class="fa-solid fa-cart-shopping mb-1"></i><span>Keranjang</span>
+      </div>
+      <div class="nav-item text-center d-flex flex-column align-items-center" onclick="switchNav('Member', this)">
+        <i class="fa-solid fa-circle-user mb-1"></i><span>Member</span>
+      </div>
+    </nav>
+  </div>
+
+  <!-- TOMBOL MELAYANG SCROLL KE ATAS -->
+  <div id="scrollTopBtn" class="floating-btn shadow" title="Ke Atas" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" style="display: none;">
+    <i class="fa-solid fa-arrow-up"></i>
+  </div>
+
+  <!-- NOTIFIKASI TOAST -->
+  <div id="toastMessage" class="shadow-sm"></div>
+
+  <!-- 1. Muat Bootstrap terlebih dahulu -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- 2. WAJIB: Muat CDN Supabase DI ATAS file main.js -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- 3. BARU: Muat file JavaScript utama Anda -->
+  <script src="js/main.js"></script>
+</body>
+</html>

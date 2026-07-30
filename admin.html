@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - MUSTAKIM PHONE</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 & FontAwesome CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Admin CSS -->
+    <link rel="stylesheet" href="css/admin.css">
+
+    <!-- PROTEKSI ADMIN -->
+    <script>
+        const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
+        if (!userSession || userSession.role.toLowerCase() !== 'admin') {
+            alert('Akses ditolak! Silakan login sebagai admin.');
+            window.location.href = "index.html"; 
+        }
+    </script>
+</head>
+<body>
+
+<div id="wrapper">
+    <!-- Sidebar -->
+    <div id="sidebar-wrapper">
+        <div class="sidebar-heading">
+            <i class="fa-solid fa-mobile-screen-button me-2"></i> MUSTAKIM
+        </div>
+        <div class="list-group list-group-flush mt-2 px-3 gap-1">
+            <a href="#" class="list-group-item active" id="menu-dashboard">
+                <i class="fa-solid fa-house"></i> Dashboard
+            </a>
+            <a href="#" class="list-group-item" id="menu-data">
+                <i class="fa-solid fa-table-list"></i> Data Harga
+            </a>
+            <a href="#" class="list-group-item" id="menu-tambah">
+                <i class="fa-solid fa-folder-plus"></i> Tambah Data
+            </a>
+            <div style="flex-grow: 1;"></div> 
+            <a href="index.html" class="list-group-item text-danger mb-3" id="menu-logout">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+        <!-- Navbar -->
+        <nav class="navbar admin-navbar d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <button class="btn border-0 me-3 rounded-3 px-3 py-2 menu-btn" id="menu-toggle">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h4 class="m-0 fw-bold fs-5" id="pageTitle">Dashboard Overview</h4>
+            </div>
+            <div>
+                <span class="badge rounded-pill px-3 py-2 fw-semibold" style="background: #e0e5f2; color: #4318ff;">
+                    <i class="fa-solid fa-user-shield me-1"></i> Administrator
+                </span>
+            </div>
+        </nav>
+
+        <!-- SECTION: DASHBOARD -->
+        <div id="section-dashboard" class="section-content">
+            <div class="row g-3 mb-4">
+                <div class="col-4 col-md-2">
+                    <div class="stat-card h-100" id="card-merk">
+                        <div class="stat-icon" style="background: #eef2ff; color: #4318ff;"><i class="fa-brands fa-apple"></i></div>
+                        <div class="stat-details">
+                            <h3 id="stat-merk">0</h3>
+                            <h6>MERK</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 col-md-2">
+                    <div class="stat-card h-100" id="card-type">
+                        <div class="stat-icon" style="background: #f3e8ff; color: #9333ea;"><i class="fa-solid fa-mobile-screen"></i></div>
+                        <div class="stat-details">
+                            <h3 id="stat-type">0</h3>
+                            <h6>TYPE</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 col-md-2">
+                    <div class="stat-card h-100" id="card-lcd">
+                        <div class="stat-icon" style="background: #dcfce7; color: #15803d;"><i class="fa-solid fa-layer-group"></i></div>
+                        <div class="stat-details">
+                            <h3 id="stat-lcd">0</h3>
+                            <h6>TOTAL LCD</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 col-md-2">
+                    <div class="stat-card h-100" id="card-bat">
+                        <div class="stat-icon" style="background: #fef3c7; color: #d97706;"><i class="fa-solid fa-battery-full"></i></div>
+                        <div class="stat-details">
+                            <h3 id="stat-battery">0</h3>
+                            <h6>TOTAL BAT</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 col-md-2">
+                    <div class="stat-card h-100">
+                        <div class="stat-icon" style="background: #fee2e2; color: #dc2626;"><i class="fa-solid fa-database"></i></div>
+                        <div class="stat-details">
+                            <h3 id="stat-total-data">0</h3>
+                            <h6>DATA</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-4 col-md-2">
+                    <div class="stat-card h-100">
+                        <div class="stat-icon" style="background: #f1f5f9; color: #475569;"><i class="fa-solid fa-eye"></i></div>
+                        <div class="stat-details">
+                            <h3 id="stat-visitors">0</h3>
+                            <h6>VISITOR</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row g-4 mt-2">
+                <div class="col-12 col-md-6">
+                    <div class="premium-card h-100">
+                        <h6 class="fw-bold mb-4"><i class="fa-solid fa-chart-pie me-2 text-primary"></i> Grafik Status Stok</h6>
+                        <div class="chart-wrapper"><canvas id="statusChart"></canvas></div>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="premium-card h-100">
+                        <h6 class="fw-bold mb-4"><i class="fa-solid fa-fire me-2 text-danger"></i> Top 5 Pencarian</h6>
+                        <div class="chart-wrapper"><canvas id="searchChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="premium-card">
+                        <h6 class="fw-bold mb-4"><i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i> 5 Data Terakhir Ditambahkan</h6>
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0" style="font-size: 0.95rem;">
+                                <thead>
+                                    <tr>
+                                        <th>Kode Barang (ID)</th>
+                                        <th>Service</th>
+                                        <th>Merk & Type</th>
+                                        <th>Harga</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentActivityBody">
+                                    <tr><td colspan="5" class="text-center text-muted py-4">Memuat data...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: DATA HARGA -->
+        <div id="section-table" class="section-content" style="display:none;">
+            <div class="premium-card">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                    <h5 class="fw-bold m-0"><i class="fa-solid fa-list-check me-2 text-primary"></i> Manajemen Data Harga</h5>
+                    <div class="d-flex flex-column flex-sm-row gap-3 w-100" style="max-width: 550px;">
+                        <select class="form-select fw-medium" id="filterService" style="min-width: 150px;">
+                            <option value="">Semua Service</option>
+                            <option value="GANTI LCD">GANTI LCD</option>
+                            <option value="GANTI BAT">GANTI BAT</option>
+                            <option value="SERVICE">SERVICE</option>
+                        </select>
+                        <div class="input-group">
+                            <span class="input-group-text border-0 rounded-start-3" style="background: #f4f7fe;"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                            <input type="text" class="form-control border-0 ps-0 rounded-end-3" id="searchInput" placeholder="Cari merk atau tipe...">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table align-middle border-bottom">
+                        <thead>
+                            <tr>
+                                <th class="text-center">No</th>
+                                <th>Merk</th>
+                                <th>Type</th>
+                                <th>Service</th>
+                                <th>Harga</th>
+                                <th>Garansi</th>
+                                <th>Status</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-center mt-4">
+                    <ul class="pagination pagination-sm shadow-sm" id="paginationControls"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: TAMBAH DATA -->
+        <div id="section-form" class="section-content" style="display:none;">
+            <div class="premium-card mx-auto" style="max-width: 800px;">
+                <div class="border-bottom pb-3 mb-4">
+                    <h5 class="fw-bold m-0"><i class="fa-solid fa-folder-plus me-2 text-primary"></i> Tambah Data Service Baru</h5>
+                    <p class="text-muted small mt-1 mb-0">Pastikan data yang dimasukkan sudah benar sebelum disimpan.</p>
+                </div>
+                <form id="formTambahData">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold mb-2">Jenis Service</label>
+                            <select class="form-select" id="inputJenisService" required>
+                                <option value="" selected disabled>-- Pilih Service --</option>
+                                <option value="GANTI LCD">GANTI LCD</option>
+                                <option value="GANTI BAT">GANTI BAT</option>
+                                <option value="SERVICE">SERVICE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold mb-2">Merk HP</label>
+                            <select class="form-select" id="inputMerkHP" required>
+                                <option value="" selected disabled>-- Pilih Merk --</option>
+                                <option value="IPHONE">IPHONE</option>
+                                <option value="SAMSUNG">SAMSUNG</option>
+                                <option value="OPPO">OPPO</option>
+                                <option value="VIVO">VIVO</option>
+                                <option value="XIAOMI">XIAOMI</option>
+                                <option value="REALME">REALME</option>
+                                <option value="INFINIX">INFINIX</option>
+                                <option value="POCO">POCO</option>
+                                <option value="REDMI">REDMI</option>
+                                <option value="ASUS">ASUS</option>
+                                <option value="LAINNYA">Merek Lainnya...</option>
+                            </select>
+                            <input type="text" class="form-control mt-2" id="inputMerkLainnya" placeholder="Ketik Merk HP manual..." style="display: none;">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold mb-2">Type HP</label>
+                            <input type="text" class="form-control" id="inputTypeHP" required placeholder="Contoh: iPhone 11 Pro">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold mb-2">Harga (Rp)</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-0 text-muted" style="background: #f4f7fe;">Rp</span>
+                                <input type="number" class="form-control border-0" id="inputHarga" required placeholder="0" style="background: #f4f7fe;">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold mb-2">Garansi</label>
+                            <select class="form-select" id="inputGaransi" required>
+                                <option value="" selected disabled>-- Pilih Garansi --</option>
+                                <option value="1 Minggu">1 Minggu</option>
+                                <option value="1 Bulan">1 Bulan</option>
+                                <option value="Tidak ada">Tidak ada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold mb-2">Status Stok</label>
+                            <select class="form-select" id="inputStatus" required>
+                                <option value="Tersedia">Tersedia (Ready)</option>
+                                <option value="Preorder">Preorder (Indent)</option>
+                                <option value="Kosong">Kosong (Habis)</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold mb-2">Merk Part / Keterangan</label>
+                            <input type="text" class="form-control" id="inputKeterangan" placeholder="Contoh: Life Future / Original / Kualitas OEM">
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end mt-5 pt-3 border-top">
+                        <button type="reset" class="btn btn-light me-3 fw-semibold px-4 rounded-3 text-secondary">Reset</button>
+                        <button type="submit" class="btn text-white px-5 fw-semibold shadow-sm rounded-3" style="background: #4318ff;"><i class="fa-solid fa-save me-2"></i> Simpan Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================== MODALS ================== -->
+<div class="modal fade" id="modalPilihMerk" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-bottom-0 p-4">
+        <h5 class="modal-title fw-bold"><i class="fa-solid fa-mobile-screen me-2 text-primary"></i> Pilih Merk HP</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="row g-3" id="containerGridMerk"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalPilihType" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-bottom-0 p-4">
+        <h5 class="modal-title fw-bold"><i class="fa-solid fa-mobile-screen me-2 text-primary"></i> Pilih Type HP</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="row g-3" id="containerGridType"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalPilihLcd" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-bottom-0 p-4">
+        <h5 class="modal-title fw-bold"><i class="fa-solid fa-layer-group text-success me-2"></i> Pilih Detail LCD</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="row g-3" id="containerGridLcd"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalPilihBat" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-bottom-0 p-4">
+        <h5 class="modal-title fw-bold"><i class="fa-solid fa-battery-full text-warning me-2"></i> Pilih Detail Baterai</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="row g-3" id="containerGridBat"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit Data -->
+<div class="modal fade" id="modalEdit" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow rounded-4">
+      <div class="modal-header border-bottom-0 p-4 bg-light">
+        <h5 class="modal-title fw-bold"><i class="fa-solid fa-pen-to-square me-2 text-primary"></i> Edit Data Service</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4 p-md-5">
+        <input type="hidden" id="editDataId">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label small fw-bold mb-2">Merk</label>
+                <select class="form-select" id="editMerkHP">
+                    <option value="IPHONE">IPHONE</option>
+                    <option value="SAMSUNG">SAMSUNG</option>
+                    <option value="OPPO">OPPO</option>
+                    <option value="VIVO">VIVO</option>
+                    <option value="XIAOMI">XIAOMI</option>
+                    <option value="REALME">REALME</option>
+                    <option value="INFINIX">INFINIX</option>
+                    <option value="POCO">POCO</option>
+                    <option value="REDMI">REDMI</option>
+                    <option value="ASUS">ASUS</option>
+                    <option value="LAINNYA">Merek Lainnya...</option>
+                </select>
+                <input type="text" class="form-control mt-2" id="editMerkLainnya" placeholder="Ketik Merk manual..." style="display: none;">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold mb-2">Type</label>
+                <input type="text" class="form-control" id="editTypeHP">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold mb-2">Service</label>
+                <select class="form-select" id="editJenisService">
+                    <option value="GANTI LCD">GANTI LCD</option>
+                    <option value="GANTI BAT">GANTI BAT</option>
+                    <option value="SERVICE">SERVICE</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold mb-2">Harga</label>
+                <div class="input-group">
+                    <span class="input-group-text border-0 text-muted" style="background: #f4f7fe;">Rp</span>
+                    <input type="number" class="form-control border-0" id="editHarga" style="background: #f4f7fe;">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold mb-2">Garansi</label>
+                <select class="form-select" id="editGaransi">
+                    <option value="1 Minggu">1 Minggu</option>
+                    <option value="1 Bulan">1 Bulan</option>
+                    <option value="Tidak ada">Tidak ada</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small fw-bold mb-2">Status</label>
+                <select class="form-select" id="editStatus">
+                    <option value="Tersedia">Tersedia</option>
+                    <option value="Preorder">Preorder</option>
+                    <option value="Kosong">Kosong</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <label class="form-label small fw-bold mb-2">Merk Part / Ket.</label>
+                <input type="text" class="form-control" id="editKeterangan">
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer border-top-0 p-4 bg-light">
+        <button type="button" class="btn btn-light px-4 rounded-3 text-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn text-white px-5 rounded-3 fw-semibold" id="btnUpdateData" style="background: #4318ff;">Update Data</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/admin.js"></script>
+
+</body>
+</html>
