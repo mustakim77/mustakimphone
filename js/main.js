@@ -468,22 +468,64 @@ function showDetail(idx) {
     const hargaNum = parseInt(String(row[4] || '0').replace(/[^0-9]/g, '')) || 0;
     const harga = formatRupiah(hargaNum);
     const hargaCoret = hargaNum > 0 ? formatRupiah(hargaNum * 1.2) : '';
+    const status = row[7] ? row[7].trim() : '-';
+    const garansi = row[5] || '-';
     
     currentViewedProduct = { id: kodeBarang, title: `${merk} ${type}`, price: hargaNum, service: service };
 
+    // Update Teks Detail
     const elTitle = document.getElementById('detailTitle');
     if(elTitle) elTitle.innerText = `${merk} ${type}`;
+    
     const elDesc = document.getElementById('detailFullDesc');
     if(elDesc) elDesc.innerText = `${service} ${merk} ${type}`;
+    
     const elPrice = document.getElementById('detailPrice');
     if(elPrice) elPrice.innerText = harga;
+    
     const elCross = document.getElementById('detailCrossPrice');
     if(elCross) elCross.innerText = hargaCoret;
+
+    // Update Service & Tag (Opsional sesuai HTML Anda)
+    const elService = document.getElementById('detailService');
+    if(elService) elService.innerText = service;
+    
+    const elTag = document.getElementById('detailTag');
+    if(elTag) elTag.innerText = garansi;
+
+    // Atur Gambar Berdasarkan Jenis Service (LCD / BAT / SERVICE)
+    const imgLcd = document.getElementById('detailLcdImg');
+    const imgBat = document.getElementById('detailBatImg');
+    const imgSrc = document.getElementById('detailSrcImg');
+
+    if(imgLcd) imgLcd.classList.add('d-none');
+    if(imgBat) imgBat.classList.add('d-none');
+    if(imgSrc) imgSrc.classList.add('d-none');
+
+    if (service.includes('LCD') && imgLcd) {
+        imgLcd.classList.remove('d-none');
+    } else if (service.includes('BAT') && imgBat) {
+        imgBat.classList.remove('d-none');
+    } else if (imgSrc) {
+        imgSrc.classList.remove('d-none');
+    }
+
+    // Update Kode Barang (Sesuai ID di HTML: detailCode)
+    const elCode = document.getElementById('detailCode');
+    if(elCode) elCode.innerText = kodeBarang;
+
+    // Update Stok / Status (Sesuai ID di HTML: detailStock)
+    const elStock = document.getElementById('detailStock');
+    if(elStock) {
+        elStock.innerText = status;
+        elStock.className = `badge ${status === 'Tersedia' ? 'bg-success' : 'bg-warning'} text-white fw-medium`;
+    }
     
     const waText = `Halo MUSTAKIM PHONE, \n\n*${service}*\n*${merk} ${type}*\nHarga: ${harga}\n\nApakah tersedia?`;
     const elWa = document.getElementById('detailWaBtn');
     if(elWa) elWa.href = `https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(waText)}`;
 
+    // Transisi Tampilan
     document.getElementById('appHeader').classList.add('d-none');
     document.getElementById('mainWorkspace').classList.add('d-none');
     document.getElementById('bottomNav').classList.add('d-none');
