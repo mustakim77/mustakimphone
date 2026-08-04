@@ -559,3 +559,32 @@ body.app-body {
         font-size: 0.7rem !important;  
     }
 }
+
+/* =========================================
+   8. WADAH LOGO MEREK (FULL BLEED & ROUNDED SQUIRCLE)
+========================================= */
+.brand-logo-box {
+  width: 100% !important;
+  max-width: 95px !important;
+  aspect-ratio: 1 / 1 !important;
+  border-radius: 20px !important; /* Mencegah sudut lancip */
+  overflow: hidden !important;    /* Gambar terpotong rapi mengikuti lekukan */
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+  padding: 0 !important;          /* Gambar menempel penuh ke tepi */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.brand-logo-box img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;   /* Menjadikan logo FULL ke seluruh box */
+  object-position: center !important;
+  border-radius: 20px !important;
+}
+
+/* Efek sentuh pada HP */
+div[onclick*="searchCategory"]:active .brand-logo-box {
+  transform: scale(0.93);
+}

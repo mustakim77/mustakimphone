@@ -294,11 +294,11 @@ function generateMerekList() {
 
     if (window.customBrandsData && window.customBrandsData.length > 0) {
         container.innerHTML = window.customBrandsData.map(m => `
-            <div class="col-4 p-3 border-end border-bottom text-center" onclick="searchCategory('${m.name}')" style="cursor:pointer;">
-                <div class="cat-circle mx-auto mb-2 bg-white text-dark shadow-sm border" style="width:70px; max-height:70px; font-size:1.5rem;">
-                   <img src="${m.image_url}" alt="${m.name}" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+            <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m.name}')" style="cursor:pointer;">
+                <div class="brand-logo-box mb-2 bg-white shadow-sm border p-2 d-flex align-items-center justify-content-center">
+                   <img src="${m.image_url}" alt="${m.name}" class="img-fluid pointer-events-none">
                 </div>
-                <span class="fw-bold text-dark" style="font-size:0.8rem;">${m.name}</span>
+                <span class="fw-bold text-dark d-block" style="font-size:0.8rem;">${m.name}</span>
             </div>
         `).join('');
         return;
@@ -319,11 +319,11 @@ function generateMerekList() {
     
     mereks.forEach(m => {
         html += `
-        <div class="col-4 p-3 border-end border-bottom text-center" onclick="searchCategory('${m}')" style="cursor:pointer;">
-            <div class="cat-circle mx-auto mb-2 bg-white text-dark shadow-sm border" style="width:70px; max-height:70px; font-size:1.5rem;">
-               <img src="https://i.ibb.co/TqHz30ng/logo-default.png" alt="DEFAULT" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+        <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m}')" style="cursor:pointer;">
+            <div class="brand-logo-box mb-2 bg-white shadow-sm border p-2 d-flex align-items-center justify-content-center">
+               <img src="https://i.ibb.co/TqHz30ng/logo-default.png" alt="DEFAULT" class="img-fluid pointer-events-none">
             </div>
-            <span class="fw-bold text-dark" style="font-size:0.8rem;">${m}</span>
+            <span class="fw-bold text-dark d-block" style="font-size:0.8rem;">${m}</span>
         </div>
         `;
     });
