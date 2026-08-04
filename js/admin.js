@@ -944,13 +944,13 @@ document.addEventListener('click', function(e) {
     if (logoutBtn) {
         e.preventDefault(); 
         Swal.fire({
-            title: 'Yakin ingin keluar?', text: "Sesi Admin Anda akan diakhiri.", icon: 'question',
+            title: 'Yakin ingin keluar?', text: "Sesi Anda akan diakhiri.", icon: 'question',
             showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#f1f5f9',
             confirmButtonText: 'Ya, Logout', cancelButtonText: '<span class="text-dark">Batal</span>'
         }).then((result) => {
             if (result.isConfirmed) {
                 sessionStorage.clear(); localStorage.clear();
-                window.location.href = "index.html";
+                window.location.href = "./";
             }
         });
     }

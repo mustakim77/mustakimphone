@@ -57,12 +57,12 @@
     </style>
 
     <!-- PROTEKSI ADMIN -->
-    <script>
-        const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
-        if (!userSession || (userSession.role && userSession.role.toLowerCase() !== 'admin')) {
-            alert('Akses ditolak! Silakan login sebagai admin.');
-            window.location.href = "index.html"; 
-        }
+<script>
+    const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
+    if (!userSession || (userSession.role && userSession.role.toLowerCase() !== 'admin')) {
+        alert('Akses ditolak! Silakan login sebagai admin.');
+        window.location.href = "./"; 
+    }
     </script>
 </head>
 <body>
@@ -93,7 +93,7 @@
                 <i class="fa-solid fa-tags"></i> Kelola Merek
             </a>
             <div style="flex-grow: 1;"></div> 
-            <a href="index.html" class="list-group-item text-danger mb-3" id="menu-logout">
+            <a href="./" class="list-group-item text-danger mb-3" id="menu-logout">
                 <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
             </a>
         </div>
