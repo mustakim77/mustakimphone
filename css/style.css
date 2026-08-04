@@ -1,215 +1,242 @@
-  /* GLOBAL APP STYLES - TEMA BIRU */
-  :root {
-    --app-blue: #0d6efd;      /* Biru Utama */
-    --app-blue-dark: #0a58ca; /* Biru Gelap (Hover) */
-    --app-bg: #f5f6f8;
-    --text-dark: #212529;
-    --text-muted: #6c757d;
-  }
+/* GLOBAL APP STYLES - TEMA BIRU iOS ELEGANT */
+:root {
+  --app-blue: #007aff;         /* iOS System Blue */
+  --app-blue-dark: #0056b3;
+  --app-bg: #f2f2f7;           /* iOS System Grouped Background */
+  --card-bg: #ffffff;
+  --text-dark: #1c1c1e;        /* iOS Label Primary */
+  --text-muted: #8e8e93;       /* iOS Label Secondary */
+  --ios-border: rgba(60, 60, 67, 0.12);
+  --ios-radius-lg: 20px;
+  --ios-radius-md: 14px;
+  --ios-radius-sm: 10px;
+}
 
-  body.app-body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--app-bg);
-    color: var(--text-dark);
-    -webkit-font-smoothing: antialiased;
-  }
+body.app-body {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Inter', sans-serif;
+  background-color: var(--app-bg);
+  color: var(--text-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-  .scroll-hide::-webkit-scrollbar { display: none; }
-  .scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-  /* HEADER */
-  .app-header {
-    height: 60px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    z-index: 1020;
-  }
-  .app-header input:focus {
-    box-shadow: none;
-    border: 1px solid var(--app-blue) !important;
-  }
-
-  /* HOME BANNER & CIRCLES */
-  .banner-box {
-    border-radius: 12px;
-    height: 120px;
-    position: relative;
-    overflow: hidden;
-  }
-  .banner-blue {
-    background: linear-gradient(135deg, #1976D2, #0d47a1);
-  }
-  .banner-indigo {
-    background: linear-gradient(135deg, #6610f2, #4c0bce);
-  }
-
-  /* --- ANIMASI SLIDER --- */
-  .banner-slider {
-    transition: transform 0.5s ease-in-out; /* Animasi geser halus */
-  }
-  .banner-slide {
-    height: 120px; /* Samakan dengan tinggi banner */
-  }
-  
-  /* --- TITIK DOTS --- */
-  .dot { 
-    width: 6px; height: 6px; background-color: #ccc; border-radius: 50%; 
-    transition: all 0.3s ease; cursor: pointer;
-  }
-  .dot.active { background-color: var(--app-blue); width: 12px; border-radius: 10px; }
-
-  /* --- IKON KATEGORI --- */
-  .category-item {
-    cursor: pointer;
-    width: 80px;
-  }
-  .cat-circle {
-    width: 65px; height: 65px;
-    background-color: var(--app-blue);
-    color: white;
-    border-radius: 16px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2rem;
-    margin: 0 auto 8px auto;
-    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3); /* Shadow kebiruan */
-  }
-  .cat-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-
-  /* SEARCH FILTERS */
-  .select-app {
-    font-size: 0.8rem;
-    padding: 4px 24px 4px 10px;
-    border-radius: 6px;
-    border: 1px solid #dee2e6;
-    background-color: #f8f9fa;
-  }
-
-  /* PRODUCT CARD */
-  .product-card {
-    cursor: pointer;
-    transition: transform 0.1s;
-  }
-  .product-card:active {
-    transform: scale(0.98);
-  }
-  .text-truncate-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* --- EFEK BUBBLE AKTIF YANG RAPI & MULUS --- */
-  .nav-item.active {
-      color: var(--app-blue) !important;
-  }
-
-  /* Membuat kotak kapsul/bubble kecil yang pas di belakang menu aktif */
-  .nav-item.active::before {
-      content: '';
-      position: absolute;
-      width: 52px;
-      height: 42px;
-      background-color: rgba(13, 110, 253, 0.12);
-      border-radius: 16px;
-      z-index: -1;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  }
-
-  .nav-item.active i {
-      transform: translateY(-2px) scale(1.15); /* Ikon sedikit melompat & membesar */
-      color: var(--app-blue) !important;
-  }
-
-  .nav-item.active span {
-      color: var(--app-blue) !important;
-      font-weight: 700;
-  }
-
-  /* FLOATING SCROLL BUTTON */
-  .floating-btn {
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    background-color: var(--app-blue);
-    color: white;
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.2rem;
-    cursor: pointer;
-    z-index: 1010;
-    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
-  }
-
-  /* CUSTOM TOAST NOTIFICATION */
-  #toastMessage {
-    position: fixed;
-    bottom: 90px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(13, 110, 253, 0.95); /* Toast disesuaikan kebiruan sedikit */
-    color: white;
-    padding: 10px 24px;
-    border-radius: 50px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    z-index: 9999;
-    opacity: 0;
-    transition: opacity 0.3s ease-in-out;
-    pointer-events: none;
-    white-space: nowrap;
-  }
-  #toastMessage.show { opacity: 1; }
+.scroll-hide::-webkit-scrollbar { display: none; }
+.scroll-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* =========================================
-   PERBAIKAN MUTLAK GAMBAR PRODUK (TIDAK GEPENG)
-========================================= */
+   1. iOS HEADER (GLASSMORPHISM BLUR)
+   ========================================= */
+.app-header {
+  height: 62px;
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 0.5px solid var(--ios-border) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  z-index: 1020;
+}
+
+.app-header input {
+  background-color: #e3e3e8 !important;
+  border-radius: var(--ios-radius-sm) !important;
+  font-size: 0.88rem;
+  font-weight: 400;
+  transition: all 0.25s ease;
+}
+
+.app-header input:focus {
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.2) !important;
+  border-color: var(--app-blue) !important;
+  background-color: #ffffff !important;
+}
+
+/* =========================================
+   2. HOME BANNER & CIRCLES
+   ========================================= */
+.banner-box {
+  border-radius: var(--ios-radius-lg);
+  height: 120px;
+  position: relative;
+  overflow: hidden;
+}
+
+.banner-slider {
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.banner-slide {
+  height: 120px;
+  border-radius: var(--ios-radius-lg);
+}
+
+.dot { 
+  width: 6px; 
+  height: 6px; 
+  background-color: #d1d1d6; 
+  border-radius: 50%; 
+  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+  cursor: pointer;
+}
+
+.dot.active { 
+  background-color: var(--app-blue); 
+  width: 14px; 
+  border-radius: 10px; 
+}
+
+/* --- IKON KATEGORI iOS SQUIRCLE --- */
+.category-item {
+  cursor: pointer;
+  width: 80px;
+}
+
+.cat-circle {
+  width: 65px; 
+  height: 65px;
+  background: #ffffff;
+  color: var(--app-blue);
+  border-radius: var(--ios-radius-lg);
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  font-size: 2rem;
+  margin: 0 auto 8px auto;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03);
+  border: 0.5px solid var(--ios-border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.category-item:active .cat-circle {
+  transform: scale(0.92);
+}
+
+.cat-title { 
+  font-size: 0.72rem; 
+  font-weight: 600; 
+  text-transform: uppercase; 
+  letter-spacing: 0.4px; 
+  color: var(--text-dark);
+}
+
+/* SEARCH FILTERS */
+.select-app {
+  font-size: 0.8rem;
+  padding: 6px 24px 6px 12px;
+  border-radius: var(--ios-radius-sm);
+  border: 0.5px solid var(--ios-border);
+  background-color: #ffffff;
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
+/* =========================================
+   3. PRODUCT CARD (iOS CARD STYLE)
+   ========================================= */
+.product-card {
+  cursor: pointer;
+  border-radius: var(--ios-radius-md) !important;
+  border: 0.5px solid var(--ios-border) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+  background: var(--card-bg) !important;
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.2s ease;
+}
+
+.product-card:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* FLOATING SCROLL BUTTON */
+.floating-btn {
+  position: fixed;
+  bottom: 85px;
+  right: 20px;
+  background-color: rgba(0, 122, 255, 0.9);
+  backdrop-filter: blur(10px);
+  color: white;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  z-index: 1010;
+  box-shadow: 0 6px 16px rgba(0, 122, 255, 0.35);
+  transition: transform 0.2s ease;
+}
+
+.floating-btn:active {
+  transform: scale(0.9);
+}
+
+/* CUSTOM TOAST NOTIFICATION */
+#toastMessage {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(28, 28, 30, 0.92);
+  backdrop-filter: blur(20px);
+  color: white;
+  padding: 10px 22px;
+  border-radius: 40px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+#toastMessage.show { opacity: 1; }
+
+/* =========================================
+   4. GAMBAR PRODUK RESPONSIF
+   ========================================= */
 .latest-products-container .card img,
 .product-card img {
   width: 100% !important;
-  height: 110px !important;      /* Kunci tinggi gambar khusus HP */
-  object-fit: contain !important; /* Menjaga rasio asli gambar tanpa merusak bentuk */
+  height: 110px !important;
+  object-fit: contain !important;
   object-position: center;
-  background-color: #ffffff;    /* Mencegah distorsi latar transparan */
+  background-color: #ffffff;
 }
 
-/* Penyesuaian khusus untuk Laptop/Desktop */
 @media (min-width: 768px) {
   .latest-products-container .card img,
   .product-card img {
-    height: 140px !important;    /* Tinggi lebih lega di layar besar */
+    height: 140px !important;
   }
 }
 
-  /* --- TATA LETAK GRID HASIL PENCARIAN RESPONSIF --- */
 .product-grid-layout {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 Kolom pas untuk HP */
-  gap: 10px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 
 @media (min-width: 768px) {
   .product-grid-layout {
-    grid-template-columns: repeat(4, 1fr); /* 4 Kolom di Tablet */
-    gap: 15px;
-  }
-}
-
-@media (min-width: 1200px) {
-  .product-grid-layout {
-    grid-template-columns: repeat(5, 1fr); /* 5 Kolom lega di Laptop/Desktop */
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
   }
 }
 
 /* =========================================
-   TATA LETAK BANNER PROMO (RESPONSIF)
-========================================= */
-
+   5. BANNER PROMO RESPONSIF
+   ========================================= */
 .banner-slide {
   width: 100% !important;
   aspect-ratio: 3 / 1;
@@ -221,43 +248,36 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center; /* Memastikan titik fokus gambar tetap di tengah */
+  object-position: center;
 }
 
-/* Khusus Laptop/Desktop: Full Lebar tapi Tinggi Terkunci */
 @media (min-width: 768px) {
-  /* 1. Kembalikan bungkusnya menjadi full lebar (menghapus batas 800px) */
   #homeView > div.p-3.pb-2 {
     max-width: 100% !important; 
   }
   
-  /* 2. Kunci tinggi maksimal banner agar tidak menjadi raksasa ke bawah */
   .banner-slide {
-    aspect-ratio: auto !important; /* Matikan rasio 3:1 */
-    height: 380px !important; /* Anda bisa ubah angka ini (misal 350px atau 400px) sesuai selera */
-    border-radius: 12px; /* Opsional: Memberi efek sedikit melengkung di ujung banner */
+    aspect-ratio: auto !important;
+    height: 380px !important;
+    border-radius: var(--ios-radius-lg);
   }
 }
 
-/* =========================================
-   BANNER TEKS "RIMBERIO STYLE" (TEMA BIRU)
-========================================= */
+/* BANNER TEKS "RIMBERIO STYLE" */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,900;1,900&family=Poppins:ital,wght@0,600;1,600&display=swap');
 
 .premium-banner {
-  /* Background Gradasi Biru */
-  background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #3b82f6 100%);
-  border-radius: 12px;
-  padding: 12px 15px; /* Padding atas-bawah dikurangi agar lebih tipis */
-  box-shadow: 0 6px 15px rgba(37, 99, 235, 0.35); /* Bayangan biru */
+  background: linear-gradient(135deg, #0040af 0%, #007aff 50%, #38bdf8 100%);
+  border-radius: var(--ios-radius-lg);
+  padding: 14px 16px;
+  box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   position: relative;
   overflow: hidden; 
-  border: 2px solid #93c5fd; /* Garis tepi biru muda */
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Efek Garis-garis Diagonal (Watermark) di Latar Belakang */
 .premium-banner::before {
   content: '';
   position: absolute;
@@ -279,16 +299,16 @@
 .premium-title {
   font-family: 'Montserrat', sans-serif;
   font-weight: 900;
-  font-style: italic; /* Dimiringkan ala Rimberio */
-  font-size: 1.6rem; /* Ukuran disesuaikan agar proporsional di banner yang lebih ringkas */
+  font-style: italic;
+  font-size: 1.6rem;
   color: #FFFFFF;
-  text-shadow: 2px 2px 0px #1e1b4b; /* Efek bayangan blok tebal */
+  text-shadow: 2px 2px 0px #002266;
   margin-bottom: 4px;
   letter-spacing: 1px;
   text-transform: uppercase;
   position: relative;
   z-index: 2; 
-  transform: skewX(-5deg); /* Efek condong/cepat */
+  transform: skewX(-5deg);
 }
 
 .premium-subtitle {
@@ -296,142 +316,246 @@
   font-weight: 600;
   font-style: italic;
   font-size: 0.8rem;
-  color: #ffffff; /* Warna teks putih */
+  color: #ffffff;
   letter-spacing: 2px;
   margin-bottom: 0;
   position: relative;
   z-index: 2;
-  background: rgba(0, 0, 0, 0.25); /* Label gelap transparan di belakang teks */
+  background: rgba(0, 0, 0, 0.25);
   display: inline-block;
   padding: 3px 12px;
   border-radius: 20px;
   transform: skewX(-5deg);
 }
 
+/* =========================================
+   6. MEMBER VIEW & FORM STYLES (iOS STYLE)
+   ========================================= */
+.ios-card {
+  background: #ffffff;
+  border-radius: 24px;
+  border: 0.5px solid var(--ios-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.ios-member-header {
+  background: linear-gradient(135deg, #007aff 0%, #0051a8 100%);
+  color: #ffffff;
+  padding: 28px 20px;
+  border-radius: 24px;
+  box-shadow: 0 10px 25px rgba(0, 122, 255, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.ios-member-header::after {
+  content: '';
+  position: absolute;
+  top: -30%;
+  right: -20%;
+  width: 180px;
+  height: 180px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.ios-input-group label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.ios-input {
+  background-color: #f2f2f7 !important;
+  border: 0.5px solid #e5e5ea !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  font-size: 0.95rem !important;
+  font-weight: 500 !important;
+  color: var(--text-dark) !important;
+  transition: all 0.2s ease !important;
+}
+
+.ios-input:focus {
+  background-color: #ffffff !important;
+  border-color: var(--app-blue) !important;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15) !important;
+}
+
+/* BUTTONS ALA iOS ACTION SHEET */
+.btn-ios-primary {
+  background: linear-gradient(180deg, #007aff 0%, #0062cc 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 13px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 14px rgba(0, 122, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.btn-ios-primary:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+}
+
+.btn-ios-secondary {
+  background: rgba(0, 122, 255, 0.08);
+  color: var(--app-blue);
+  border: 0.5px solid rgba(0, 122, 255, 0.2);
+  border-radius: 14px;
+  padding: 13px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.btn-ios-secondary:active {
+  background: rgba(0, 122, 255, 0.15);
+  transform: scale(0.97);
+}
+
+.btn-ios-outline {
+  background: transparent;
+  color: #8e8e93;
+  border: 0.5px solid #d1d1d6;
+  border-radius: 14px;
+  padding: 11px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.btn-ios-outline:active {
+  background: #e5e5ea;
+  transform: scale(0.97);
+}
+
 /* ========================================================
-     BOTTOM NAVIGATION (LEBAR KANAN KIRI PAS & PRESISI)
-     ======================================================== */
-  .app-bottom-nav {
-      position: fixed !important;
-      bottom: 6px !important;/* <--- BATAS LAYAR BAWAH */
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      width: 94% !important;
-      max-width: 440px !important; /* DIPERLEBAR: Agar muat dengan nyaman dan rapi di HP */
-      height: 70px;
-      z-index: 1030;
-      display: flex !important;
-      justify-content: space-around !important;
-      align-items: center !important;
-      background-color: #ffffff;
-      padding: 0 12px; /* Menambahkan jarak aman kanan-kiri di dalam bilah */
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
-      border-radius: 32px !important;
-      border: 1px solid rgba(0, 0, 0, 0.04);
-      overflow: visible !important; /* WAJIB: Agar kotak yang menonjol keluar tidak terpotong */
-  }
+   7. BOTTOM NAVIGATION (DENGAN EFEK BUBBLE AKTIF)
+   ======================================================== */
+.app-bottom-nav {
+    position: fixed !important;
+    bottom: 6px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 94% !important;
+    max-width: 440px !important;
+    height: 70px;
+    z-index: 1030;
+    display: flex !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+    background-color: #ffffff;
+    padding: 0 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12) !important;
+    border-radius: 32px !important;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    overflow: visible !important;
+}
 
-  .nav-item {
-      flex: 1;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-muted);
-      cursor: pointer;
-      height: 100%;
-      text-decoration: none;
-      background: transparent;
-      border: none;
-      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  }
+.nav-item {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    height: 100%;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
 
-  /* Efek saat ditekan */
-  .nav-item:active {
-      transform: scale(0.9);
-  }
+.nav-item:active {
+    transform: scale(0.9);
+}
 
-  .nav-item i {
-      font-size: 1.2rem;
-      margin-bottom: 2px;
-      z-index: 2;
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
+.nav-item i {
+    font-size: 1.2rem;
+    margin-bottom: 2px;
+    z-index: 2;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
-  /* Sembunyikan teks untuk menu yang sedang aktif */
-  .nav-item.active span {
-      display: none !important; 
-  }
+.nav-item.active span {
+    display: none !important; 
+}
 
-  .nav-item span {
-      font-size: 0.6rem;
-      font-weight: 500;
-      z-index: 2;
-      transition: color 0.3s ease;
-  }
+.nav-item span {
+    font-size: 0.6rem;
+    font-weight: 500;
+    z-index: 2;
+    transition: color 0.3s ease;
+}
 
-  /* ========================================================
-     EFEK KOTAK MENONJOL KELUAR UNTUK MENU AKTIF
-     ======================================================== */
-  .nav-item.active {
-      color: #ffffff !important;
-  }
+/* EFEK BUBBLE AKTIF MENONJOL */
+.nav-item.active {
+    color: #ffffff !important;
+}
 
-  .nav-item.active::before {
-      content: '';
-      position: absolute;
-      top: -18px; 
-      left: 50%;
-      transform: translateX(-50%);
-      width: 52px;
-      height: 52px;
-      background-color: var(--app-blue);
-      border-radius: 18px;
-      z-index: 1;
-      box-shadow: 0 8px 20px rgba(13, 110, 253, 0.35);
-      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: -18px; 
+    left: 50%;
+    transform: translateX(-50%);
+    width: 52px;
+    height: 52px;
+    background-color: var(--app-blue);
+    border-radius: 18px;
+    z-index: 1;
+    box-shadow: 0 8px 20px rgba(0, 122, 255, 0.35);
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
-  .nav-item.active i {
-      transform: translateY(-18px) scale(1.25);
-      color: #ffffff !important;
-  }
+.nav-item.active i {
+    transform: translateY(-18px) scale(1.25);
+    color: #ffffff !important;
+}
 
-  /* ========================================================
-     KHUSUS LAYAR LAPTOP / DESKTOP (BENTANG PENUH)
-     ======================================================== */
-  @media (min-width: 768px) {
-      .app-bottom-nav {
-          width: 100% !important;
-          max-width: 100% !important;
-          left: 0 !important;
-          transform: none !important;
-          bottom: 0 !important;
-          height: 75px !important;
-          padding: 0 40px !important;
-          box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.08) !important;
-          border-radius: 0 !important;
-          border-top: 1px solid #eaeaea;
-          overflow: visible !important;
-      }
+/* KHUSUS DESKTOP / LAPTOP */
+@media (min-width: 768px) {
+    .app-bottom-nav {
+        width: 100% !important;
+        max-width: 100% !important;
+        left: 0 !important;
+        transform: none !important;
+        bottom: 0 !important;
+        height: 75px !important;
+        padding: 0 40px !important;
+        box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.08) !important;
+        border-radius: 0 !important;
+        border-top: 1px solid #eaeaea;
+        overflow: visible !important;
+    }
 
-      .nav-item.active::before {
-          top: -22px;
-          width: 62px;
-          height: 62px;
-          border-radius: 20px;
-      }
+    .nav-item.active::before {
+        top: -22px;
+        width: 62px;
+        height: 62px;
+        border-radius: 20px;
+    }
 
-      .nav-item.active i {
-          transform: translateY(-22px) scale(1.35);
-      }
+    .nav-item.active i {
+        transform: translateY(-22px) scale(1.35);
+    }
 
-      .nav-item i {
-          font-size: 1.35rem !important; 
-      }
+    .nav-item i {
+        font-size: 1.35rem !important; 
+    }
 
-      .nav-item span {
-          font-size: 0.7rem !important;  
-      }
-  }
+    .nav-item span {
+        font-size: 0.7rem !important;  
+    }
+}

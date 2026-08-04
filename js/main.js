@@ -1,22 +1,32 @@
 // ==========================================
-// KONEKSI SUPABASE
+// KONEKSI SUPABASE & INITIALIZATION
 // ==========================================
 console.log("File main.js berhasil dimuat dan siap digunakan!");
 
 const SUPABASE_URL = 'https://btlxqbebbwtddcpzpaet.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable__dVwgg315z2OT5UkioK9zw_gRdhxPP5';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0bHhxYmViYnd0ZGRjcHpwYWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyODc3NzksImV4cCI6MjEwMDg2Mzc3OX0.UTuPztP57dSbHwt5kJ2u30sSpcE3KQJ6vioPoEM7eEs';
 const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let globalData = [];
 let currentFilteredData = [];
 let currentViewedProduct = null;
 let currentSlide = 0;
-const totalSlides = 4; // Jumlah banner
+let totalSlides = 4;
 let autoSlideTimer;
 const nomorWhatsAppAdmin = "6285799860406"; 
 
+// Mapping Gambar Kategori
+let categoryImagesMap = {
+    'GANTI LCD': 'https://i.ibb.co/whtJ0CKy/logo-lcd.png',
+    'GANTI BAT': 'https://i.ibb.co/cXrYM3vL/logo-bat.png',
+    'SERVICE': 'https://i.ibb.co/ZRcxyg1m/logo-konektor.png'
+};
+
 document.addEventListener('DOMContentLoaded', () => {
+    loadCategoriesDinamis();
     loadData();
+    loadBannersDinamis();
+    loadBrandsDinamis();
     startAutoSlide();
 
     // ==========================================
@@ -166,12 +176,12 @@ function switchNav(tabName, element) {
         } else if (tabName === 'Merek') {
             const mv = document.getElementById('merekView');
             if(mv) mv.classList.remove('d-none');
-            if (typeof generateMerekList === 'function') generateMerekList(); 
+            generateMerekList(); 
             window.scrollTo(0, 0);
         } else if (tabName === 'Keranjang') {
             const cv = document.getElementById('keranjangView');
             if(cv) cv.classList.remove('d-none');
-            if (typeof renderCart === 'function') renderCart(); 
+            renderCart(); 
             window.scrollTo(0, 0);
         } else if (tabName === 'Member') {
             const memv = document.getElementById('memberView');
@@ -202,9 +212,97 @@ function closeDetail() {
     if(bn) bn.classList.remove('d-none');
 }
 
+// ==========================================
+// RENDER KATEGORI, BANNER & BRAND DINAMIS
+// ==========================================
+async function loadCategoriesDinamis() {
+    try {
+        const { data: categories, error } = await dbClient.from('categories').select('*');
+        if (error || !categories || categories.length === 0) return;
+
+        categories.forEach(cat => {
+            if (cat.name && cat.image_url) {
+                categoryImagesMap[cat.name.toUpperCase()] = cat.image_url;
+            }
+        });
+
+        // Update gambar di Beranda
+        const lcdImgHome = document.querySelector(".category-item[onclick*='LCD'] img");
+        if (lcdImgHome && categoryImagesMap['GANTI LCD']) lcdImgHome.src = categoryImagesMap['GANTI LCD'];
+
+        const batImgHome = document.querySelector(".category-item[onclick*='BAT'] img");
+        if (batImgHome && categoryImagesMap['GANTI BAT']) batImgHome.src = categoryImagesMap['GANTI BAT'];
+
+        const srvImgHome = document.querySelector(".category-item[onclick*='SERVICE'] img");
+        if (srvImgHome && categoryImagesMap['SERVICE']) srvImgHome.src = categoryImagesMap['SERVICE'];
+
+        // Update gambar di Kategori View
+        const lcdImgKat = document.querySelector("#kategoriView [onclick*='LCD'] img");
+        if (lcdImgKat && categoryImagesMap['GANTI LCD']) lcdImgKat.src = categoryImagesMap['GANTI LCD'];
+
+        const batImgKat = document.querySelector("#kategoriView [onclick*='BAT'] img");
+        if (batImgKat && categoryImagesMap['GANTI BAT']) batImgKat.src = categoryImagesMap['GANTI BAT'];
+
+        const srvImgKat = document.querySelector("#kategoriView [onclick*='SERVICE'] img");
+        if (srvImgKat && categoryImagesMap['SERVICE']) srvImgKat.src = categoryImagesMap['SERVICE'];
+
+    } catch (e) {
+        console.log("Menggunakan gambar kategori bawaan.");
+    }
+}
+
+async function loadBannersDinamis() {
+    try {
+        const { data: banners, error } = await dbClient.from('banners').select('*');
+        if (error || !banners || banners.length === 0) return;
+
+        const slider = document.getElementById('bannerSlider');
+        const dots = document.getElementById('bannerDots');
+        if (!slider || !dots) return;
+
+        slider.innerHTML = banners.map(b => `
+            <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
+                <img src="${b.image_url}" alt="${b.title || 'Banner Promo'}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+        `).join('');
+
+        dots.innerHTML = banners.map((_, i) => `
+            <div class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>
+        `).join('');
+
+        totalSlides = banners.length;
+        currentSlide = 0;
+    } catch (e) {
+        console.log("Menggunakan banner bawaan.");
+    }
+}
+
+async function loadBrandsDinamis() {
+    try {
+        const { data: brands, error } = await dbClient.from('brands').select('*');
+        if (error || !brands || brands.length === 0) return;
+
+        window.customBrandsData = brands;
+    } catch (e) {
+        console.log("Menggunakan daftar merek bawaan.");
+    }
+}
+
 function generateMerekList() {
     const container = document.getElementById('merekContainer');
     if (!container) return;
+
+    if (window.customBrandsData && window.customBrandsData.length > 0) {
+        container.innerHTML = window.customBrandsData.map(m => `
+            <div class="col-4 p-3 border-end border-bottom text-center" onclick="searchCategory('${m.name}')" style="cursor:pointer;">
+                <div class="cat-circle mx-auto mb-2 bg-white text-dark shadow-sm border" style="width:70px; max-height:70px; font-size:1.5rem;">
+                   <img src="${m.image_url}" alt="${m.name}" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                </div>
+                <span class="fw-bold text-dark" style="font-size:0.8rem;">${m.name}</span>
+            </div>
+        `).join('');
+        return;
+    }
     
     if (!globalData || globalData.length === 0) {
         container.innerHTML = '<div class="col-12 p-5 text-center text-muted">Data belum tersedia</div>';
@@ -306,7 +404,7 @@ async function loadData() {
     try {
         const { data, error } = await dbClient
             .from('data_service')
-            .select('*'); // Tanpa order timestamp agar data lengkap dan tidak null
+            .select('*');
 
         if (error) throw error;
 
@@ -468,75 +566,82 @@ function showDetail(idx) {
     const hargaNum = parseInt(String(row[4] || '0').replace(/[^0-9]/g, '')) || 0;
     const harga = formatRupiah(hargaNum);
     const hargaCoret = hargaNum > 0 ? formatRupiah(hargaNum * 1.2) : '';
-    const status = row[7] ? row[7].trim() : '-';
-    const garansi = row[5] || '-';
+    const garansi = row[5] ? String(row[5]).trim() : 'Garansi Test';
+    const keterangan = row[6] ? String(row[6]).trim() : '';
+    const stokStatus = row[7] ? String(row[7]).trim() : 'Tersedia';
     
     currentViewedProduct = { id: kodeBarang, title: `${merk} ${type}`, price: hargaNum, service: service };
 
-    // Update Teks Detail
+    // 1. ISI TEXT DETAIL PRODUK
     const elTitle = document.getElementById('detailTitle');
-    if(elTitle) elTitle.innerText = `${merk} ${type}`;
-    
+    if (elTitle) elTitle.innerText = `${merk} ${type}`;
+
     const elDesc = document.getElementById('detailFullDesc');
-    if(elDesc) elDesc.innerText = `${service} ${merk} ${type}`;
-    
-    const elPrice = document.getElementById('detailPrice');
-    if(elPrice) elPrice.innerText = harga;
-    
-    const elCross = document.getElementById('detailCrossPrice');
-    if(elCross) elCross.innerText = hargaCoret;
+    if (elDesc) elDesc.innerText = `${service} ${merk} ${type}${keterangan ? ' (' + keterangan + ')' : ''}`;
 
-    // Update Service & Tag (Opsional sesuai HTML Anda)
     const elService = document.getElementById('detailService');
-    if(elService) elService.innerText = service;
-    
+    if (elService) elService.innerText = service;
+
     const elTag = document.getElementById('detailTag');
-    if(elTag) elTag.innerText = garansi;
+    if (elTag) elTag.innerText = garansi;
 
-    // Atur Gambar Berdasarkan Jenis Service (LCD / BAT / SERVICE)
-    const imgLcd = document.getElementById('detailLcdImg');
-    const imgBat = document.getElementById('detailBatImg');
-    const imgSrc = document.getElementById('detailSrcImg');
+    const elPrice = document.getElementById('detailPrice');
+    if (elPrice) elPrice.innerText = harga;
 
-    if(imgLcd) imgLcd.classList.add('d-none');
-    if(imgBat) imgBat.classList.add('d-none');
-    if(imgSrc) imgSrc.classList.add('d-none');
+    const elCross = document.getElementById('detailCrossPrice');
+    if (elCross) elCross.innerText = hargaCoret;
 
-    if (service.includes('LCD') && imgLcd) {
-        imgLcd.classList.remove('d-none');
-    } else if (service.includes('BAT') && imgBat) {
-        imgBat.classList.remove('d-none');
-    } else if (imgSrc) {
-        imgSrc.classList.remove('d-none');
-    }
-
-    // Update Kode Barang (Sesuai ID di HTML: detailCode)
+    // 2. ISI KODE BARANG & STATUS STOK
     const elCode = document.getElementById('detailCode');
-    if(elCode) elCode.innerText = kodeBarang;
+    if (elCode) elCode.innerText = kodeBarang;
 
-    // Update Stok / Status (Sesuai ID di HTML: detailStock)
     const elStock = document.getElementById('detailStock');
-    if(elStock) {
-        elStock.innerText = status;
-        elStock.className = `badge ${status === 'Tersedia' ? 'bg-success' : 'bg-warning'} text-white fw-medium`;
+    if (elStock) elStock.innerText = stokStatus;
+
+    // 3. TAMPILKAN GAMBAR SESUAI KATEGORI SERVICE
+    const lcdImg = document.getElementById('detailLcdImg');
+    const batImg = document.getElementById('detailBatImg');
+    const srcImg = document.getElementById('detailSrcImg');
+    
+    // Sembunyikan semua gambar terlebih dahulu
+    if (lcdImg) lcdImg.classList.add('d-none');
+    if (batImg) batImg.classList.add('d-none');
+    if (srcImg) srcImg.classList.add('d-none');
+
+    // Tampilkan gambar yang sesuai kategori
+    if (service.includes('LCD')) {
+        if (lcdImg) {
+            if (categoryImagesMap['GANTI LCD']) lcdImg.src = categoryImagesMap['GANTI LCD'];
+            lcdImg.classList.remove('d-none');
+        }
+    } else if (service.includes('BAT')) {
+        if (batImg) {
+            if (categoryImagesMap['GANTI BAT']) batImg.src = categoryImagesMap['GANTI BAT'];
+            batImg.classList.remove('d-none');
+        }
+    } else {
+        if (srcImg) {
+            if (categoryImagesMap['SERVICE']) srcImg.src = categoryImagesMap['SERVICE'];
+            srcImg.classList.remove('d-none');
+        }
     }
     
-    const waText = `Halo MUSTAKIM PHONE, \n\n*${service}*\n*${merk} ${type}*\nHarga: ${harga}\n\nApakah tersedia?`;
+    // 4. SETTING LINK WHATSAPP ADMIN
+    const waText = `Halo MUSTAKIM PHONE,\n\n*${service}*\n*${merk} ${type}*\nHarga: ${harga}\nKode Barang: ${kodeBarang}\n\nApakah stok tersedia?`;
     const elWa = document.getElementById('detailWaBtn');
-    if(elWa) elWa.href = `https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(waText)}`;
+    if (elWa) elWa.href = `https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(waText)}`;
 
-    // Transisi Tampilan
+    // Switch Tampilan
     document.getElementById('appHeader').classList.add('d-none');
     document.getElementById('mainWorkspace').classList.add('d-none');
-    document.getElementById('bottomNav').classList.add('d-none');
     
     document.getElementById('detailHeader').classList.remove('d-none');
     document.getElementById('detailWorkspace').classList.remove('d-none');
-    window.scrollTo(0,0);
+    window.scrollTo(0, 0);
 }
 
 // ==========================================
-// RENDER 6 PART TERBARU (DENGAN SORTING TANGGAL AKURAT)
+// RENDER 6 PART TERBARU (LATEST PRODUCTS)
 // ==========================================
 function renderLatestProducts() {
     const container = document.getElementById('latestProductsContainer');
@@ -549,16 +654,15 @@ function renderLatestProducts() {
     
     // Urutkan data berdasarkan tanggal teks Indonesia terbaru (Descending)
     const sortedData = [...globalData].sort((a, b) => {
-        const timeA = parseIndonesianDate(a[8]); // Kolom update berada di indeks ke-8
+        const timeA = parseIndonesianDate(a[8]); // Kolom update
         const timeB = parseIndonesianDate(b[8]);
         return timeB - timeA;
     });
     
-    let latestRows = sortedData.slice(0, 6); // Ambil 6 data teratas
+    let latestRows = sortedData.slice(0, 6); // Ambil 6 data terbaru
     let html = '<div class="row g-2 px-1">';
     
     latestRows.forEach((row) => {
-        // Cari indeks asli di globalData agar fungsi showDetail() membuka data yang tepat
         const originalIndex = globalData.findIndex(item => item[0] === row[0]);
 
         const merk = row[1] || '';
@@ -715,34 +819,51 @@ function formatRupiah(angka) {
 }
 
 function getProductImage(serviceName) {
-    if (serviceName.includes('LCD')) return 'https://i.ibb.co/whtJ0CKy/logo-lcd.png';
-    if (serviceName.includes('BAT')) return 'https://i.ibb.co/cXrYM3vL/logo-bat.png';
-    if (serviceName.includes('SERVICE')) return 'https://i.ibb.co/ZRcxyg1m/logo-konektor.png';
+    const s = (serviceName || '').toUpperCase();
+    if (s.includes('LCD') && categoryImagesMap['GANTI LCD']) return categoryImagesMap['GANTI LCD'];
+    if (s.includes('BAT') && categoryImagesMap['GANTI BAT']) return categoryImagesMap['GANTI BAT'];
+    if (s.includes('SERVICE') && categoryImagesMap['SERVICE']) return categoryImagesMap['SERVICE'];
     return 'https://i.ibb.co/TqHz30ng/logo-default.png';
 }
 
 // ==========================================
-// FUNGSI MEMBER & AKUN
+// FUNGSI MEMBER & AKUN (LENGKAP NO HP & RESET)
 // ==========================================
 function cekSecretLogin(url) { window.location.href = url; }
+
 function bukaMenuDaftar() {
     document.getElementById('tampilanProfilTamu').style.display = 'none';
     document.getElementById('akunContainer').style.display = 'block';
     tampilkanDaftar();
 }
+
 function bukaMenuLogin() {
     document.getElementById('tampilanProfilTamu').style.display = 'none';
     document.getElementById('akunContainer').style.display = 'block';
     tampilkanLogin();
 }
+
 function tampilkanDaftar() {
     document.getElementById('formLoginContainer').style.display = 'none';
+    const formReset = document.getElementById('formResetContainer');
+    if (formReset) formReset.style.display = 'none';
     document.getElementById('formDaftarContainer').style.display = 'block';
 }
+
 function tampilkanLogin() {
     document.getElementById('formDaftarContainer').style.display = 'none';
+    const formReset = document.getElementById('formResetContainer');
+    if (formReset) formReset.style.display = 'none';
     document.getElementById('formLoginContainer').style.display = 'block';
 }
+
+function tampilkanResetPassword() {
+    document.getElementById('formLoginContainer').style.display = 'none';
+    document.getElementById('formDaftarContainer').style.display = 'none';
+    const formReset = document.getElementById('formResetContainer');
+    if (formReset) formReset.style.display = 'block';
+}
+
 function kembaliKeProfilTamu() {
     document.getElementById('akunContainer').style.display = 'none';
     document.getElementById('tampilanProfilTamu').style.display = 'block';
@@ -758,25 +879,26 @@ function cekEnter(event) {
     }
 }
 
+// VERIFIKASI LOGIN (BISA MENGGUNAKAN USERNAME ATAU NO HP)
 async function verifikasiLogin() {
-    const usernameInput = document.getElementById('username').value.trim();
+    const inputUser = document.getElementById('username').value.trim();
     const passwordInput = document.getElementById('password').value.trim();
     const pesanLogin = document.getElementById('pesanLogin');
 
-    if (!usernameInput || !passwordInput) {
+    if (!inputUser || !passwordInput) {
         pesanLogin.style.color = 'red';
-        pesanLogin.innerText = 'Username dan Password harus diisi!';
+        pesanLogin.innerText = 'Username/No HP dan Password harus diisi!';
         return;
     }
 
-    pesanLogin.style.color = '#0d6efd';
+    pesanLogin.style.color = '#007aff';
     pesanLogin.innerText = 'Memeriksa akun...';
 
     try {
         const { data, error } = await dbClient
             .from('admin_users')
             .select('*')
-            .eq('username', usernameInput)
+            .or(`username.eq.${inputUser},no_hp.eq.${inputUser}`)
             .eq('password', passwordInput)
             .maybeSingle();
 
@@ -812,7 +934,7 @@ async function verifikasiLogin() {
             }, 1000);
         } else {
             pesanLogin.style.color = 'red';
-            pesanLogin.innerText = 'Username atau Password salah!';
+            pesanLogin.innerText = 'Username/No HP atau Password salah!';
         }
     } catch (err) {
         console.error('Error Login:', err.message);
@@ -821,38 +943,51 @@ async function verifikasiLogin() {
     }
 }
 
+// PENDAFTARAN MEMBER BARU (TERMASUK INPUT NOMOR HP)
 async function prosesDaftar() {
+    const regNoHpEl = document.getElementById('regNoHp');
+    const regNoHp = regNoHpEl ? regNoHpEl.value.trim() : '';
     const regUsername = document.getElementById('regUsername').value.trim();
     const regPassword = document.getElementById('regPassword').value.trim();
     const pesanDaftar = document.getElementById('pesanDaftar');
 
     if (!regUsername || !regPassword) {
         pesanDaftar.style.color = 'red';
-        pesanDaftar.innerText = 'Username dan Password harus diisi!';
+        pesanDaftar.innerText = 'Username dan Password wajib diisi!';
         return;
     }
 
-    pesanDaftar.style.color = '#0d6efd';
+    pesanDaftar.style.color = '#007aff';
     pesanDaftar.innerText = 'Mendaftarkan akun...';
 
     try {
+        let filterOr = `username.eq.${regUsername}`;
+        if (regNoHp) {
+            filterOr += `,no_hp.eq.${regNoHp}`;
+        }
+
         const { data: existingUser } = await dbClient
             .from('admin_users')
-            .select('username')
-            .eq('username', regUsername)
+            .select('username, no_hp')
+            .or(filterOr)
             .maybeSingle();
 
         if (existingUser) {
             pesanDaftar.style.color = 'red';
-            pesanDaftar.innerText = 'Username sudah digunakan, pilih yang lain!';
+            if (regNoHp && existingUser.no_hp === regNoHp) {
+                pesanDaftar.innerText = 'Nomor HP sudah terdaftar! Silakan login/reset.';
+            } else {
+                pesanDaftar.innerText = 'Username sudah digunakan, pilih yang lain!';
+            }
             return;
         }
 
+        const insertPayload = { username: regUsername, password: regPassword, role: 'member' };
+        if (regNoHp) insertPayload.no_hp = regNoHp;
+
         const { error } = await dbClient
             .from('admin_users')
-            .insert([
-                { username: regUsername, password: regPassword, role: 'member' }
-            ]);
+            .insert([insertPayload]);
 
         if (error) throw error;
 
@@ -861,6 +996,7 @@ async function prosesDaftar() {
         showToast('Akun berhasil dibuat!');
 
         setTimeout(() => {
+            if (regNoHpEl) regNoHpEl.value = '';
             document.getElementById('regUsername').value = '';
             document.getElementById('regPassword').value = '';
             pesanDaftar.innerText = '';
@@ -869,8 +1005,65 @@ async function prosesDaftar() {
 
     } catch (err) {
         console.error('Error Daftar:', err.message);
-        pesanDsilat.style.color = 'red';
+        pesanDaftar.style.color = 'red';
         pesanDaftar.innerText = 'Gagal mendaftar: ' + err.message;
+    }
+}
+
+// RESET PASSWORD MELALUI NOMOR HP
+async function prosesResetPassword() {
+    const resetNoHpEl = document.getElementById('resetNoHp');
+    const resetPassBaruEl = document.getElementById('resetPassBaru');
+    const resetNoHp = resetNoHpEl ? resetNoHpEl.value.trim() : '';
+    const resetPassBaru = resetPassBaruEl ? resetPassBaruEl.value.trim() : '';
+    const pesanReset = document.getElementById('pesanReset');
+
+    if (!resetNoHp || !resetPassBaru) {
+        pesanReset.style.color = 'red';
+        pesanReset.innerText = 'Nomor HP dan Password Baru wajib diisi!';
+        return;
+    }
+
+    pesanReset.style.color = '#007aff';
+    pesanReset.innerText = 'Mencari akun...';
+
+    try {
+        const { data: userAccount, error: fetchErr } = await dbClient
+            .from('admin_users')
+            .select('*')
+            .eq('no_hp', resetNoHp)
+            .maybeSingle();
+
+        if (fetchErr) throw fetchErr;
+
+        if (!userAccount) {
+            pesanReset.style.color = 'red';
+            pesanReset.innerText = 'Nomor HP tidak terdaftar! Periksa kembali.';
+            return;
+        }
+
+        const { error: updateErr } = await dbClient
+            .from('admin_users')
+            .update({ password: resetPassBaru })
+            .eq('id', userAccount.id);
+
+        if (updateErr) throw updateErr;
+
+        pesanReset.style.color = 'green';
+        pesanReset.innerHTML = `Berhasil! Password diperbarui.<br><small class="text-dark">Username Anda: <strong>${userAccount.username}</strong></small>`;
+        showToast('Password berhasil direset!');
+
+        setTimeout(() => {
+            if (resetNoHpEl) resetNoHpEl.value = '';
+            if (resetPassBaruEl) resetPassBaruEl.value = '';
+            pesanReset.innerText = '';
+            tampilkanLogin();
+        }, 2500);
+
+    } catch (err) {
+        console.error('Error Reset:', err.message);
+        pesanReset.style.color = 'red';
+        pesanReset.innerText = 'Gagal mereset password: ' + err.message;
     }
 }
 
@@ -927,7 +1120,7 @@ async function simpanPasswordBaru() {
         showToast('Password berhasil diperbarui');
 
         userSession.password = passBaru;
-        localStorage.setItem('mustakim`User', JSON.stringify(userSession));
+        localStorage.setItem('mustakimUser', JSON.stringify(userSession));
 
         setTimeout(() => {
             tutupFormGantiPassword();

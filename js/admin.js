@@ -1,14 +1,13 @@
 /**
  * PROYEK: MUSTAKIM PHONE - Admin Logic (Supabase Version)
- * FULL VERSION (COMPREHENSIVE) + LOGOUT FUNCTION + DASHBOARD SHORTCUTS
- * UI/UX Premium Enhanced (Using dbClient)
+ * FULL RESTORED VERSION + DASHBOARD STATS + CATEGORIES, BANNER & BRAND MANAGEMENT
  */
 
 // ==========================================
 // KONEKSI SUPABASE
 // ==========================================
 const SUPABASE_URL = 'https://btlxqbebbwtddcpzpaet.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable__dVwgg315z2OT5UkioK9zw_gRdhxPP5';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0bHhxYmViYnd0ZGRjcHpwYWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyODc3NzksImV4cCI6MjEwMDg2Mzc3OX0.UTuPztP57dSbHwt5kJ2u30sSpcE3KQJ6vioPoEM7eEs';
 
 const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -19,7 +18,6 @@ let currentPage = 1;
 const rowsPerPage = 10;
 let globalData = [];
 let filteredData = [];
-let searchTimer; 
 let myChart = null; 
 let searchChart = null;
 
@@ -62,11 +60,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     const filterService = document.getElementById('filterService');
-    if(filterService) {
-        filterService.addEventListener('change', applyFilters);
-    }
+    if(filterService) filterService.addEventListener('change', applyFilters);
+
+    // Event Listener Form
+    const formKategori = document.getElementById('formUbahKategori');
+    if(formKategori) formKategori.addEventListener('submit', simpanKategori);
+
+    const formBanner = document.getElementById('formTambahBanner');
+    if(formBanner) formBanner.addEventListener('submit', simpanBanner);
+
+    const formMerek = document.getElementById('formTambahMerek');
+    if(formMerek) formMerek.addEventListener('submit', simpanMerek);
 
     loadData();
+    loadCategories();
+    loadBanners();
+    loadBrands();
 });
 
 // ==========================================
@@ -114,7 +123,10 @@ function setupSidebar() {
     const menuMapping = {
         'menu-dashboard': 'section-dashboard',
         'menu-data': 'section-table',
-        'menu-tambah': 'section-form'
+        'menu-tambah': 'section-form',
+        'menu-kategori': 'section-kategori',
+        'menu-banner': 'section-banner',
+        'menu-merek': 'section-merek'
     };
 
     document.querySelectorAll('#sidebar-wrapper .list-group-item').forEach(item => {
@@ -151,7 +163,7 @@ function setupSidebar() {
 }
 
 // ==========================================
-// DATA LOADING & DASHBOARD
+// DATA LOADING & DASHBOARD (DIKEMBALIKAN UTUH)
 // ==========================================
 async function loadData() {
   Swal.fire({ 
@@ -198,6 +210,7 @@ async function loadData() {
 
     filteredData = [...globalData];
     
+    // PEMANGGILAN FUNGSI DASHBOARD DIKEMBALIKAN
     updateDashboard();
     setupDashboardShortcuts(); 
     renderTable();
@@ -219,8 +232,9 @@ function updateDashboard() {
   const merkSet = new Set(), typeSet = new Set();
   let countLCD = 0, countBattery = 0;
   globalData.forEach(row => {
-    merkSet.add(row[1]); typeSet.add(row[2]);
-    const service = String(row[3]).toUpperCase();
+    if (row[1]) merkSet.add(row[1]); 
+    if (row[2]) typeSet.add(row[2]);
+    const service = String(row[3] || '').toUpperCase();
     if(service.includes('LCD')) countLCD++;
     if(service.includes('BAT')) countBattery++;
   });
@@ -260,7 +274,7 @@ function filterFromDashboard(category) {
 function showMerkModal() {
     const merkCounts = {}; 
     globalData.forEach(row => {
-        let m = String(row[1]).toUpperCase().trim();
+        let m = String(row[1] || '').toUpperCase().trim();
         if(m) { merkCounts[m] = (merkCounts[m] || 0) + 1; }
     });
 
@@ -309,7 +323,7 @@ window.filterBySpecificMerk = function(merkName) {
     if (merkName === 'SEMUA') {
         filteredData = [...globalData];
     } else {
-        filteredData = globalData.filter(row => String(row[1]).toUpperCase().trim() === merkName);
+        filteredData = globalData.filter(row => String(row[1] || '').toUpperCase().trim() === merkName);
     }
 
     currentPage = 1;
@@ -321,7 +335,7 @@ window.filterBySpecificMerk = function(merkName) {
 function showTypeModal() {
     const typeCounts = {};
     globalData.forEach(row => {
-        let t = String(row[2]).toUpperCase().trim();
+        let t = String(row[2] || '').toUpperCase().trim();
         if(t) { typeCounts[t] = (typeCounts[t] || 0) + 1; }
     });
 
@@ -365,7 +379,7 @@ window.filterBySpecificType = function(typeName) {
     if (typeName === 'SEMUA') {
         filteredData = [...globalData];
     } else {
-        filteredData = globalData.filter(row => String(row[2]).toUpperCase().trim() === typeName);
+        filteredData = globalData.filter(row => String(row[2] || '').toUpperCase().trim() === typeName);
     }
     currentPage = 1;
     renderTable();
@@ -374,10 +388,10 @@ window.filterBySpecificType = function(typeName) {
 
 // --- MODAL LCD ---
 function showLcdModal() {
-    const lcdData = globalData.filter(row => String(row[3]).toUpperCase().includes('LCD'));
+    const lcdData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('LCD'));
     const merkCounts = {};
     lcdData.forEach(row => {
-        let m = String(row[1]).toUpperCase().trim();
+        let m = String(row[1] || '').toUpperCase().trim();
         if(m) { merkCounts[m] = (merkCounts[m] || 0) + 1; }
     });
 
@@ -419,9 +433,9 @@ window.filterBySpecificLcdMerk = function(merkName) {
     document.getElementById('filterService').value = 'GANTI LCD';
 
     if (merkName === 'SEMUA') {
-        filteredData = globalData.filter(row => String(row[3]).toUpperCase().includes('LCD'));
+        filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('LCD'));
     } else {
-        filteredData = globalData.filter(row => String(row[3]).toUpperCase().includes('LCD') && String(row[1]).toUpperCase().trim() === merkName);
+        filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('LCD') && String(row[1] || '').toUpperCase().trim() === merkName);
     }
     currentPage = 1;
     renderTable();
@@ -430,10 +444,10 @@ window.filterBySpecificLcdMerk = function(merkName) {
 
 // --- MODAL BATTERY ---
 function showBatModal() {
-    const batData = globalData.filter(row => String(row[3]).toUpperCase().includes('BAT'));
+    const batData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('BAT'));
     const merkCounts = {};
     batData.forEach(row => {
-        let m = String(row[1]).toUpperCase().trim();
+        let m = String(row[1] || '').toUpperCase().trim();
         if(m) { merkCounts[m] = (merkCounts[m] || 0) + 1; }
     });
 
@@ -475,9 +489,9 @@ window.filterBySpecificBatMerk = function(merkName) {
     document.getElementById('filterService').value = 'GANTI BAT';
 
     if (merkName === 'SEMUA') {
-        filteredData = globalData.filter(row => String(row[3]).toUpperCase().includes('BAT'));
+        filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('BAT'));
     } else {
-        filteredData = globalData.filter(row => String(row[3]).toUpperCase().includes('BAT') && String(row[1]).toUpperCase().trim() === merkName);
+        filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('BAT') && String(row[1] || '').toUpperCase().trim() === merkName);
     }
     currentPage = 1;
     renderTable();
@@ -485,7 +499,7 @@ window.filterBySpecificBatMerk = function(merkName) {
 }
 
 // ==========================================
-// CRUD LOGIC
+// CRUD LOGIC SERVICE DATA
 // ==========================================
 document.getElementById('formTambahData').addEventListener('submit', async function(e) {
   e.preventDefault();
@@ -541,7 +555,7 @@ window.openEditModal = function(id) {
   document.getElementById('editHarga').value = String(row[4]).replace(/[^0-9]/g, '');
   document.getElementById('editGaransi').value = row[5];
   
-  let statusData = String(row[7]).toLowerCase().trim();
+  let statusData = String(row[7] || '').toLowerCase().trim();
   let selectStatus = document.getElementById('editStatus');
   for (let i = 0; i < selectStatus.options.length; i++) {
     if (selectStatus.options[i].value.toLowerCase() === statusData) { selectStatus.selectedIndex = i; break; }
@@ -601,6 +615,189 @@ window.deleteRecord = function(id) {
 }
 
 // ==========================================
+// CATEGORIES MANAGEMENT
+// ==========================================
+async function loadCategories() {
+    const container = document.getElementById('containerListKategori');
+    if (!container) return;
+
+    try {
+        const { data, error } = await dbClient.from('categories').select('*');
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `<div class="col-12 text-center text-muted py-3">Belum ada gambar kategori tersimpan.</div>`;
+            return;
+        }
+
+        container.innerHTML = data.map(c => `
+            <div class="col-4 col-md-4 text-center">
+                <div class="p-3 border rounded-3 bg-white shadow-sm">
+                    <img src="${c.image_url}" class="img-fluid mb-2" style="max-height: 60px; object-fit: contain;">
+                    <div class="fw-bold text-uppercase" style="font-size:0.8rem;">${c.name}</div>
+                </div>
+            </div>
+        `).join('');
+    } catch(err) {
+        if (container) container.innerHTML = `<div class="col-12 text-center text-danger py-3">Gagal memuat gambar kategori.</div>`;
+    }
+}
+
+async function simpanKategori(e) {
+    e.preventDefault();
+    const name = document.getElementById('selectKategoriName').value;
+    const imageUrl = document.getElementById('inputKategoriUrl').value.trim();
+
+    if (!imageUrl) {
+        Swal.fire('Peringatan', 'URL Gambar Kategori wajib diisi!', 'warning');
+        return;
+    }
+
+    try {
+        const { error } = await dbClient
+            .from('categories')
+            .upsert({ name: name, image_url: imageUrl }, { onConflict: 'name' });
+
+        if (error) throw error;
+
+        Swal.fire('Berhasil!', `Gambar untuk kategori ${name} telah diperbarui.`, 'success');
+        document.getElementById('inputKategoriUrl').value = '';
+        loadCategories();
+    } catch(err) {
+        Swal.fire('Gagal', err.message, 'error');
+    }
+}
+
+// ==========================================
+// BANNER MANAGEMENT
+// ==========================================
+async function loadBanners() {
+    const container = document.getElementById('containerListBanner');
+    if (!container) return;
+
+    try {
+        const { data, error } = await dbClient.from('banners').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `<div class="col-12 text-center text-muted py-3">Belum ada banner tersimpan.</div>`;
+            return;
+        }
+
+        container.innerHTML = data.map(b => `
+            <div class="col-6 col-md-4">
+                <div class="card border-0 shadow-sm overflow-hidden position-relative rounded-3">
+                    <img src="${b.image_url}" class="w-100" style="aspect-ratio: 3/1; object-fit: cover;">
+                    <button onclick="deleteBanner(${b.id})" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle" title="Hapus Banner">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch(err) {
+        if (container) container.innerHTML = `<div class="col-12 text-center text-danger py-3">Gagal memuat banner.</div>`;
+    }
+}
+
+async function simpanBanner(e) {
+    e.preventDefault();
+    const title = document.getElementById('inputBannerTitle').value.trim();
+    const imageUrl = document.getElementById('inputBannerUrl').value.trim();
+
+    if (!imageUrl) {
+        Swal.fire('Peringatan', 'URL Gambar Banner wajib diisi!', 'warning');
+        return;
+    }
+
+    try {
+        const { error } = await dbClient.from('banners').insert([{ title: title || 'Banner Promo', image_url: imageUrl }]);
+        if (error) throw error;
+
+        Swal.fire('Berhasil!', 'Banner promo berhasil ditambahkan.', 'success');
+        document.getElementById('formTambahBanner').reset();
+        loadBanners();
+    } catch(err) {
+        Swal.fire('Gagal', err.message, 'error');
+    }
+}
+
+async function deleteBanner(id) {
+    if (confirm("Hapus banner ini?")) {
+        try {
+            const { error } = await dbClient.from('banners').delete().eq('id', id);
+            if (error) throw error;
+            loadBanners();
+        } catch(err) {
+            alert("Gagal menghapus: " + err.message);
+        }
+    }
+}
+
+// ==========================================
+// BRAND MANAGEMENT
+// ==========================================
+async function loadBrands() {
+    const container = document.getElementById('containerListMerek');
+    if (!container) return;
+
+    try {
+        const { data, error } = await dbClient.from('brands').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `<div class="col-12 text-center text-muted py-3">Belum ada merek tersimpan.</div>`;
+            return;
+        }
+
+        container.innerHTML = data.map(m => `
+            <div class="col-4 col-md-3 text-center">
+                <div class="p-3 border rounded-3 bg-white position-relative shadow-sm">
+                    <img src="${m.image_url}" class="img-fluid mb-2" style="max-height: 50px; object-fit: contain;">
+                    <div class="fw-bold text-uppercase" style="font-size:0.8rem;">${m.name}</div>
+                    <button onclick="deleteBrand(${m.id})" class="btn btn-sm btn-outline-danger mt-2 w-100 rounded-2"><i class="fa-solid fa-trash me-1"></i>Hapus</button>
+                </div>
+            </div>
+        `).join('');
+    } catch(err) {
+        if (container) container.innerHTML = `<div class="col-12 text-center text-danger py-3">Gagal memuat data merek.</div>`;
+    }
+}
+
+async function simpanMerek(e) {
+    e.preventDefault();
+    const name = document.getElementById('inputMerekName').value.trim().toUpperCase();
+    const imageUrl = document.getElementById('inputMerekUrl').value.trim();
+
+    if (!name || !imageUrl) {
+        Swal.fire('Peringatan', 'Nama Merek dan URL Logo wajib diisi!', 'warning');
+        return;
+    }
+
+    try {
+        const { error } = await dbClient.from('brands').insert([{ name: name, image_url: imageUrl }]);
+        if (error) throw error;
+
+        Swal.fire('Berhasil!', 'Merek baru berhasil ditambahkan.', 'success');
+        document.getElementById('formTambahMerek').reset();
+        loadBrands();
+    } catch(err) {
+        Swal.fire('Gagal', err.message, 'error');
+    }
+}
+
+async function deleteBrand(id) {
+    if (confirm("Hapus merek ini?")) {
+        try {
+            const { error } = await dbClient.from('brands').delete().eq('id', id);
+            if (error) throw error;
+            loadBrands();
+        } catch(err) {
+            alert("Gagal menghapus: " + err.message);
+        }
+    }
+}
+
+// ==========================================
 // TABLE & SEARCH
 // ==========================================
 function applyFilters() {
@@ -609,7 +806,7 @@ function applyFilters() {
     
     filteredData = globalData.filter(row => {
         let matchSearch = row.join(' ').toLowerCase().includes(searchVal);
-        let matchService = serviceVal === '' || String(row[3]).toUpperCase().includes(serviceVal);
+        let matchService = serviceVal === '' || String(row[3] || '').toUpperCase().includes(serviceVal);
         return matchSearch && matchService;
     });
     
@@ -631,7 +828,7 @@ function renderTable() {
     const paginatedData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
     
     paginatedData.forEach((row, index) => {
-        let statusText = row[7] ? row[7].trim() : 'Kosong';
+        let statusText = row[7] ? String(row[7]).trim() : 'Kosong';
         let badgeClass = statusText === 'Tersedia' ? 'status-ready' : (statusText === 'Preorder' ? 'status-preorder' : 'status-kosong');
         
         let tipeLengkap = row[2] ? row[2].toString() : '';
@@ -644,11 +841,11 @@ function renderTable() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="text-center text-muted fw-medium">${((currentPage - 1) * rowsPerPage) + index + 1}</td>
-          <td class="fw-semibold text-dark">${row[1]}</td>
+          <td class="fw-semibold text-dark">${row[1] || ''}</td>
           <td>${tipeTampil}</td>
-          <td><span class="badge bg-light text-dark border px-2 py-1 fw-medium">${row[3]}</span></td>
+          <td><span class="badge bg-light text-dark border px-2 py-1 fw-medium">${row[3] || ''}</span></td>
           <td class="fw-semibold text-dark">${formatRupiah(row[4])}</td>
-          <td class="text-muted small">${row[5]}</td>
+          <td class="text-muted small">${row[5] || ''}</td>
           <td><span class="status-badge ${badgeClass}">${statusText}</span></td>
           <td class="text-center">
             <button onclick="openEditModal('${row[0]}')" class="btn btn-sm btn-light text-primary border-0 me-1 rounded-3 shadow-sm" title="Edit"><i class="fa-solid fa-pen"></i></button>
@@ -672,29 +869,28 @@ function renderPagination() {
 window.changePage = function(page) { currentPage = page; renderTable(); }
 
 // ==========================================
-// CHARTS & ACTIVITY (DENGAN SORTING TANGGAL AKURAT)
+// CHARTS & ACTIVITY
 // ==========================================
 function renderRecentActivity(data) {
     const tbody = document.getElementById('recentActivityBody');
     if (!tbody) return;
 
-    // Urutkan data berdasarkan tanggal teks Indonesia terbaru (Descending) menggunakan parseIndonesianDate
     const sortedData = [...data].sort((a, b) => {
-        const timeA = parseIndonesianDate(a[8]); // Kolom update berada di indeks ke-8
+        const timeA = parseIndonesianDate(a[8]);
         const timeB = parseIndonesianDate(b[8]);
         return timeB - timeA;
     });
 
-    const recentData = sortedData.slice(0, 5); // Ambil 5 data teratas
+    const recentData = sortedData.slice(0, 5);
     if (recentData.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada aktivitas data.</td></tr>`; return; }
 
     tbody.innerHTML = recentData.map(row => {
-        let statusText = row[7] ? row[7].trim() : 'Kosong';
+        let statusText = row[7] ? String(row[7]).trim() : 'Kosong';
         let badgeClass = statusText === 'Tersedia' ? 'status-ready' : (statusText === 'Preorder' ? 'status-preorder' : 'status-kosong');
         return `<tr>
             <td class="fw-bold text-primary" style="font-size: 0.85rem;"><i class="fa-solid fa-hashtag text-muted me-1" style="font-size: 0.75rem;"></i>${row[0]}</td>
-            <td><span class="badge bg-light text-dark border px-2 py-1 fw-medium">${row[3]}</span></td>
-            <td><strong class="text-dark">${row[1]}</strong> <span class="text-muted">- ${row[2].split(/[,\/]+/)[0]}...</span></td>
+            <td><span class="badge bg-light text-dark border px-2 py-1 fw-medium">${row[3] || ''}</span></td>
+            <td><strong class="text-dark">${row[1] || ''}</strong> <span class="text-muted">- ${String(row[2] || '').split(/[,\/]+/)[0]}...</span></td>
             <td class="fw-semibold text-dark">${formatRupiah(row[4])}</td>
             <td><span class="status-badge ${badgeClass}" style="padding: 4px 10px; font-size: 0.75rem;">${statusText}</span></td>
         </tr>`;
@@ -704,7 +900,7 @@ function renderRecentActivity(data) {
 function renderChart(data) {
     let ready = 0, preorder = 0, kosong = 0;
     data.forEach(row => {
-        let s = String(row[7]).trim();
+        let s = String(row[7] || '').trim();
         if (s === 'Tersedia') ready++; 
         else if (s === 'Preorder') preorder++; 
         else if (s === 'Kosong') kosong++;

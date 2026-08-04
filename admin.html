@@ -15,13 +15,51 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <link rel="icon" type="image/png" href="https://i.ibb.co/ynfgh4DK/logo-MP.png">
-    <!-- Custom Admin CSS -->
     <link rel="stylesheet" href="css/admin.css">
+
+    <style>
+        /* Style Tambahan untuk Popup Grid Brand Box */
+        .brand-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .brand-box:hover {
+            transform: translateY(-3px);
+            border-color: #4318ff;
+            box-shadow: 0 10px 20px rgba(67, 24, 255, 0.1);
+        }
+        .brand-card-img-wrap {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+        .brand-box h5 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: #1e293b;
+        }
+        .brand-badge {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+    </style>
 
     <!-- PROTEKSI ADMIN -->
     <script>
         const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
-        if (!userSession || userSession.role.toLowerCase() !== 'admin') {
+        if (!userSession || (userSession.role && userSession.role.toLowerCase() !== 'admin')) {
             alert('Akses ditolak! Silakan login sebagai admin.');
             window.location.href = "index.html"; 
         }
@@ -45,6 +83,15 @@
             <a href="#" class="list-group-item" id="menu-tambah">
                 <i class="fa-solid fa-folder-plus"></i> Tambah Data
             </a>
+            <a href="#" class="list-group-item" id="menu-kategori">
+                <i class="fa-solid fa-border-all"></i> Gambar Kategori
+            </a>
+            <a href="#" class="list-group-item" id="menu-banner">
+                <i class="fa-solid fa-images"></i> Banner Slide
+            </a>
+            <a href="#" class="list-group-item" id="menu-merek">
+                <i class="fa-solid fa-tags"></i> Kelola Merek
+            </a>
             <div style="flex-grow: 1;"></div> 
             <a href="index.html" class="list-group-item text-danger mb-3" id="menu-logout">
                 <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
@@ -60,11 +107,11 @@
                 <button class="btn border-0 me-3 rounded-3 px-3 py-2 menu-btn" id="menu-toggle">
                     <i class="fa-solid fa-bars"></i>
                 </button>
-                <h4 class="m-0 fw-bold fs-5" id="pageTitle">Dashboard Overview</h4>
+                <h4 class="m-0 fw-bold fs-5" id="pageTitle">Dashboard</h4>
             </div>
             <div>
                 <span class="badge rounded-pill px-3 py-2 fw-semibold" style="background: #e0e5f2; color: #4318ff;">
-                    <i class="fa-solid fa-user-shield me-1"></i> Administrator
+                    <i class="fa-solid fa-user-shield me-1"></i> Admin
                 </span>
             </div>
         </nav>
@@ -214,7 +261,7 @@
         <div id="section-form" class="section-content" style="display:none;">
             <div class="premium-card mx-auto" style="max-width: 800px;">
                 <div class="border-bottom pb-3 mb-4">
-                    <h5 class="fw-bold m-0"><i class="fa-solid fa-folder-plus me-2 text-primary"></i> Tambah Data Service Baru</h5>
+                    <h5 class="fw-bold m-0"><i class="fa-solid fa-folder-plus me-2 text-primary"></i> Tambah Data Baru</h5>
                     <p class="text-muted small mt-1 mb-0">Pastikan data yang dimasukkan sudah benar sebelum disimpan.</p>
                 </div>
                 <form id="formTambahData">
@@ -286,141 +333,248 @@
                 </form>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- ================== MODALS ================== -->
-<div class="modal fade" id="modalPilihMerk" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content border-0 shadow rounded-4">
-      <div class="modal-header border-bottom-0 p-4">
-        <h5 class="modal-title fw-bold"><i class="fa-solid fa-mobile-screen me-2 text-primary"></i> Pilih Merk HP</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-4">
-        <div class="row g-3" id="containerGridMerk"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalPilihType" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content border-0 shadow rounded-4">
-      <div class="modal-header border-bottom-0 p-4">
-        <h5 class="modal-title fw-bold"><i class="fa-solid fa-mobile-screen me-2 text-primary"></i> Pilih Type HP</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-4">
-        <div class="row g-3" id="containerGridType"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalPilihLcd" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content border-0 shadow rounded-4">
-      <div class="modal-header border-bottom-0 p-4">
-        <h5 class="modal-title fw-bold"><i class="fa-solid fa-layer-group text-success me-2"></i> Pilih Detail LCD</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-4">
-        <div class="row g-3" id="containerGridLcd"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="modalPilihBat" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content border-0 shadow rounded-4">
-      <div class="modal-header border-bottom-0 p-4">
-        <h5 class="modal-title fw-bold"><i class="fa-solid fa-battery-full text-warning me-2"></i> Pilih Detail Baterai</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-4">
-        <div class="row g-3" id="containerGridBat"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Edit Data -->
-<div class="modal fade" id="modalEdit" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow rounded-4">
-      <div class="modal-header border-bottom-0 p-4 bg-light">
-        <h5 class="modal-title fw-bold"><i class="fa-solid fa-pen-to-square me-2 text-primary"></i> Edit Data Service</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body p-4 p-md-5">
-        <input type="hidden" id="editDataId">
-        <div class="row g-4">
-            <div class="col-md-6">
-                <label class="form-label small fw-bold mb-2">Merk</label>
-                <select class="form-select" id="editMerkHP">
-                    <option value="IPHONE">IPHONE</option>
-                    <option value="SAMSUNG">SAMSUNG</option>
-                    <option value="OPPO">OPPO</option>
-                    <option value="VIVO">VIVO</option>
-                    <option value="XIAOMI">XIAOMI</option>
-                    <option value="REALME">REALME</option>
-                    <option value="INFINIX">INFINIX</option>
-                    <option value="POCO">POCO</option>
-                    <option value="REDMI">REDMI</option>
-                    <option value="ASUS">ASUS</option>
-                    <option value="LAINNYA">Merek Lainnya...</option>
-                </select>
-                <input type="text" class="form-control mt-2" id="editMerkLainnya" placeholder="Ketik Merk manual..." style="display: none;">
+        <!-- SECTION: KELOLA GAMBAR KATEGORI -->
+        <div id="section-kategori" class="section-content" style="display:none;">
+            <div class="premium-card mx-auto mb-4" style="max-width: 800px;">
+                <div class="border-bottom pb-3 mb-4">
+                    <h5 class="fw-bold m-0"><i class="fa-solid fa-border-all me-2 text-primary"></i> Kelola Gambar Kategori</h5>
+                    <p class="text-muted small mt-1 mb-0">Atur URL Gambar ikon untuk kategori GANTI LCD, GANTI BAT, dan SERVICE.</p>
+                </div>
+                <form id="formUbahKategori">
+                    <div class="row g-3">
+                        <div class="col-md-5">
+                            <label class="form-label small fw-bold">Pilih Kategori</label>
+                            <select id="selectKategoriName" class="form-select" required>
+                                <option value="GANTI LCD">GANTI LCD</option>
+                                <option value="GANTI BAT">GANTI BAT</option>
+                                <option value="SERVICE">SERVICE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-7">
+                            <label class="form-label small fw-bold">URL Gambar Ikon Kategori</label>
+                            <input type="url" id="inputKategoriUrl" class="form-control" placeholder="https://i.ibb.co/..." required>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn text-white px-4 fw-semibold shadow-sm rounded-3" style="background: #4318ff;"><i class="fa-solid fa-save me-2"></i>Simpan Gambar Kategori</button>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <div class="col-md-6">
-                <label class="form-label small fw-bold mb-2">Type</label>
-                <input type="text" class="form-control" id="editTypeHP">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label small fw-bold mb-2">Service</label>
-                <select class="form-select" id="editJenisService">
-                    <option value="GANTI LCD">GANTI LCD</option>
-                    <option value="GANTI BAT">GANTI BAT</option>
-                    <option value="SERVICE">SERVICE</option>
-                </select>
-            </div>
-            <div class="col-md-6">
-                <label class="form-label small fw-bold mb-2">Harga</label>
-                <div class="input-group">
-                    <span class="input-group-text border-0 text-muted" style="background: #f4f7fe;">Rp</span>
-                    <input type="number" class="form-control border-0" id="editHarga" style="background: #f4f7fe;">
+
+            <div class="premium-card mx-auto" style="max-width: 800px;">
+                <h6 class="fw-bold mb-3"><i class="fa-solid fa-list me-2 text-primary"></i> Gambar Kategori Terpasang</h6>
+                <div id="containerListKategori" class="row g-3">
+                    <div class="col-12 text-center text-muted py-3">Memuat gambar kategori...</div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <label class="form-label small fw-bold mb-2">Garansi</label>
-                <select class="form-select" id="editGaransi">
-                    <option value="1 Minggu">1 Minggu</option>
-                    <option value="1 Bulan">1 Bulan</option>
-                    <option value="Tidak ada">Tidak ada</option>
-                </select>
+        </div>
+
+        <!-- SECTION: BANNER SLIDE -->
+        <div id="section-banner" class="section-content" style="display:none;">
+            <div class="premium-card mx-auto mb-4" style="max-width: 800px;">
+                <div class="border-bottom pb-3 mb-4">
+                    <h5 class="fw-bold m-0"><i class="fa-solid fa-images me-2 text-primary"></i> Kelola Banner Slide</h5>
+                    <p class="text-muted small mt-1 mb-0">Tambah atau hapus gambar promo yang tampil di halaman utama.</p>
+                </div>
+                <form id="formTambahBanner">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Judul Banner (Opsional)</label>
+                            <input type="text" id="inputBannerTitle" class="form-control" placeholder="Contoh: Promo Ganti LCD">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">URL Gambar Banner</label>
+                            <input type="url" id="inputBannerUrl" class="form-control" placeholder="https://i.ibb.co/..." required>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn text-white px-4 fw-semibold shadow-sm rounded-3" style="background: #4318ff;"><i class="fa-solid fa-plus me-2"></i>Tambah Banner</button>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <div class="col-md-6">
-                <label class="form-label small fw-bold mb-2">Status</label>
-                <select class="form-select" id="editStatus">
-                    <option value="Tersedia">Tersedia</option>
-                    <option value="Preorder">Preorder</option>
-                    <option value="Kosong">Kosong</option>
-                </select>
-            </div>
-            <div class="col-12">
-                <label class="form-label small fw-bold mb-2">Merk Part / Ket.</label>
-                <input type="text" class="form-control" id="editKeterangan">
+
+            <div class="premium-card mx-auto" style="max-width: 800px;">
+                <h6 class="fw-bold mb-3"><i class="fa-solid fa-list me-2 text-primary"></i> Daftar Banner Aktif</h6>
+                <div id="containerListBanner" class="row g-3">
+                    <div class="col-12 text-center text-muted py-3">Memuat banner...</div>
+                </div>
             </div>
         </div>
-      </div>
-      <div class="modal-footer border-top-0 p-4 bg-light">
-        <button type="button" class="btn btn-light px-4 rounded-3 text-secondary" data-bs-dismiss="modal">Batal</button>
-        <button type="button" class="btn text-white px-5 rounded-3 fw-semibold" id="btnUpdateData" style="background: #4318ff;">Update Data</button>
-      </div>
+
+        <!-- SECTION: KELOLA MEREK -->
+        <div id="section-merek" class="section-content" style="display:none;">
+            <div class="premium-card mx-auto mb-4" style="max-width: 800px;">
+                <div class="border-bottom pb-3 mb-4">
+                    <h5 class="fw-bold m-0"><i class="fa-solid fa-tags me-2 text-primary"></i> Kelola Merek HP</h5>
+                    <p class="text-muted small mt-1 mb-0">Tambah merek HP beserta logo untuk tampilan navigasi merek.</p>
+                </div>
+                <form id="formTambahMerek">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Nama Merek</label>
+                            <input type="text" id="inputMerekName" class="form-control" placeholder="Contoh: IPHONE, SAMSUNG, OPPO" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">URL Logo / Gambar Merek</label>
+                            <input type="url" id="inputMerekUrl" class="form-control" placeholder="https://i.ibb.co/..." required>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn text-white px-4 fw-semibold shadow-sm rounded-3" style="background: #4318ff;"><i class="fa-solid fa-plus me-2"></i>Tambah Merek</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="premium-card mx-auto" style="max-width: 800px;">
+                <h6 class="fw-bold mb-3"><i class="fa-solid fa-list me-2 text-primary"></i> Daftar Merek Terdaftar</h6>
+                <div id="containerListMerek" class="row g-3">
+                    <div class="col-12 text-center text-muted py-3">Memuat data merek...</div>
+                </div>
+            </div>
+        </div>
+
     </div>
-  </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL POPUP POPUP DASHBOARD FILTER -->
+<!-- ========================================== -->
+
+<!-- MODAL PILIH MERK -->
+<div class="modal fade" id="modalPilihMerk" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-bottom pb-3">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-tags text-primary me-2"></i>Pilih Merk HP</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3" id="containerGridMerk"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PILIH TYPE -->
+<div class="modal fade" id="modalPilihType" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-bottom pb-3">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-mobile-screen text-purple me-2"></i>Pilih Tipe HP</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3" id="containerGridType"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PILIH LCD -->
+<div class="modal fade" id="modalPilihLcd" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-bottom pb-3">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-layer-group text-success me-2"></i>Filter Service GANTI LCD</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3" id="containerGridLcd"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PILIH BAT -->
+<div class="modal fade" id="modalPilihBat" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-bottom pb-3">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-battery-full text-warning me-2"></i>Filter Service GANTI BAT</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row g-3" id="containerGridBat"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL EDIT DATA SERVICE -->
+<div class="modal fade" id="modalEdit" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-bottom pb-3">
+                <h5 class="modal-title fw-bold"><i class="fa-solid fa-pen-to-square text-primary me-2"></i>Edit Data Service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formEditData">
+                    <input type="hidden" id="editDataId">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Jenis Service</label>
+                            <select class="form-select" id="editJenisService" required>
+                                <option value="GANTI LCD">GANTI LCD</option>
+                                <option value="GANTI BAT">GANTI BAT</option>
+                                <option value="SERVICE">SERVICE</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Merk HP</label>
+                            <select class="form-select" id="editMerkHP" required>
+                                <option value="IPHONE">IPHONE</option>
+                                <option value="SAMSUNG">SAMSUNG</option>
+                                <option value="OPPO">OPPO</option>
+                                <option value="VIVO">VIVO</option>
+                                <option value="XIAOMI">XIAOMI</option>
+                                <option value="REALME">REALME</option>
+                                <option value="INFINIX">INFINIX</option>
+                                <option value="POCO">POCO</option>
+                                <option value="REDMI">REDMI</option>
+                                <option value="ASUS">ASUS</option>
+                                <option value="LAINNYA">Merek Lainnya...</option>
+                            </select>
+                            <input type="text" class="form-control mt-2" id="editMerkLainnya" placeholder="Ketik Merk HP manual..." style="display: none;">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Type HP</label>
+                            <input type="text" class="form-control" id="editTypeHP" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Harga (Rp)</label>
+                            <input type="number" class="form-control" id="editHarga" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Garansi</label>
+                            <select class="form-select" id="editGaransi" required>
+                                <option value="1 Minggu">1 Minggu</option>
+                                <option value="1 Bulan">1 Bulan</option>
+                                <option value="Tidak ada">Tidak ada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Status Stok</label>
+                            <select class="form-select" id="editStatus" required>
+                                <option value="Tersedia">Tersedia (Ready)</option>
+                                <option value="Preorder">Preorder (Indent)</option>
+                                <option value="Kosong">Kosong (Habis)</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label small fw-bold">Merk Part / Keterangan</label>
+                            <input type="text" class="form-control" id="editKeterangan">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top pt-3">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-primary px-4 fw-semibold" id="btnUpdateData" style="background: #4318ff;"><i class="fa-solid fa-save me-1"></i> Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- SCRIPTS -->
