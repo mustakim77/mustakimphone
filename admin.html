@@ -57,12 +57,29 @@
     </style>
 
     <!-- PROTEKSI ADMIN -->
-<script>
+    <script>
     const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
     if (!userSession || (userSession.role && userSession.role.toLowerCase() !== 'admin')) {
         alert('Akses ditolak! Silakan login sebagai admin.');
         window.location.href = "./"; 
     }
+    </script>
+    
+    <!-- GLOBAL IMAGE FALLBACK UNTUK JARINGAN LEMAH (ADMIN) -->
+    <script>
+      document.addEventListener("error", function (e) {
+        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === "img") {
+          e.target.onerror = null;
+          e.target.src = "https://i.ibb.co/p6xxsTqv/logo-default.png";
+        }
+      }, true);
+      document.addEventListener("load", function(e) {
+          if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === "img") {
+              if (e.target.src.includes('ibb.co') && e.target.naturalWidth > 0 && e.target.naturalWidth <= 160) {
+                  e.target.src = "https://i.ibb.co/p6xxsTqv/logo-default.png";
+              }
+          }
+      }, true);
     </script>
 </head>
 <body>

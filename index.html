@@ -12,6 +12,23 @@
   
   <link rel="icon" type="image/png" href="https://i.ibb.co/ynfgh4DK/logo-MP.png">
   <link rel="stylesheet" href="css/style.css">
+
+  <!-- GLOBAL IMAGE FALLBACK UNTUK JARINGAN LEMAH -->
+  <script>
+    document.addEventListener("error", function (e) {
+      if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === "img") {
+        e.target.onerror = null;
+        e.target.src = "https://i.ibb.co/p6xxsTqv/logo-default.png";
+      }
+    }, true);
+    document.addEventListener("load", function(e) {
+        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === "img") {
+            if (e.target.src.includes('ibb.co') && e.target.naturalWidth > 0 && e.target.naturalWidth <= 160) {
+                e.target.src = "https://i.ibb.co/p6xxsTqv/logo-default.png";
+            }
+        }
+    }, true);
+  </script>
 </head>
 <body class="app-body">
   
@@ -59,16 +76,16 @@
           <div class="overflow-hidden position-relative" style="border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
             <div class="banner-slider d-flex" id="bannerSlider">
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.ibb.co/5g0tbkGz/gantilcd.png" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.ibb.co/5g0tbkGz/gantilcd.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.ibb.co/SDkfNhNr/gantibat.png" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.ibb.co/SDkfNhNr/gantibat.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.ibb.co/bRR2dZy4/software.png" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.ibb.co/bRR2dZy4/software.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.ibb.co/whCWYvTv/atmmini.png" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.ibb.co/whCWYvTv/atmmini.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
             </div>
           </div>
@@ -85,19 +102,19 @@
           <div class="d-flex justify-content-center gap-4">
             <div class="category-item text-center" onclick="searchCategory('LCD')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.ibb.co/whtJ0CKy/logo-lcd.png" alt="LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.ibb.co/6Rt7KS4j/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">GANTI LCD</span>
             </div>
             <div class="category-item text-center" onclick="searchCategory('BAT')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.ibb.co/cXrYM3vL/logo-bat.png" alt="BAT" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.ibb.co/kgZvV6cS/logo-bat.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="BAT" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">GANTI BAT</span>
             </div>
             <div class="category-item text-center" onclick="searchCategory('SERVICE')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.ibb.co/ZRcxyg1m/logo-konektor.png" alt="SERVICE" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.ibb.co/JF8hms0P/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">SERVICE</span>
             </div>
@@ -161,19 +178,19 @@
         <div class="row g-0">
           <div class="col-4 p-3 border-end border-bottom text-center" onclick="searchCategory('LCD')" style="cursor:pointer;">
             <div class="cat-circle mx-auto mb-2 bg-white d-flex align-items-center justify-content-center shadow-sm border">
-              <img src="https://i.ibb.co/whtJ0CKy/logo-lcd.png" alt="LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+              <img src="https://i.ibb.co/6Rt7KS4j/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
             </div>
             <span class="fw-bold text-dark" style="font-size:0.8rem;">GANTI LCD</span>
           </div>
           <div class="col-4 p-3 border-end border-bottom text-center" onclick="searchCategory('BAT')" style="cursor:pointer;">
             <div class="cat-circle mx-auto mb-2 bg-white d-flex align-items-center justify-content-center shadow-sm border">
-              <img src="https://i.ibb.co/cXrYM3vL/logo-bat.png" alt="BAT" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+              <img src="https://i.ibb.co/kgZvV6cS/logo-bat.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="BAT" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
             </div>
             <span class="fw-bold text-dark" style="font-size:0.8rem;">BATERAI</span>
           </div>
           <div class="col-4 p-3 border-bottom text-center" onclick="searchCategory('SERVICE')" style="cursor:pointer;">
             <div class="cat-circle mx-auto mb-2 bg-white d-flex align-items-center justify-content-center shadow-sm border">
-              <img src="https://i.ibb.co/ZRcxyg1m/logo-konektor.png" alt="SERVICE" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+              <img src="https://i.ibb.co/JF8hms0P/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
             </div>
             <span class="fw-bold text-dark" style="font-size:0.8rem;">SERVICE</span>
           </div>
@@ -445,9 +462,9 @@
         </div>
 
         <div class="d-flex align-items-center justify-content-center bg-white py-4" style="height: 280px;">
-          <img id="detailLcdImg" src="https://i.ibb.co/whtJ0CKy/logo-lcd.png" alt="LCD" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
-          <img id="detailBatImg" src="https://i.ibb.co/cXrYM3vL/logo-bat.png" alt="BAT" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
-          <img id="detailSrcImg" src="https://i.ibb.co/ZRcxyg1m/logo-konektor.png" alt="SERVICE" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
+          <img id="detailLcdImg" src="https://i.ibb.co/6Rt7KS4j/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
+          <img id="detailBatImg" src="https://i.ibb.co/kgZvV6cS/logo-bat.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="BAT" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
+          <img id="detailSrcImg" src="https://i.ibb.co/JF8hms0P/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
         </div>
 
         <div class="p-3">

@@ -633,7 +633,7 @@ async function loadCategories() {
         container.innerHTML = data.map(c => `
             <div class="col-4 col-md-4 text-center">
                 <div class="p-3 border rounded-3 bg-white shadow-sm">
-                    <img src="${c.image_url}" class="img-fluid mb-2" style="max-height: 60px; object-fit: contain;">
+                    <img src="${c.image_url}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" class="img-fluid mb-2" style="max-height: 60px; object-fit: contain;">
                     <div class="fw-bold text-uppercase" style="font-size:0.8rem;">${c.name}</div>
                 </div>
             </div>
@@ -687,7 +687,7 @@ async function loadBanners() {
         container.innerHTML = data.map(b => `
             <div class="col-6 col-md-4">
                 <div class="card border-0 shadow-sm overflow-hidden position-relative rounded-3">
-                    <img src="${b.image_url}" class="w-100" style="aspect-ratio: 3/1; object-fit: cover;">
+                    <img src="${b.image_url}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" class="w-100" style="aspect-ratio: 3/1; object-fit: cover;">
                     <button onclick="deleteBanner(${b.id})" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle" title="Hapus Banner">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -752,7 +752,7 @@ async function loadBrands() {
         container.innerHTML = data.map(m => `
             <div class="col-4 col-md-3 text-center">
                 <div class="p-3 border rounded-3 bg-white position-relative shadow-sm">
-                    <img src="${m.image_url}" class="img-fluid mb-2" style="max-height: 50px; object-fit: contain;">
+                    <img src="${m.image_url}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" class="img-fluid mb-2" style="max-height: 50px; object-fit: contain;">
                     <div class="fw-bold text-uppercase" style="font-size:0.8rem;">${m.name}</div>
                     <button onclick="deleteBrand(${m.id})" class="btn btn-sm btn-outline-danger mt-2 w-100 rounded-2"><i class="fa-solid fa-trash me-1"></i>Hapus</button>
                 </div>

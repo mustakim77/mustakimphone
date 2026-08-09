@@ -18,8 +18,8 @@ const nomorWhatsAppAdmin = "6285799860406";
 // Mapping Gambar Kategori
 let categoryImagesMap = {
     'GANTI LCD': 'https://i.ibb.co/whtJ0CKy/logo-lcd.png',
-    'GANTI BAT': 'https://i.ibb.co/cXrYM3vL/logo-bat.png',
-    'SERVICE': 'https://i.ibb.co/ZRcxyg1m/logo-konektor.png'
+    'GANTI BAT': 'https://i.ibb.co/kgZvV6cS/logo-bat.png',
+    'SERVICE': 'https://i.ibb.co/JF8hms0P/logo-konektor.png'
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -262,7 +262,7 @@ async function loadBannersDinamis() {
 
         slider.innerHTML = banners.map(b => `
             <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="${b.image_url}" alt="${b.title || 'Banner Promo'}" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="${b.image_url}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="${b.title || 'Banner Promo'}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
         `).join('');
 
@@ -296,7 +296,7 @@ function generateMerekList() {
         container.innerHTML = window.customBrandsData.map(m => `
             <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m.name}')" style="cursor:pointer;">
                 <div class="brand-logo-box mb-2 bg-white shadow-sm border p-2 d-flex align-items-center justify-content-center">
-                   <img src="${m.image_url}" alt="${m.name}" class="img-fluid pointer-events-none">
+                   <img src="${m.image_url}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="${m.name}" class="img-fluid pointer-events-none">
                 </div>
                 <span class="fw-bold text-dark d-block" style="font-size:0.8rem;">${m.name}</span>
             </div>
@@ -321,7 +321,7 @@ function generateMerekList() {
         html += `
         <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m}')" style="cursor:pointer;">
             <div class="brand-logo-box mb-2 bg-white shadow-sm border p-2 d-flex align-items-center justify-content-center">
-               <img src="https://i.ibb.co/TqHz30ng/logo-default.png" alt="DEFAULT" class="img-fluid pointer-events-none">
+               <img src="https://i.ibb.co/p6xxsTqv/logo-default.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="DEFAULT" class="img-fluid pointer-events-none">
             </div>
             <span class="fw-bold text-dark d-block" style="font-size:0.8rem;">${m}</span>
         </div>
@@ -535,7 +535,7 @@ function filterAndDisplay(keyword) {
         <div class="col-6 col-md-3">
             <div class="card h-100 border-0 shadow-sm product-card mb-2 me-2" style="border-radius: 8px; cursor: pointer;" onclick="showDetail(${idx})">
               <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 100px; border-bottom: 1px solid #f0f0f0;">
-                    <img src="${imageUrl}" style="max-height: 70px; max-width: 90%; object-fit: contain;">
+                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" style="max-height: 70px; max-width: 90%; object-fit: contain;">
                 </div>
                 <div class="card-body p-2 d-flex flex-column bg-white">
                     <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.8rem; line-height: 1.3;">${merk} ${type}</h6>
@@ -676,7 +676,7 @@ function renderLatestProducts() {
             <div class="card border-0 shadow-sm product-card h-100" style="border-radius: 8px; cursor: pointer;" onclick="showDetail(${originalIndex})">
                 <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 100px; border-bottom: 1px solid #f0f0f0;">
                     <span class="badge bg-primary position-absolute top-0 start-0 m-1 shadow-sm" style="font-size: 0.55rem;">BARU</span>
-                    <img src="${imageUrl}" style="max-height: 70px; max-width: 90%; object-fit: contain;">
+                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" style="max-height: 70px; max-width: 90%; object-fit: contain;">
                 </div>
                 <div class="card-body p-2 bg-white d-flex flex-column justify-content-between">
                     <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.75rem;">${merk} ${type}</h6>
@@ -730,7 +730,7 @@ function renderCart() {
         <div class="card border-0 shadow-sm mb-2" style="border-radius:12px;">
             <div class="card-body p-2 d-flex align-items-center">
                 <div class="bg-light rounded p-1 d-flex align-items-center justify-content-center me-2" style="width: 60px; height: 60px;">
-                    <img src="${imageUrl}" style="width: 100%; height: 100%; object-fit: contain;">
+                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
                 <div class="flex-grow-1">
                     <h6 class="fw-bold text-dark mb-1" style="font-size:0.75rem;">${item.title}</h6>
@@ -823,7 +823,7 @@ function getProductImage(serviceName) {
     if (s.includes('LCD') && categoryImagesMap['GANTI LCD']) return categoryImagesMap['GANTI LCD'];
     if (s.includes('BAT') && categoryImagesMap['GANTI BAT']) return categoryImagesMap['GANTI BAT'];
     if (s.includes('SERVICE') && categoryImagesMap['SERVICE']) return categoryImagesMap['SERVICE'];
-    return 'https://i.ibb.co/TqHz30ng/logo-default.png';
+    return 'https://i.ibb.co/p6xxsTqv/logo-default.png';
 }
 
 // ==========================================
