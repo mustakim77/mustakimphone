@@ -14,12 +14,13 @@ let currentSlide = 0;
 let totalSlides = 4;
 let autoSlideTimer;
 const nomorWhatsAppAdmin = "6285799860406"; 
+const defaultImageFallback = "https://i.postimg.cc/sfk5KptM/logo-default.png";
 
-// Mapping Gambar Kategori
+// Mapping Gambar Kategori (Postimages CDN)
 let categoryImagesMap = {
-    'GANTI LCD': 'https://i.ibb.co/whtJ0CKy/logo-lcd.png',
-    'GANTI BAT': 'https://i.ibb.co/kgZvV6cS/logo-bat.png',
-    'SERVICE': 'https://i.ibb.co/JF8hms0P/logo-konektor.png'
+    'GANTI LCD': 'https://i.postimg.cc/ncmGtdvm/logo-lcd.png',
+    'GANTI BAT': 'https://i.postimg.cc/wBwhknd2/logo-bat.png',
+    'SERVICE': 'https://i.postimg.cc/brtkpJ2Z/logo-konektor.png'
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -47,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const daftarLayar = [
         'homeView', 'searchView', 'kategoriView', 'merekView', 
         'keranjangView', 'memberView', 'detailWorkspace', 
-        'akunContainer', 'tampilanProfilTamu'
+        'akunContainer'
     ];
     
     daftarLayar.forEach(id => {
@@ -102,8 +103,30 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
-// FUNGSI HELPER: PARSER TANGGAL INDONESIA
+// TEMPLATE SKELETON SHIMMER LOADING
 // ==========================================
+function getSkeletonHTML(count = 6) {
+    let html = '<div class="row g-2 px-1">';
+    for (let i = 0; i < count; i++) {
+        html += `
+        <div class="col-6 col-md-3 mb-2">
+            <div class="card border-0 shadow-sm skeleton-card"></div>
+        </div>`;
+    }
+    html += '</div>';
+    return html;
+}
+
+// ==========================================
+// HELPER BADGE STOK & PARSER TANGGAL
+// ==========================================
+function getBadgeClass(status) {
+    const s = String(status || '').toLowerCase().trim();
+    if (s === 'ready' || s === 'tersedia') return 'badge-stok-ready';
+    if (s === 'preorder' || s === 'po') return 'badge-stok-preorder';
+    return 'badge-stok-empty';
+}
+
 function parseIndonesianDate(dateStr) {
     if (!dateStr) return 0;
     try {
@@ -144,7 +167,7 @@ function showToast(message) {
 }
 
 // ==========================================
-// FUNGSI NAVIGASI BAWAH
+// NAVIGASI APLIKASI & NAV BAR
 // ==========================================
 function switchNav(tabName, element) {
     try {
@@ -186,6 +209,16 @@ function switchNav(tabName, element) {
         } else if (tabName === 'Member') {
             const memv = document.getElementById('memberView');
             if(memv) memv.classList.remove('d-none');
+            
+            const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
+            if (userSession) {
+                document.getElementById('akunContainer').style.display = 'none';
+                document.getElementById('memberDashboardView').style.display = 'block';
+            } else {
+                document.getElementById('memberDashboardView').style.display = 'none';
+                document.getElementById('akunContainer').style.display = 'block';
+                tampilkanLogin();
+            }
             window.scrollTo(0, 0);
         }
     } catch (error) {
@@ -193,6 +226,16 @@ function switchNav(tabName, element) {
         clearAndGoHome(); 
         showToast("Kembali ke Beranda.");
     }
+}
+
+function prosesLogout() {
+    localStorage.removeItem('mustakimUser');
+    const dash = document.getElementById('memberDashboardView');
+    const akun = document.getElementById('akunContainer');
+    if (dash) dash.style.display = 'none';
+    if (akun) akun.style.display = 'block';
+    tampilkanLogin();
+    showToast('Berhasil Logout');
 }
 
 function closeDetail() {
@@ -226,7 +269,6 @@ async function loadCategoriesDinamis() {
             }
         });
 
-        // Update gambar di Beranda
         const lcdImgHome = document.querySelector(".category-item[onclick*='LCD'] img");
         if (lcdImgHome && categoryImagesMap['GANTI LCD']) lcdImgHome.src = categoryImagesMap['GANTI LCD'];
 
@@ -236,7 +278,6 @@ async function loadCategoriesDinamis() {
         const srvImgHome = document.querySelector(".category-item[onclick*='SERVICE'] img");
         if (srvImgHome && categoryImagesMap['SERVICE']) srvImgHome.src = categoryImagesMap['SERVICE'];
 
-        // Update gambar di Kategori View
         const lcdImgKat = document.querySelector("#kategoriView [onclick*='LCD'] img");
         if (lcdImgKat && categoryImagesMap['GANTI LCD']) lcdImgKat.src = categoryImagesMap['GANTI LCD'];
 
@@ -262,7 +303,7 @@ async function loadBannersDinamis() {
 
         slider.innerHTML = banners.map(b => `
             <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="${b.image_url}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="${b.title || 'Banner Promo'}" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="${b.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${b.title || 'Banner Promo'}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
         `).join('');
 
@@ -296,7 +337,7 @@ function generateMerekList() {
         container.innerHTML = window.customBrandsData.map(m => `
             <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m.name}')" style="cursor:pointer;">
                 <div class="brand-logo-box mb-2 bg-white shadow-sm border p-2 d-flex align-items-center justify-content-center">
-                   <img src="${m.image_url}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="${m.name}" class="img-fluid pointer-events-none">
+                   <img src="${m.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${m.name}" class="img-fluid pointer-events-none">
                 </div>
                 <span class="fw-bold text-dark d-block" style="font-size:0.8rem;">${m.name}</span>
             </div>
@@ -321,7 +362,7 @@ function generateMerekList() {
         html += `
         <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m}')" style="cursor:pointer;">
             <div class="brand-logo-box mb-2 bg-white shadow-sm border p-2 d-flex align-items-center justify-content-center">
-               <img src="https://i.ibb.co/p6xxsTqv/logo-default.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="DEFAULT" class="img-fluid pointer-events-none">
+               <img src="${defaultImageFallback}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="DEFAULT" class="img-fluid pointer-events-none">
             </div>
             <span class="fw-bold text-dark d-block" style="font-size:0.8rem;">${m}</span>
         </div>
@@ -480,12 +521,7 @@ function filterAndDisplay(keyword) {
     }
 
     if (!globalData || globalData.length === 0) {
-        container.innerHTML = `
-          <div class="text-center py-5">
-             <div class="spinner-border text-primary mb-2" role="status"></div>
-             <p class="text-secondary" style="font-size: 0.85rem;">Menyiapkan data...</p>
-          </div>
-        `;
+        container.innerHTML = getSkeletonHTML(6);
         return;
     }
     
@@ -529,18 +565,23 @@ function filterAndDisplay(keyword) {
         const service = row[3] ? row[3].toUpperCase() : '';
         const harga = formatRupiah(row[4] || 0);
         const keterangan = row[6] ? String(row[6]).trim() : ''; 
+        const stokStatus = row[7] ? String(row[7]).trim() : 'Tersedia';
+        const badgeClass = getBadgeClass(stokStatus);
         let imageUrl = getProductImage(service);
 
         html += `
         <div class="col-6 col-md-3">
-            <div class="card h-100 border-0 shadow-sm product-card mb-2 me-2" style="border-radius: 8px; cursor: pointer;" onclick="showDetail(${idx})">
-              <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 100px; border-bottom: 1px solid #f0f0f0;">
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" style="max-height: 70px; max-width: 90%; object-fit: contain;">
+            <div class="card h-100 border-0 shadow-sm product-card mb-2 me-2" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${idx})">
+              <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0;">
+                    <span class="badge ${badgeClass} position-absolute top-0 start-0 m-2 shadow-sm" style="font-size: 0.6rem; padding: 4px 8px; border-radius: 6px;">${stokStatus.toUpperCase()}</span>
+                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 80px; max-width: 90%; object-fit: contain;">
                 </div>
-                <div class="card-body p-2 d-flex flex-column bg-white">
-                    <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.8rem; line-height: 1.3;">${merk} ${type}</h6>
-                    <h6 class="fw-bold text-secondary text-truncate-2 mb-1" style="font-size: 0.75rem;">${keterangan}</h6>
-                    <span class="text-primary fw-bolder" style="font-size: 0.8rem;">${harga}</span>
+                <div class="card-body p-2 d-flex flex-column bg-white justify-content-between">
+                    <div>
+                        <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.8rem; line-height: 1.3;">${merk} ${type}</h6>
+                        <h6 class="fw-bold text-secondary text-truncate-2 mb-1" style="font-size: 0.72rem;">${keterangan}</h6>
+                    </div>
+                    <span class="text-primary fw-bolder mt-1" style="font-size: 0.82rem;">${harga}</span>
                 </div>
             </div>
         </div>`;
@@ -572,7 +613,6 @@ function showDetail(idx) {
     
     currentViewedProduct = { id: kodeBarang, title: `${merk} ${type}`, price: hargaNum, service: service };
 
-    // 1. ISI TEXT DETAIL PRODUK
     const elTitle = document.getElementById('detailTitle');
     if (elTitle) elTitle.innerText = `${merk} ${type}`;
 
@@ -591,24 +631,20 @@ function showDetail(idx) {
     const elCross = document.getElementById('detailCrossPrice');
     if (elCross) elCross.innerText = hargaCoret;
 
-    // 2. ISI KODE BARANG & STATUS STOK
     const elCode = document.getElementById('detailCode');
     if (elCode) elCode.innerText = kodeBarang;
 
     const elStock = document.getElementById('detailStock');
     if (elStock) elStock.innerText = stokStatus;
 
-    // 3. TAMPILKAN GAMBAR SESUAI KATEGORI SERVICE
     const lcdImg = document.getElementById('detailLcdImg');
     const batImg = document.getElementById('detailBatImg');
     const srcImg = document.getElementById('detailSrcImg');
     
-    // Sembunyikan semua gambar terlebih dahulu
     if (lcdImg) lcdImg.classList.add('d-none');
     if (batImg) batImg.classList.add('d-none');
     if (srcImg) srcImg.classList.add('d-none');
 
-    // Tampilkan gambar yang sesuai kategori
     if (service.includes('LCD')) {
         if (lcdImg) {
             if (categoryImagesMap['GANTI LCD']) lcdImg.src = categoryImagesMap['GANTI LCD'];
@@ -626,12 +662,10 @@ function showDetail(idx) {
         }
     }
     
-    // 4. SETTING LINK WHATSAPP ADMIN
     const waText = `Halo MUSTAKIM PHONE,\n\n*${service}*\n*${merk} ${type}*\nHarga: ${harga}\nKode Barang: ${kodeBarang}\n\nApakah stok tersedia?`;
     const elWa = document.getElementById('detailWaBtn');
     if (elWa) elWa.href = `https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(waText)}`;
 
-    // Switch Tampilan
     document.getElementById('appHeader').classList.add('d-none');
     document.getElementById('mainWorkspace').classList.add('d-none');
     
@@ -648,18 +682,17 @@ function renderLatestProducts() {
     if (!container) return;
     
     if (!globalData || globalData.length === 0) {
-        container.innerHTML = '<p class="text-muted small px-2">Data kosong atau sedang memuat dari Supabase...</p>';
+        container.innerHTML = getSkeletonHTML(6);
         return;
     }
     
-    // Urutkan data berdasarkan tanggal teks Indonesia terbaru (Descending)
     const sortedData = [...globalData].sort((a, b) => {
-        const timeA = parseIndonesianDate(a[8]); // Kolom update
+        const timeA = parseIndonesianDate(a[8]);
         const timeB = parseIndonesianDate(b[8]);
         return timeB - timeA;
     });
     
-    let latestRows = sortedData.slice(0, 6); // Ambil 6 data terbaru
+    let latestRows = sortedData.slice(0, 6);
     let html = '<div class="row g-2 px-1">';
     
     latestRows.forEach((row) => {
@@ -669,18 +702,20 @@ function renderLatestProducts() {
         const type = row[2] || '';
         const service = row[3] ? row[3].toUpperCase() : '';
         const harga = formatRupiah(row[4] || 0);
+        const stokStatus = row[7] ? String(row[7]).trim() : 'Tersedia';
+        const badgeClass = getBadgeClass(stokStatus);
         let imageUrl = getProductImage(service);
 
         html += `
-        <div class="col-6 col-md-4">
-            <div class="card border-0 shadow-sm product-card h-100" style="border-radius: 8px; cursor: pointer;" onclick="showDetail(${originalIndex})">
-                <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 100px; border-bottom: 1px solid #f0f0f0;">
-                    <span class="badge bg-primary position-absolute top-0 start-0 m-1 shadow-sm" style="font-size: 0.55rem;">BARU</span>
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" style="max-height: 70px; max-width: 90%; object-fit: contain;">
+        <div class="col-6 col-md-4 mb-1">
+            <div class="card border-0 shadow-sm product-card h-100" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${originalIndex})">
+                <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0;">
+                    <span class="badge ${badgeClass} position-absolute top-0 start-0 m-2 shadow-sm" style="font-size: 0.58rem; padding: 3px 7px; border-radius: 6px;">${stokStatus.toUpperCase()}</span>
+                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 80px; max-width: 90%; object-fit: contain;">
                 </div>
                 <div class="card-body p-2 bg-white d-flex flex-column justify-content-between">
-                    <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.75rem;">${merk} ${type}</h6>
-                    <span class="text-primary fw-bolder" style="font-size: 0.8rem;">${harga}</span>
+                    <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.78rem;">${merk} ${type}</h6>
+                    <span class="text-primary fw-bolder" style="font-size: 0.82rem;">${harga}</span>
                 </div>
             </div>
         </div>`;
@@ -730,7 +765,7 @@ function renderCart() {
         <div class="card border-0 shadow-sm mb-2" style="border-radius:12px;">
             <div class="card-body p-2 d-flex align-items-center">
                 <div class="bg-light rounded p-1 d-flex align-items-center justify-content-center me-2" style="width: 60px; height: 60px;">
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" style="width: 100%; height: 100%; object-fit: contain;">
+                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
                 <div class="flex-grow-1">
                     <h6 class="fw-bold text-dark mb-1" style="font-size:0.75rem;">${item.title}</h6>
@@ -784,7 +819,7 @@ function checkoutWA() {
 }
 
 // ==========================================
-// FUNGSI PENDUKUNG LAINNYA
+// FUNGSI BANNER SLIDER
 // ==========================================
 function startAutoSlide() {
     clearInterval(autoSlideTimer); 
@@ -823,50 +858,87 @@ function getProductImage(serviceName) {
     if (s.includes('LCD') && categoryImagesMap['GANTI LCD']) return categoryImagesMap['GANTI LCD'];
     if (s.includes('BAT') && categoryImagesMap['GANTI BAT']) return categoryImagesMap['GANTI BAT'];
     if (s.includes('SERVICE') && categoryImagesMap['SERVICE']) return categoryImagesMap['SERVICE'];
-    return 'https://i.ibb.co/p6xxsTqv/logo-default.png';
+    return defaultImageFallback;
 }
 
 // ==========================================
-// FUNGSI MEMBER & AKUN (LENGKAP NO HP & RESET)
+// FUNGSI MEMBER & AUTHENTICATION
 // ==========================================
 function cekSecretLogin(url) { window.location.href = url; }
 
 function bukaMenuDaftar() {
-    document.getElementById('tampilanProfilTamu').style.display = 'none';
-    document.getElementById('akunContainer').style.display = 'block';
+    const akun = document.getElementById('akunContainer');
+    if (akun) akun.style.display = 'block';
     tampilkanDaftar();
 }
 
 function bukaMenuLogin() {
-    document.getElementById('tampilanProfilTamu').style.display = 'none';
-    document.getElementById('akunContainer').style.display = 'block';
+    const akun = document.getElementById('akunContainer');
+    if (akun) akun.style.display = 'block';
     tampilkanLogin();
 }
 
-function tampilkanDaftar() {
-    document.getElementById('formLoginContainer').style.display = 'none';
-    const formReset = document.getElementById('formResetContainer');
-    if (formReset) formReset.style.display = 'none';
-    document.getElementById('formDaftarContainer').style.display = 'block';
+function kembaliKeProfilTamu() {
+    clearAndGoHome();
 }
 
+// FUNGSI SHOW / HIDE PASSWORD
+function togglePassword(inputId, icon) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    if (input.type === "password") {
+        input.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+    } else {
+        input.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+    }
+}
+
+// FUNGSI SLIDING TAB SWITCHER
 function tampilkanLogin() {
-    document.getElementById('formDaftarContainer').style.display = 'none';
+    const slider = document.getElementById('authFormsSlider');
+    const viewport = document.querySelector('.auth-forms-viewport');
     const formReset = document.getElementById('formResetContainer');
+    const indicator = document.getElementById('tabIndicator');
+
+    if (viewport) viewport.style.display = 'block';
     if (formReset) formReset.style.display = 'none';
-    document.getElementById('formLoginContainer').style.display = 'block';
+    if (slider) slider.style.transform = 'translateX(0%)';
+    if (indicator) indicator.style.transform = 'translateX(0%)';
+
+    const tabLogin = document.getElementById('tabBtnLogin');
+    const tabDaftar = document.getElementById('tabBtnDaftar');
+    if (tabLogin) tabLogin.classList.add('active');
+    if (tabDaftar) tabDaftar.classList.remove('active');
+}
+
+function tampilkanDaftar() {
+    const slider = document.getElementById('authFormsSlider');
+    const viewport = document.querySelector('.auth-forms-viewport');
+    const formReset = document.getElementById('formResetContainer');
+    const indicator = document.getElementById('tabIndicator');
+
+    if (viewport) viewport.style.display = 'block';
+    if (formReset) formReset.style.display = 'none';
+    if (slider) slider.style.transform = 'translateX(-50%)';
+    if (indicator) indicator.style.transform = 'translateX(100%)';
+
+    const tabLogin = document.getElementById('tabBtnLogin');
+    const tabDaftar = document.getElementById('tabBtnDaftar');
+    if (tabDaftar) tabDaftar.classList.add('active');
+    if (tabLogin) tabLogin.classList.remove('active');
 }
 
 function tampilkanResetPassword() {
-    document.getElementById('formLoginContainer').style.display = 'none';
-    document.getElementById('formDaftarContainer').style.display = 'none';
+    const viewport = document.querySelector('.auth-forms-viewport');
     const formReset = document.getElementById('formResetContainer');
-    if (formReset) formReset.style.display = 'block';
-}
 
-function kembaliKeProfilTamu() {
-    document.getElementById('akunContainer').style.display = 'none';
-    document.getElementById('tampilanProfilTamu').style.display = 'block';
+    if (viewport) viewport.style.display = 'none';
+    if (formReset) formReset.style.display = 'block';
 }
 
 function cekEnter(event) {
@@ -879,7 +951,27 @@ function cekEnter(event) {
     }
 }
 
-// VERIFIKASI LOGIN (BISA MENGGUNAKAN USERNAME ATAU NO HP)
+// FUNGSI CEK KEKUATAN SANDI
+function cekKekuatanSandi(password) {
+    const bar = document.getElementById('pwStrengthBar');
+    if (!bar) return;
+
+    if (password.length === 0) {
+        bar.style.width = '0%';
+        bar.className = 'progress-bar';
+    } else if (password.length < 6) {
+        bar.style.width = '33%';
+        bar.className = 'progress-bar bg-danger';
+    } else if (password.length >= 6 && /\d/.test(password) && /[a-zA-Z]/.test(password)) {
+        bar.style.width = '100%';
+        bar.className = 'progress-bar bg-success';
+    } else {
+        bar.style.width = '66%';
+        bar.className = 'progress-bar bg-warning';
+    }
+}
+
+// VERIFIKASI LOGIN
 async function verifikasiLogin() {
     const inputUser = document.getElementById('username').value.trim();
     const passwordInput = document.getElementById('password').value.trim();
@@ -943,7 +1035,7 @@ async function verifikasiLogin() {
     }
 }
 
-// PENDAFTARAN MEMBER BARU (TERMASUK INPUT NOMOR HP)
+// PENDAFTARAN MEMBER BARU
 async function prosesDaftar() {
     const regNoHpEl = document.getElementById('regNoHp');
     const regNoHp = regNoHpEl ? regNoHpEl.value.trim() : '';
@@ -1010,7 +1102,7 @@ async function prosesDaftar() {
     }
 }
 
-// RESET PASSWORD MELALUI NOMOR HP
+// RESET PASSWORD
 async function prosesResetPassword() {
     const resetNoHpEl = document.getElementById('resetNoHp');
     const resetPassBaruEl = document.getElementById('resetPassBaru');
@@ -1067,13 +1159,6 @@ async function prosesResetPassword() {
     }
 }
 
-function prosesLogout() {
-    localStorage.removeItem('mustakimUser');
-    document.getElementById('memberDashboardView').style.display = 'none';
-    document.getElementById('tampilanProfilTamu').style.display = 'block';
-    showToast('Berhasil Logout');
-}
-
 function bukaFormGantiPassword() {
     document.getElementById('memberDashboardView').style.display = 'none';
     document.getElementById('formGantiPassContainer').style.display = 'block';
@@ -1082,6 +1167,44 @@ function bukaFormGantiPassword() {
 function tutupFormGantiPassword() {
     document.getElementById('formGantiPassContainer').style.display = 'none';
     document.getElementById('memberDashboardView').style.display = 'block';
+}
+
+// ==========================================
+// BADGE COUNTER KERANJANG
+// ==========================================
+function updateCartBadge() {
+    const badge = document.getElementById('cartBadge');
+    if (!badge) return;
+    
+    let cart = JSON.parse(localStorage.getItem('mustakimCart')) || [];
+    let totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+    
+    if (totalQty > 0) {
+        badge.innerText = totalQty;
+        badge.classList.remove('d-none');
+    } else {
+        badge.classList.add('d-none');
+    }
+}
+
+// ==========================================
+// FITUR BAGIKAN PRODUK (WEB SHARE API)
+// ==========================================
+function shareProduct() {
+    if (!currentViewedProduct) return;
+    
+    const shareData = {
+        title: currentViewedProduct.title,
+        text: `Cek ${currentViewedProduct.title} di Mustakim Phone! Harga ${formatRupiah(currentViewedProduct.price)} (Sudah termasuk jasa pasang).`,
+        url: window.location.href
+    };
+
+    if (navigator.share) {
+        navigator.share(shareData).catch(() => {});
+    } else {
+        navigator.clipboard.writeText(shareData.text + ' ' + shareData.url);
+        showToast('Link produk berhasil disalin!');
+    }
 }
 
 async function simpanPasswordBaru() {

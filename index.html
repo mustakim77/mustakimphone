@@ -18,13 +18,13 @@
     document.addEventListener("error", function (e) {
       if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === "img") {
         e.target.onerror = null;
-        e.target.src = "https://i.ibb.co/p6xxsTqv/logo-default.png";
+        e.target.src = "https://i.postimg.cc/sfk5KptM/logo-default.png";
       }
     }, true);
     document.addEventListener("load", function(e) {
         if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === "img") {
             if (e.target.src.includes('ibb.co') && e.target.naturalWidth > 0 && e.target.naturalWidth <= 160) {
-                e.target.src = "https://i.ibb.co/p6xxsTqv/logo-default.png";
+                e.target.src = "https://i.postimg.cc/sfk5KptM/logo-default.png";
             }
         }
     }, true);
@@ -64,7 +64,7 @@
     <header id="detailHeader" class="app-header bg-white px-3 py-3 border-bottom sticky-top d-flex align-items-center d-none">
       <i class="fa-solid fa-arrow-left text-primary fs-5 me-3" onclick="closeDetail()" style="cursor: pointer;"></i>
       <div class="flex-grow-1 text-start fw-medium fs-5 text-dark" style="letter-spacing: -0.5px;">Detail Produk</div>
-      <i id="shareBtn" class="fa-solid fa-share-nodes text-primary fs-5" style="cursor: pointer;"></i>
+      <i id="shareBtn" class="fa-solid fa-share-nodes text-primary fs-5" style="cursor: pointer;" onclick="shareProduct()"></i>
     </header>
 
     <!-- AREA KONTEN UTAMA -->
@@ -76,16 +76,16 @@
           <div class="overflow-hidden position-relative" style="border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
             <div class="banner-slider d-flex" id="bannerSlider">
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.ibb.co/5g0tbkGz/gantilcd.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.postimg.cc/B6snXnyJ/gantilcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.ibb.co/SDkfNhNr/gantibat.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.postimg.cc/KzF8R8Vj/gantibat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.ibb.co/bRR2dZy4/software.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.postimg.cc/LXR8n87H/software.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.ibb.co/whCWYvTv/atmmini.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.postimg.cc/wvHj7jPx/atmmini.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
             </div>
           </div>
@@ -102,19 +102,19 @@
           <div class="d-flex justify-content-center gap-4">
             <div class="category-item text-center" onclick="searchCategory('LCD')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.ibb.co/6Rt7KS4j/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.postimg.cc/ncmGtdvm/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">GANTI LCD</span>
             </div>
             <div class="category-item text-center" onclick="searchCategory('BAT')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.ibb.co/kgZvV6cS/logo-bat.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="BAT" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.postimg.cc/wBwhknd2/logo-bat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="BAT" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">GANTI BAT</span>
             </div>
             <div class="category-item text-center" onclick="searchCategory('SERVICE')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.ibb.co/JF8hms0P/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.postimg.cc/brtkpJ2Z/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">SERVICE</span>
             </div>
@@ -178,19 +178,19 @@
         <div class="row g-0">
           <div class="col-4 p-3 border-end border-bottom text-center" onclick="searchCategory('LCD')" style="cursor:pointer;">
             <div class="cat-circle mx-auto mb-2 bg-white d-flex align-items-center justify-content-center shadow-sm border">
-              <img src="https://i.ibb.co/6Rt7KS4j/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+              <img src="https://i.postimg.cc/ncmGtdvm/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
             </div>
             <span class="fw-bold text-dark" style="font-size:0.8rem;">GANTI LCD</span>
           </div>
           <div class="col-4 p-3 border-end border-bottom text-center" onclick="searchCategory('BAT')" style="cursor:pointer;">
             <div class="cat-circle mx-auto mb-2 bg-white d-flex align-items-center justify-content-center shadow-sm border">
-              <img src="https://i.ibb.co/kgZvV6cS/logo-bat.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="BAT" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+              <img src="https://i.postimg.cc/wBwhknd2/logo-bat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="BAT" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
             </div>
             <span class="fw-bold text-dark" style="font-size:0.8rem;">BATERAI</span>
           </div>
           <div class="col-4 p-3 border-bottom text-center" onclick="searchCategory('SERVICE')" style="cursor:pointer;">
             <div class="cat-circle mx-auto mb-2 bg-white d-flex align-items-center justify-content-center shadow-sm border">
-              <img src="https://i.ibb.co/JF8hms0P/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+              <img src="https://i.postimg.cc/brtkpJ2Z/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
             </div>
             <span class="fw-bold text-dark" style="font-size:0.8rem;">SERVICE</span>
           </div>
@@ -230,168 +230,144 @@
 
       <!-- 6. MEMBER VIEW -->
       <div id="memberView" class="d-none bg-light min-vh-100 p-3 pb-5">
-        
-        <!-- TAMPILAN PROFIL TAMU (BELUM LOGIN) -->
-        <div id="tampilanProfilTamu" class="max-w-md mx-auto">
-          <div class="ios-member-header d-flex align-items-center mb-4">
-            <div class="position-relative" style="cursor: pointer;" onclick="cekSecretLogin('admin.html')" title="Ketuk untuk opsi Admin">
-              <i class="fa-solid fa-circle-user" style="font-size: 4rem;"></i>
-              <span class="position-absolute bottom-0 end-0 bg-warning border border-white rounded-circle p-1" style="width:14px; height:14px;"></span>
-            </div>
-            <div class="ms-3">
-              <h5 class="mb-0 fw-bold fs-4">Selamat Datang</h5>
-              <span class="opacity-75" style="font-size: 0.88rem;">Masuk atau daftar untuk akses member</span>
-            </div>
-          </div>
-
-          <div class="ios-card p-4">
-            <h6 class="fw-bold text-dark mb-3" style="font-size: 0.95rem;">
-              <i class="fa-solid fa-shield-halved text-primary me-2"></i>Akses Akun Member
-            </h6>
-            <p class="text-muted mb-4" style="font-size: 0.82rem; line-height: 1.4;">
-              Nikmati kemudahan pemesanan sparepart, cek status servis, dan promo khusus pelanggan Mustakim Phone.
-            </p>
-
-            <div class="d-flex flex-column gap-3">
-              <button class="btn btn-ios-primary w-100 d-flex align-items-center justify-content-center" onclick="bukaMenuDaftar()">
-                <i class="fa-solid fa-user-plus me-2"></i> Daftar Member Baru
+      
+        <!-- KOTAK FORM LOGIN & DAFTAR -->
+        <div id="akunContainer" class="mx-auto" style="display: none; max-width: 420px; margin-top: 15px;">
+          <div class="dribbble-auth-card">
+            
+            <!-- TAB SWITCHER DENGAN SLIDING PILL -->
+            <div class="auth-tab-switcher mb-4">
+              <div id="tabIndicator" class="tab-pill-indicator"></div>
+              <button type="button" id="tabBtnLogin" class="auth-tab-btn active" onclick="tampilkanLogin()">
+                <i class="fa-solid fa-right-to-bracket me-2"></i>Login
               </button>
-
-              <button class="btn btn-ios-secondary w-100 d-flex align-items-center justify-content-center" onclick="bukaMenuLogin()">
-                <i class="fa-solid fa-right-to-bracket me-2"></i> Login Akun
+              <button type="button" id="tabBtnDaftar" class="auth-tab-btn" onclick="tampilkanDaftar()">
+                <i class="fa-solid fa-user-plus me-2"></i>Daftar
               </button>
             </div>
 
-            <hr class="my-4" style="border-color: var(--ios-border);">
+            <!-- VIEWPORT SLIDER FORM -->
+            <div class="auth-forms-viewport">
+              <div id="authFormsSlider" class="auth-forms-slider">
+                
+                <!-- 1. FORM LOGIN MEMBER -->
+                <div id="formLoginContainer" class="auth-form-slide">
+                  <div class="auth-header text-center mb-4">
+                    <h4 class="auth-title">Selamat Datang!</h4>
+                    <p class="auth-subtitle">Masuk ke akun Anda untuk melanjutkan</p>
+                  </div>
 
-            <div class="d-flex align-items-center justify-content-between text-dark" onclick="showToast('Silakan Hubungi WhatsApp CS')" style="cursor:pointer;">
-              <div class="d-flex align-items-center">
-                <div class="bg-primary-subtle text-primary rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                  <i class="fa-solid fa-headset fs-5"></i>
+                  <div class="auth-input-wrapper mb-3">
+                    <i class="fa-solid fa-user input-icon"></i>
+                    <input type="text" id="username" class="auth-input-field" placeholder="Username / No. HP" onkeypress="cekEnter(event)">
+                  </div>
+
+                  <div class="auth-input-wrapper mb-2">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input type="password" id="password" class="auth-input-field" placeholder="Password" onkeypress="cekEnter(event)">
+                    <i class="fa-solid fa-eye toggle-password" onclick="togglePassword('password', this)"></i>
+                  </div>
+
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                    <label class="d-flex align-items-center text-muted" style="font-size: 0.8rem; cursor: pointer;">
+                      <input type="checkbox" class="form-check-input me-2" style="border-radius: 4px;"> Ingat saya
+                    </label>
+                    <a href="#" onclick="tampilkanResetPassword()" class="auth-forgot-link">
+                      Lupa Password?
+                    </a>
+                  </div>
+
+                  <button onclick="verifikasiLogin()" class="btn-dribbble-primary w-100">
+                    <span>Masuk Sekarang</span>
+                    <i class="fa-solid fa-arrow-right ms-2"></i>
+                  </button>
+
+                  <div id="pesanLogin" class="mt-3 text-center auth-pesan"></div>
+
+                  <button onclick="kembaliKeProfilTamu()" class="btn-dribbble-outline w-100 mt-3">
+                    <i class="fa-solid fa-xmark me-1"></i> Batal / Kembali
+                  </button>
                 </div>
-                <div>
-                  <span class="fw-bold d-block" style="font-size: 0.88rem;">Butuh Bantuan?</span>
-                  <span class="text-muted" style="font-size: 0.75rem;">Hubungi Customer Service kami</span>
+
+                <!-- 2. FORM DAFTAR MEMBER -->
+                <div id="formDaftarContainer" class="auth-form-slide">
+                  <div class="auth-header text-center mb-4">
+                    <h4 class="auth-title">Buat Akun Baru</h4>
+                    <p class="auth-subtitle">Daftar gratis untuk akses fitur member</p>
+                  </div>
+
+                  <div class="auth-input-wrapper mb-3">
+                    <i class="fa-brands fa-whatsapp input-icon"></i>
+                    <input type="tel" id="regNoHp" class="auth-input-field" placeholder="Nomor HP / WhatsApp">
+                  </div>
+
+                  <div class="auth-input-wrapper mb-3">
+                    <i class="fa-solid fa-user input-icon"></i>
+                    <input type="text" id="regUsername" class="auth-input-field" placeholder="Buat Username">
+                  </div>
+
+                  <div class="auth-input-wrapper mb-2">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input type="password" id="regPassword" class="auth-input-field" placeholder="Buat Password (Min. 6 Karakter)" oninput="cekKekuatanSandi(this.value)">
+                    <i class="fa-solid fa-eye toggle-password" onclick="togglePassword('regPassword', this)"></i>
+                  </div>
+                  <!-- INDIKATOR KEKUATAN PASSWORD -->
+                   <div class="progress mb-3" style="height: 4px; border-radius: 2px; background: #e2e8f0;">
+                    <div id="pwStrengthBar" class="progress-bar" role="progressbar" style="width: 0%; transition: all 0.3s ease;"></div>
+                  </div>
+
+                  <button onclick="prosesDaftar()" class="btn-dribbble-primary w-100 mt-2">
+                    <span>Daftar Member</span>
+                    <i class="fa-solid fa-user-check ms-2"></i>
+                  </button>
+
+                  <div id="pesanDaftar" class="mt-3 text-center auth-pesan"></div>
+
+                  <button onclick="kembaliKeProfilTamu()" class="btn-dribbble-outline w-100 mt-3">
+                    <i class="fa-solid fa-xmark me-1"></i> Batal / Kembali
+                  </button>
                 </div>
+
               </div>
-              <i class="fa-solid fa-chevron-right text-muted" style="font-size: 0.8rem;"></i>
             </div>
-          </div>
-        </div>
 
-        <!-- KOTAK FORM LOGIN, DAFTAR & RESET PASSWORD -->
-        <div id="akunContainer" class="ios-card p-4 mx-auto" style="display: none; max-width: 420px; margin-top: 10px;">
-          
-          <!-- Form Login -->
-          <div id="formLoginContainer">
-            <div class="text-center mb-4">
-              <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-                <i class="fa-solid fa-user-lock fs-3"></i>
+            <!-- 3. FORM RESET PASSWORD (DILUAR SLIDER) -->
+            <div id="formResetContainer" style="display: none;">
+              <div class="auth-header text-center mb-4">
+                <h4 class="auth-title">Reset Password 🔑</h4>
+                <p class="auth-subtitle">Masukkan No. HP terdaftar Anda</p>
               </div>
-              <h4 class="fw-bold text-dark mb-1">Login Member</h4>
-              <span class="text-muted" style="font-size: 0.82rem;">Silakan Masuk ke Akun Anda</span>
+
+              <div class="auth-input-wrapper mb-3">
+                <i class="fa-brands fa-whatsapp input-icon"></i>
+                <input type="tel" id="resetNoHp" class="auth-input-field" placeholder="Nomor HP Terdaftar">
+              </div>
+
+              <div class="auth-input-wrapper mb-3">
+                <i class="fa-solid fa-lock input-icon"></i>
+                <input type="password" id="resetPassBaru" class="auth-input-field" placeholder="Masukkan Password Baru">
+              </div>
+
+              <button onclick="prosesResetPassword()" class="btn-dribbble-primary w-100 mt-2">
+                <span>Simpan Password Baru</span>
+                <i class="fa-solid fa-floppy-disk ms-2"></i>
+              </button>
+
+              <div id="pesanReset" class="mt-3 text-center auth-pesan"></div>
+
+              <button onclick="tampilkanLogin()" class="btn-dribbble-outline w-100 mt-3">
+                <i class="fa-solid fa-arrow-left me-1"></i> Kembali ke Login
+              </button>
             </div>
 
-            <div class="ios-input-group mb-3">
-              <label for="username"><i class="fa-solid fa-user me-1"></i> Username / Nomor HP</label>
-              <input type="text" id="username" class="form-control ios-input" placeholder="Masukkan username atau No HP" onkeypress="cekEnter(event)">
-            </div>
-
-            <div class="ios-input-group mb-2">
-              <label for="password"><i class="fa-solid fa-key me-1"></i> Password</label>
-              <input type="password" id="password" class="form-control ios-input" placeholder="Masukkan password" onkeypress="cekEnter(event)">
-            </div>
-
-            <div class="text-end mb-3">
-              <a href="#" onclick="tampilkanResetPassword()" class="text-primary fw-semibold text-decoration-none" style="font-size: 0.8rem;">
-                <i class="fa-solid fa-circle-question me-1"></i> Lupa Username / Password?
+            <!-- TOMBOL QUICK WA HELP -->
+            <div class="text-center mt-4 pt-2 border-top">
+              <a href="https://wa.me/6285799860406?text=Halo%20Admin,%20saya%20butuh%20bantuan%20login/daftar%20member" target="_blank" class="auth-wa-help">
+                <i class="fa-brands fa-whatsapp text-success me-1"></i> Butuh Bantuan? Chat Admin
               </a>
             </div>
 
-            <button onclick="verifikasiLogin()" class="btn btn-ios-primary w-100">
-              Masuk Sekarang
-            </button>
-
-            <div id="pesanLogin" class="mt-3 text-center" style="font-weight: 600; font-size: 0.85rem;"></div>
-
-            <p class="text-center mt-4 mb-2 text-muted" style="font-size: 0.85rem;">
-              Belum punya akun? <a href="#" onclick="tampilkanDaftar()" class="text-primary fw-bold text-decoration-none">Daftar di sini</a>
-            </p>
-
-            <button onclick="kembaliKeProfilTamu()" class="btn btn-ios-outline w-100 mt-2">Batal / Kembali</button>
           </div>
-
-          <!-- Form Daftar -->
-          <div id="formDaftarContainer" style="display: none;">
-            <div class="text-center mb-4">
-              <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-                <i class="fa-solid fa-user-plus fs-3"></i>
-              </div>
-              <h4 class="fw-bold text-dark mb-1">Daftar Member</h4>
-              <span class="text-muted" style="font-size: 0.82rem;">Buat Akun baru secara gratis</span>
-            </div>
-
-            <div class="ios-input-group mb-3">
-              <label for="regNoHp"><i class="fa-brands fa-whatsapp me-1"></i> Nomor HP / WA</label>
-              <input type="tel" id="regNoHp" class="form-control ios-input" placeholder="Contoh: 081234567890">
-            </div>
-
-            <div class="ios-input-group mb-3">
-              <label for="regUsername"><i class="fa-solid fa-user me-1"></i> Buat Username</label>
-              <input type="text" id="regUsername" class="form-control ios-input" placeholder="Contoh: agus123">
-            </div>
-
-            <div class="ios-input-group mb-3">
-              <label for="regPassword"><i class="fa-solid fa-lock me-1"></i> Buat Password</label>
-              <input type="password" id="regPassword" class="form-control ios-input" placeholder="Minimal 6 karakter">
-            </div>
-
-            <button onclick="prosesDaftar()" class="btn btn-ios-primary w-100 mt-2">
-              Daftar Sekarang
-            </button>
-
-            <div id="pesanDaftar" class="mt-3 text-center" style="font-weight: 600; font-size: 0.85rem;"></div>
-
-            <p class="text-center mt-4 mb-2 text-muted" style="font-size: 0.85rem;">
-              Sudah punya akun? <a href="#" onclick="tampilkanLogin()" class="text-primary fw-bold text-decoration-none">Login di sini</a>
-            </p>
-
-            <button onclick="kembaliKeProfilTamu()" class="btn btn-ios-outline w-100 mt-2">Batal / Kembali</button>
-          </div>
-
-          <!-- Form Reset / Lupa Password -->
-          <div id="formResetContainer" style="display: none;">
-            <div class="text-center mb-4">
-              <div class="bg-warning-subtle text-warning rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-                <i class="fa-solid fa-key fs-3"></i>
-              </div>
-              <h4 class="fw-bold text-dark mb-1">Reset Password</h4>
-              <span class="text-muted" style="font-size: 0.82rem;">Masukkan Nomor HP terdaftar Anda</span>
-            </div>
-
-            <div class="ios-input-group mb-3">
-              <label for="resetNoHp"><i class="fa-brands fa-whatsapp me-1"></i> Nomor HP Terdaftar</label>
-              <input type="tel" id="resetNoHp" class="form-control ios-input" placeholder="Contoh: 081234567890">
-            </div>
-
-            <div class="ios-input-group mb-3">
-              <label for="resetPassBaru"><i class="fa-solid fa-lock me-1"></i> Password Baru</label>
-              <input type="password" id="resetPassBaru" class="form-control ios-input" placeholder="Masukkan password baru">
-            </div>
-
-            <button onclick="prosesResetPassword()" class="btn btn-ios-primary w-100 mt-2">
-              Simpan Password Baru
-            </button>
-
-            <div id="pesanReset" class="mt-3 text-center" style="font-weight: 600; font-size: 0.85rem;"></div>
-
-            <p class="text-center mt-4 mb-2 text-muted" style="font-size: 0.85rem;">
-              Sudah ingat akun? <a href="#" onclick="tampilkanLogin()" class="text-primary fw-bold text-decoration-none">Login di sini</a>
-            </p>
-
-            <button onclick="kembaliKeProfilTamu()" class="btn btn-ios-outline w-100 mt-2">Batal / Kembali</button>
-          </div>
-
         </div>
 
         <!-- DASHBOARD SETELAH MEMBER LOGIN -->
@@ -449,7 +425,7 @@
 
       </div>
 
-    </main> <!-- MENUTUP MAIN WORKSPACE SECARA BENAR -->
+    </main>
 
     <!-- AREA DETAIL PRODUK (INDEPENDEN) -->
     <main id="detailWorkspace" class="d-none bg-light min-vh-100 pb-5 mb-5">
@@ -462,9 +438,9 @@
         </div>
 
         <div class="d-flex align-items-center justify-content-center bg-white py-4" style="height: 280px;">
-          <img id="detailLcdImg" src="https://i.ibb.co/6Rt7KS4j/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
-          <img id="detailBatImg" src="https://i.ibb.co/kgZvV6cS/logo-bat.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="BAT" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
-          <img id="detailSrcImg" src="https://i.ibb.co/JF8hms0P/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
+          <img id="detailLcdImg" src="https://i.postimg.cc/ncmGtdvm/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
+          <img id="detailBatImg" src="https://i.postimg.cc/wBwhknd2/logo-bat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="BAT" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
+          <img id="detailSrcImg" src="https://i.postimg.cc/brtkpJ2Z/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid d-none" style="max-height: 180px; width: auto; object-fit: contain;">
         </div>
 
         <div class="p-3">
@@ -476,6 +452,14 @@
           </div>
           <div class="text-muted text-decoration-line-through mb-0 fw-medium" style="font-size: 0.85rem;" id="detailCrossPrice"></div>
           <div class="fw-bolder text-dark mb-4" style="font-size: 1.8rem; letter-spacing: -1px;" id="detailPrice"></div>
+
+          <!-- INFORMASI HARGA ALL-IN -->
+           <div class="alert alert-success d-flex align-items-center py-2 px-3 mb-3 border-0 shadow-sm" style="border-radius: 10px; background-color: #ecfdf5; color: #047857;">
+            <i class="fa-solid fa-screwdriver-wrench me-2 fs-5"></i>
+            <div style="font-size: 0.82rem; line-height: 1.3;">
+              <strong>Harga All-In:</strong> Sparepart Sudah termasuk jasa pasang.
+            </div>
+          </div>
 
           <div class="d-flex align-items-center gap-2 mb-4">
             <button onclick="addToCart()" class="btn btn-outline-primary fw-bold d-flex justify-content-center align-items-center py-2 px-3" style="border-radius: 8px; white-space: nowrap;">
@@ -505,7 +489,7 @@
       </div>
     </main>
 
-    <!-- BOTTOM NAVIGATION (SELALU AKTIF & INDEPENDEN DI ATAS LAYAR) -->
+    <!-- BOTTOM NAVIGATION -->
     <nav id="bottomNav" class="app-bottom-nav fixed-bottom bg-white border-top d-flex justify-content-around py-2 shadow-lg">
       <div class="nav-item active text-center d-flex flex-column align-items-center" onclick="switchNav('home', this)">
         <i class="fa-solid fa-house mb-1"></i><span>Home</span>
@@ -516,15 +500,17 @@
       <div class="nav-item text-center d-flex flex-column align-items-center" onclick="switchNav('Merek', this)">
         <i class="fa-solid fa-mobile-screen mb-1"></i><span>Merek</span>
       </div>
-      <div class="nav-item text-center d-flex flex-column align-items-center" onclick="switchNav('Keranjang', this)">
-        <i class="fa-solid fa-cart-shopping mb-1"></i><span>Keranjang</span>
+      <div class="nav-item text-center d-flex flex-column align-items-center position-relative" onclick="switchNav('Keranjang', this)">
+        <i class="fa-solid fa-cart-shopping mb-1"></i>
+        <span id="cartBadge" class="badge rounded-pill bg-danger position-absolute top-0 start-50 translate-middle-x d-none" style="font-size: 0.58rem; margin-left: 10px;">0</span>
+        <span>Keranjang</span>
       </div>
       <div class="nav-item text-center d-flex flex-column align-items-center" onclick="switchNav('Member', this)">
         <i class="fa-solid fa-circle-user mb-1"></i><span>Member</span>
       </div>
     </nav>
 
-  </div> <!-- END .app-wrapper -->
+  </div>
 
   <!-- TOMBOL MELAYANG SCROLL KE ATAS -->
   <div id="scrollTopBtn" class="floating-btn shadow" title="Ke Atas" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" style="display: none;">
