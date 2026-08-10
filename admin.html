@@ -94,6 +94,9 @@
             <a href="#" class="list-group-item active" id="menu-dashboard">
                 <i class="fa-solid fa-house"></i> Dashboard
             </a>
+            <a href="#" class="list-group-item" id="menu-orders">
+                <i class="fa-solid fa-receipt"></i> Kelola Pesanan
+            </a>
             <a href="#" class="list-group-item" id="menu-data">
                 <i class="fa-solid fa-table-list"></i> Data Harga
             </a>
@@ -228,6 +231,47 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: KELOLA PESANAN (ORDERS) -->
+        <div id="section-orders" class="section-content" style="display:none;">
+            <div class="premium-card">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                    <h5 class="fw-bold m-0"><i class="fa-solid fa-receipt me-2 text-primary"></i> Kelola Pesanan & Status Nota</h5>
+                    <div class="d-flex flex-column flex-sm-row gap-3 w-100" style="max-width: 550px;">
+                        <select class="form-select fw-medium" id="filterOrderStatus" style="min-width: 150px;">
+                            <option value="">Semua Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Diproses">Diproses</option>
+                            <option value="Selesai">Selesai</option>
+                        </select>
+                        <div class="input-group">
+                            <span class="input-group-text border-0 rounded-start-3" style="background: #f4f7fe;"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                            <input type="text" class="form-control border-0 ps-0 rounded-end-3" id="searchOrderInput" placeholder="Cari Kode Nota, Nama, No. HP...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table align-middle border-bottom">
+                        <thead>
+                            <tr>
+                                <th>No. Nota</th>
+                                <th>Tanggal</th>
+                                <th>Pemesan</th>
+                                <th>No. WA</th>
+                                <th>Item / Service</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <tr><td colspan="8" class="text-center text-muted py-4">Memuat data pesanan...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

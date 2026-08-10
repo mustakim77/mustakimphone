@@ -208,7 +208,7 @@ body {
   border-bottom: 1px solid #f4f7fe;
 }
 
-/* STATUS BADGE */
+/* STATUS BADGE & DROPDOWN STATUS PESANAN */
 .status-badge {
   padding: 6px 14px;         
   border-radius: 20px;     
@@ -220,6 +220,16 @@ body {
 .status-ready { background-color: #dcfce7; color: #15803d; }
 .status-preorder { background-color: #fef3c7; color: #b45309; }
 .status-kosong { background-color: #fee2e2; color: #b91c1c; }
+
+.table .form-select-sm {
+  border-radius: 20px;
+  padding: 5px 26px 5px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: var(--transition-smooth);
+}
 
 /* ====================================
    MODAL PROFESIONAL (4 KOLOM DI LAPTOP)

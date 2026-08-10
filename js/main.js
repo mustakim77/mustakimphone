@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadBannersDinamis();
     loadBrandsDinamis();
     startAutoSlide();
+    updateCartBadge();
 
     // ==========================================
     // INJEKSI EFEK ANIMASI PINDAH HALAMAN
@@ -661,10 +662,6 @@ function showDetail(idx) {
             srcImg.classList.remove('d-none');
         }
     }
-    
-    const waText = `Halo MUSTAKIM PHONE,\n\n*${service}*\n*${merk} ${type}*\nHarga: ${harga}\nKode Barang: ${kodeBarang}\n\nApakah stok tersedia?`;
-    const elWa = document.getElementById('detailWaBtn');
-    if (elWa) elWa.href = `https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(waText)}`;
 
     document.getElementById('appHeader').classList.add('d-none');
     document.getElementById('mainWorkspace').classList.add('d-none');
@@ -725,6 +722,44 @@ function renderLatestProducts() {
 }
 
 // ==========================================
+// ORDER LANGSUNG (TANPA MASUK KERANJANG)
+// ==========================================
+function orderSekarangLangsung() {
+    if (!currentViewedProduct) return;
+
+    // Set item sementara (Direct Order)
+    window.directOrderItem = [{
+        id: currentViewedProduct.id,
+        title: currentViewedProduct.title,
+        price: currentViewedProduct.price,
+        service: currentViewedProduct.service,
+        qty: 1
+    }];
+
+    const summaryQtyEl = document.getElementById('summaryTotalQty');
+    if (summaryQtyEl) summaryQtyEl.innerText = '1 Pcs';
+
+    const summaryPriceEl = document.getElementById('summaryTotalPrice');
+    if (summaryPriceEl) summaryPriceEl.innerText = formatRupiah(currentViewedProduct.price);
+
+    const orderCatatanEl = document.getElementById('orderCatatan');
+    if (orderCatatanEl) orderCatatanEl.value = currentViewedProduct.title;
+
+    // Auto-fill data member jika login
+    const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
+    if (userSession) {
+        if (userSession.username) document.getElementById('orderNama').value = userSession.username;
+        if (userSession.no_hp) document.getElementById('orderNoHp').value = userSession.no_hp;
+    }
+
+    const modalEl = document.getElementById('checkoutModal');
+    if (modalEl) {
+        const checkoutModal = new bootstrap.Modal(modalEl);
+        checkoutModal.show();
+    }
+}
+
+// ==========================================
 // FUNGSI KERANJANG (CART)
 // ==========================================
 function addToCart() {
@@ -734,6 +769,7 @@ function addToCart() {
     if(existingItem) { existingItem.qty += 1; } 
     else { cart.push({...currentViewedProduct, qty: 1}); }
     localStorage.setItem('mustakimCart', JSON.stringify(cart));
+    updateCartBadge();
     showToast('Produk ditambahkan ke keranjang!');
 }
 
@@ -793,6 +829,7 @@ function updateCartQty(index, delta) {
         cart[index].qty += delta;
         if (cart[index].qty <= 0) cart.splice(index, 1);
         localStorage.setItem('mustakimCart', JSON.stringify(cart));
+        updateCartBadge();
         renderCart(); 
     }
 }
@@ -801,21 +838,8 @@ function removeFromCart(index) {
     let cart = JSON.parse(localStorage.getItem('mustakimCart')) || [];
     cart.splice(index, 1);
     localStorage.setItem('mustakimCart', JSON.stringify(cart));
+    updateCartBadge();
     renderCart();
-}
-
-function checkoutWA() {
-    let cart = JSON.parse(localStorage.getItem('mustakimCart')) || [];
-    if(cart.length === 0) return;
-    
-    let text = "Halo MUSTAKIM PHONE, saya ingin memesan produk dari Keranjang:\n\n";
-    let total = 0;
-    cart.forEach((item, idx) => {
-        text += `*${idx+1}. ${item.title}*\n • Jml: ${item.qty} Pcs x ${formatRupiah(item.price)}\n\n`;
-        total += (item.price * item.qty);
-    });
-    text += `*Total Estimasi Harga: ${formatRupiah(total)}*`;
-    window.open(`https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(text)}`, '_blank');
 }
 
 // ==========================================
@@ -1256,5 +1280,194 @@ async function simpanPasswordBaru() {
         console.error('Error Ganti Password:', err.message);
         pesanGantiPass.style.color = 'red';
         pesanGantiPass.innerText = 'Gagal mengubah password.';
+    }
+}
+
+// ==========================================
+// UPDATE LINK WA HEADER SECARA DINAMIS
+// ==========================================
+function updateWaHeaderLink(customText) {
+    const btn = document.getElementById('headerWaBtn');
+    if (!btn) return;
+    
+    const defaultText = "Halo MUSTAKIM PHONE, saya mau tanya seputar sparepart dan service.";
+    const textToSend = customText || defaultText;
+    
+    btn.href = `https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(textToSend)}`;
+}
+
+// ==========================================
+// CHECKOUT WEB APP & SIMPAN TO SUPABASE
+// ==========================================
+function checkoutWA() {
+    // Digunakan saat checkout via menu keranjang
+    window.directOrderItem = null;
+    let cart = JSON.parse(localStorage.getItem('mustakimCart')) || [];
+    if (cart.length === 0) {
+        showToast('Keranjang Anda masih kosong!');
+        return;
+    }
+
+    let totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+    let totalPrice = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+    const summaryQtyEl = document.getElementById('summaryTotalQty');
+    if (summaryQtyEl) summaryQtyEl.innerText = totalQty + ' Pcs';
+
+    const summaryPriceEl = document.getElementById('summaryTotalPrice');
+    if (summaryPriceEl) summaryPriceEl.innerText = formatRupiah(totalPrice);
+
+    // Auto-fill Data Member Jika Sudah Login
+    const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
+    if (userSession) {
+        if (userSession.username) document.getElementById('orderNama').value = userSession.username;
+        if (userSession.no_hp) document.getElementById('orderNoHp').value = userSession.no_hp;
+    }
+
+    // Auto-fill Catatan dengan Rincian Item dari Keranjang
+    let detailItems = cart.map(item => item.title).join(', ');
+    const orderCatatanEl = document.getElementById('orderCatatan');
+    if (orderCatatanEl) orderCatatanEl.value = detailItems;
+
+    const modalEl = document.getElementById('checkoutModal');
+    if (modalEl) {
+        const checkoutModal = new bootstrap.Modal(modalEl);
+        checkoutModal.show();
+    }
+}
+
+async function prosesCheckoutForm() {
+    // Cek transaksi: Direct Order atau dari Keranjang Belanja
+    let cart = window.directOrderItem || JSON.parse(localStorage.getItem('mustakimCart')) || [];
+    if (cart.length === 0) return;
+
+    const nama = document.getElementById('orderNama').value.trim();
+    const noHp = document.getElementById('orderNoHp').value.trim();
+    const catatan = document.getElementById('orderCatatan').value.trim();
+
+    if (!nama || !noHp) {
+        showToast('Nama dan Nomor WhatsApp wajib diisi!');
+        return;
+    }
+
+    let total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+
+    try {
+        // 1. Simpan ke Supabase & ambil ID Auto-Increment
+        const { data, error } = await dbClient
+            .from('orders')
+            .insert([{
+                order_id: 'TEMP',
+                customer_name: nama,
+                customer_phone: noHp,
+                note: catatan,
+                items: cart,
+                total_price: total,
+                status: 'Pending'
+            }])
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // 2. Format Order ID Urut (contoh: MP-00001, MP-00002)
+        const orderId = 'MP-' + String(data.id).padStart(5, '0');
+        await dbClient.from('orders').update({ order_id: orderId }).eq('id', data.id);
+
+        // 3. Format Pesan Nota WA
+        let text = `*PESANAN BARU - MUSTAKIM PHONE*\n`;
+        text += `==============================\n`;
+        text += `*No. Nota:* #${orderId}\n`;
+        text += `*Nama:* ${nama}\n`;
+        text += `*No. HP:* ${noHp}\n`;
+        if (catatan) text += `*Item / Catatan:* ${catatan}\n`;
+        text += `==============================\n`;
+        text += `*DETAIL ITEM (Part + Free Jasa Pasang):*\n\n`;
+
+        cart.forEach((item, idx) => {
+            let subtotal = item.price * item.qty;
+            text += `${idx + 1}. *${item.title}*\n   • ${item.qty} Pcs x ${formatRupiah(item.price)} = ${formatRupiah(subtotal)}\n\n`;
+        });
+
+        text += `==============================\n`;
+        text += `*TOTAL PEMBAYARAN:* ${formatRupiah(total)}\n`;
+        text += `==============================\n`;
+        text += `_Mohon konfirmasi ketersediaan stok & jadwal pengerjaan outlet._`;
+
+        // Reset state & keranjang jika transaksi dari keranjang
+        if (window.directOrderItem) {
+            window.directOrderItem = null;
+        } else {
+            localStorage.removeItem('mustakimCart');
+            if (typeof updateCartBadge === 'function') updateCartBadge();
+            renderCart();
+        }
+
+        const modalEl = document.getElementById('checkoutModal');
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+
+        // Buka WhatsApp Admin
+        window.open(`https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(text)}`, '_blank');
+
+    } catch (e) {
+        console.error("Gagal memproses checkout: ", e);
+        showToast("Gagal menyimpan pesanan. Coba lagi!");
+    }
+}
+
+// ==========================================
+// LACAK PESANAN BY KODE NOTA / NO HP
+// ==========================================
+function bukaModalLacak() {
+    const modalEl = document.getElementById('lacakModal');
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+}
+
+async function cariLacakPesanan() {
+    const query = document.getElementById('inputLacakNota').value.trim();
+    const container = document.getElementById('hasilLacakContainer');
+    if (!query) {
+        container.innerHTML = '<p class="text-danger small">Masukkan Kode Nota atau No. HP!</p>';
+        return;
+    }
+
+    container.innerHTML = '<div class="spinner-border spinner-border-sm text-primary"></div> Mencari data...';
+
+    try {
+        const { data, error } = await dbClient
+            .from('orders')
+            .select('*')
+            .or(`order_id.ilike.%${query}%,customer_phone.eq.${query}`)
+            .order('created_at', { ascending: false });
+
+        if (error || !data || data.length === 0) {
+            container.innerHTML = '<div class="alert alert-warning py-2 small">Pesanan tidak ditemukan. Periksa kembali input Anda.</div>';
+            return;
+        }
+
+        let html = '';
+        data.forEach(order => {
+            let statusBadge = 'bg-secondary';
+            if (order.status === 'Pending') statusBadge = 'bg-warning text-dark';
+            if (order.status === 'Diproses') statusBadge = 'bg-info text-dark';
+            if (order.status === 'Selesai') statusBadge = 'bg-success';
+
+            html += `
+            <div class="card border mb-2 shadow-sm" style="border-radius:10px;">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold text-primary">#${order.order_id}</span>
+                        <span class="badge ${statusBadge}">${order.status}</span>
+                    </div>
+                    <div class="small text-muted mb-1">Pemesan: <strong>${order.customer_name}</strong></div>
+                    <div class="small text-muted mb-2">Total Tagihan: <strong class="text-dark">${formatRupiah(order.total_price)}</strong></div>
+                </div>
+            </div>`;
+        });
+        container.innerHTML = html;
+    } catch (e) {
+        container.innerHTML = '<p class="text-danger small">Gagal memuat status pesanan.</p>';
     }
 }

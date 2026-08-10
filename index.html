@@ -48,7 +48,8 @@
       </div>
       
       <a href="https://wa.me/6285799860406?text=Halo%20MUSTAKIM%20PHONE,%20saya%20ingin%20tanya%20tentang%20layanan%20service." 
-         target="_blank" 
+         target="_blank"
+         id="headerWaBtn" 
          class="text-success text-decoration-none me-0" 
          title="Hubungi Admin">
          <i class="fa-brands fa-whatsapp fs-3"></i>
@@ -386,6 +387,11 @@
             <h6 class="fw-bold text-dark mb-3" style="font-size: 0.95rem;">Pengaturan Akun</h6>
             
             <div class="d-flex flex-column gap-3">
+
+              <button class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center" onclick="bukaModalLacak()">
+                <i class="fa-solid fa-magnifying-glass-location me-2"></i> Lacak Status Pesanan
+              </button>
+
               <button class="btn btn-ios-secondary w-100 d-flex align-items-center justify-content-center" onclick="bukaFormGantiPassword()">
                 <i class="fa-solid fa-key me-2"></i> Ganti Password
               </button>
@@ -466,9 +472,9 @@
               <i class="fa-solid fa-cart-shopping fs-5 me-2"></i> Keranjang
             </button>
             
-            <a id="detailWaBtn" href="#" target="_blank" class="btn text-white flex-grow-1 fw-bold py-2 d-flex justify-content-center align-items-center" style="border-radius: 8px; background-color:#1fa91c; border-color:#1fa91c; font-size:1.1rem;">
-              <i class="fa-brands fa-whatsapp fs-4 me-2"></i> HUBUNGI ADMIN
-            </a>
+            <button id="detailWaBtn" onclick="orderSekarangLangsung()" class="btn btn-success flex-grow-1 fw-bold py-2 d-flex justify-content-center align-items-center shadow-sm" style="border-radius: 8px; background-color:#1fa91c; border-color:#1fa91c; font-size:1.05rem;">
+              <i class="fa-brands fa-whatsapp fs-4 me-2"></i> ORDER SEKARANG
+            </button>
           </div>
         
           <div class="border-top bg-white">
@@ -519,6 +525,66 @@
 
   <!-- NOTIFIKASI TOAST -->
   <div id="toastMessage" class="shadow-sm"></div>
+
+  <!-- MODAL FORM CHECKOUT DIGITAL -->
+  <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+        <div class="modal-header border-0 pb-0">
+          <h6 class="modal-title fw-bold text-dark"><i class="fa-solid fa-file-invoice text-primary me-2"></i>Formulir Pemesanan</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label text-muted small fw-bold mb-1">Nama Pemesan *</label>
+            <input type="text" id="orderNama" class="form-control rounded-3" placeholder="Masukkan nama Anda">
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-muted small fw-bold mb-1">Nomor WhatsApp *</label>
+            <input type="tel" id="orderNoHp" class="form-control rounded-3" placeholder="Contoh: 08123456789">
+          </div>
+          <div class="mb-3">
+            <label class="form-label text-muted small fw-bold mb-1">Tipe HP / Catatan (Opsional)</label>
+            <textarea id="orderCatatan" class="form-control rounded-3" rows="2" placeholder="Contoh: Mau pasang sore ini / Tipe HP Vivo Y20"></textarea>
+          </div>
+          
+          <div class="bg-light p-3 rounded-3 mb-3 border">
+            <div class="d-flex justify-content-between small text-muted mb-1">
+              <span>Jumlah Item:</span>
+              <span id="summaryTotalQty" class="fw-bold text-dark">0 Pcs</span>
+            </div>
+            <div class="d-flex justify-content-between fw-bold text-dark">
+              <span>Total Tagihan (All-In):</span>
+              <span id="summaryTotalPrice" class="text-primary fs-6">Rp0</span>
+            </div>
+          </div>
+
+          <button onclick="prosesCheckoutForm()" class="btn btn-success w-100 fw-bold py-2 shadow-sm d-flex align-items-center justify-content-center" style="border-radius: 10px; background-color:#1fa91c; border-color:#1fa91c;">
+            <i class="fa-brands fa-whatsapp fs-5 me-2"></i> Kirim Nota ke WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL LACAK PESANAN -->
+  <div class="modal fade" id="lacakModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+        <div class="modal-header border-0 pb-0">
+          <h6 class="modal-title fw-bold text-dark"><i class="fa-solid fa-magnifying-glass-location text-primary me-2"></i>Lacak Status Nota</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="input-group mb-3">
+            <input type="text" id="inputLacakNota" class="form-control" placeholder="Masukkan Kode Nota (contoh: MP-00001) / No. HP">
+            <button class="btn btn-primary fw-bold" onclick="cariLacakPesanan()"><i class="fa-solid fa-search"></i> Cari</button>
+          </div>
+          <div id="hasilLacakContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- SCRIPT LIBRARIES -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

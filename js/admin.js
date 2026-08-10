@@ -1,6 +1,7 @@
 /**
  * PROYEK: MUSTAKIM PHONE - Admin Logic (Supabase Version)
  * FULL RESTORED VERSION + DASHBOARD STATS + CATEGORIES, BANNER & BRAND MANAGEMENT
+ * INTEGRASI KELOLA PESANAN & STATUS NOTA VIA WHATSAPP LENGKAP
  */
 
 // ==========================================
@@ -18,6 +19,8 @@ let currentPage = 1;
 const rowsPerPage = 10;
 let globalData = [];
 let filteredData = [];
+let globalOrders = [];
+let filteredOrders = [];
 let myChart = null; 
 let searchChart = null;
 
@@ -62,6 +65,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const filterService = document.getElementById('filterService');
     if(filterService) filterService.addEventListener('change', applyFilters);
 
+    // Event Listener Filter & Search Orders
+    const filterOrderStatus = document.getElementById('filterOrderStatus');
+    if(filterOrderStatus) filterOrderStatus.addEventListener('change', applyOrderFilters);
+
+    const searchOrderInput = document.getElementById('searchOrderInput');
+    if(searchOrderInput) searchOrderInput.addEventListener('keyup', applyOrderFilters);
+
     // Event Listener Form
     const formKategori = document.getElementById('formUbahKategori');
     if(formKategori) formKategori.addEventListener('submit', simpanKategori);
@@ -73,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(formMerek) formMerek.addEventListener('submit', simpanMerek);
 
     loadData();
+    loadOrders();
     loadCategories();
     loadBanners();
     loadBrands();
@@ -122,6 +133,7 @@ function setupSidebar() {
 
     const menuMapping = {
         'menu-dashboard': 'section-dashboard',
+        'menu-orders': 'section-orders',
         'menu-data': 'section-table',
         'menu-tambah': 'section-form',
         'menu-kategori': 'section-kategori',
@@ -155,6 +167,10 @@ function setupSidebar() {
                     targetSection.style.display = 'block';
                     setTimeout(() => targetSection.style.opacity = '1', 50);
                 }
+
+                if (targetId === 'section-orders') {
+                    loadOrders();
+                }
                 
                 if (window.innerWidth <= 768) document.getElementById('wrapper').classList.remove('toggled');
             }
@@ -163,7 +179,177 @@ function setupSidebar() {
 }
 
 // ==========================================
-// DATA LOADING & DASHBOARD (DIKEMBALIKAN UTUH)
+// KELOLA PESANAN (ORDERS) MANAGEMENT
+// ==========================================
+async function loadOrders() {
+    const tbody = document.getElementById('ordersTableBody');
+    if(!tbody) return;
+
+    try {
+        const { data, error } = await dbClient
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        globalOrders = data || [];
+        filteredOrders = [...globalOrders];
+        renderOrdersTable();
+    } catch(err) {
+        console.error("Gagal memuat orders:", err);
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Gagal memuat data pesanan: ${err.message}</td></tr>`;
+    }
+}
+
+function applyOrderFilters() {
+    const statusVal = document.getElementById('filterOrderStatus') ? document.getElementById('filterOrderStatus').value : '';
+    const searchVal = document.getElementById('searchOrderInput') ? document.getElementById('searchOrderInput').value.toLowerCase().trim() : '';
+
+    filteredOrders = globalOrders.filter(order => {
+        const matchStatus = statusVal === '' || order.status === statusVal;
+        
+        const itemsStr = Array.isArray(order.items) ? order.items.map(i => i.title).join(' ') : '';
+        const searchTarget = `${order.order_id || ''} ${order.customer_name || ''} ${order.customer_phone || ''} ${order.note || ''} ${itemsStr}`.toLowerCase();
+        const matchSearch = searchVal === '' || searchTarget.includes(searchVal);
+
+        return matchStatus && matchSearch;
+    });
+
+    renderOrdersTable();
+}
+
+function renderOrdersTable() {
+    const tbody = document.getElementById('ordersTableBody');
+    if(!tbody) return;
+
+    if (filteredOrders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Belum ada pesanan ditemukan.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filteredOrders.map(order => {
+        let statusBadge = 'bg-secondary';
+        if (order.status === 'Pending') statusBadge = 'bg-warning text-dark';
+        if (order.status === 'Diproses') statusBadge = 'bg-info text-dark';
+        if (order.status === 'Selesai') statusBadge = 'bg-success text-white';
+
+        let tgl = order.created_at ? new Date(order.created_at).toLocaleString('id-ID', {
+            day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        }) : '-';
+
+        let itemRincian = order.note || '-';
+        if (Array.isArray(order.items) && order.items.length > 0) {
+            itemRincian = order.items.map(i => `${i.title} (${i.qty} Pcs)`).join(', ');
+        }
+
+        let cleanPhone = String(order.customer_phone || '').replace(/[^0-9]/g, '');
+        if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1);
+
+        let waMsg = `Halo Kak *${order.customer_name}*,\n\nMengenai pesanan nota *#${order.order_id}* di *Mustakim Phone* dengan rincian:\n- *Unit / Service:* ${itemRincian}\n- *Total Tagihan:* ${formatRupiah(order.total_price)}\n- *Status:* *${(order.status || 'Pending').toUpperCase()}*\n\nAda yang bisa kami bantu?`;
+        let waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMsg)}`;
+
+        return `
+            <tr>
+                <td class="fw-bold text-primary">#${order.order_id}</td>
+                <td class="small text-muted">${tgl}</td>
+                <td class="fw-semibold text-dark">${order.customer_name || '-'}</td>
+                <td><span class="small text-muted">${order.customer_phone || '-'}</span></td>
+                <td style="max-width: 200px;"><span class="small text-dark text-truncate d-block" title="${itemRincian}">${itemRincian}</span></td>
+                <td class="fw-bold text-dark">${formatRupiah(order.total_price)}</td>
+                <td>
+                    <select class="form-select form-select-sm fw-bold border-0 ${statusBadge}" style="width: auto; cursor: pointer;" onchange="ubahStatusOrder(${order.id}, this.value)">
+                        <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="Diproses" ${order.status === 'Diproses' ? 'selected' : ''}>Diproses</option>
+                        <option value="Selesai" ${order.status === 'Selesai' ? 'selected' : ''}>Selesai</option>
+                    </select>
+                </td>
+                <td class="text-center">
+                    <a href="${waLink}" target="_blank" class="btn btn-sm btn-success rounded-3 me-1" title="Chat WA Pemesan">
+                        <i class="fa-brands fa-whatsapp fs-6"></i>
+                    </a>
+                    <button onclick="hapusOrder(${order.id})" class="btn btn-sm btn-light text-danger rounded-3" title="Hapus Order">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+async function ubahStatusOrder(orderDbId, statusBaru) {
+    const order = globalOrders.find(o => o.id === orderDbId);
+    if (!order) return;
+
+    try {
+        const { error } = await dbClient
+            .from('orders')
+            .update({ status: statusBaru })
+            .eq('id', orderDbId);
+
+        if (error) throw error;
+
+        // Susun rincian item / type HP & service
+        let itemRincian = order.note || '-';
+        if (Array.isArray(order.items) && order.items.length > 0) {
+            itemRincian = order.items.map(i => `${i.title} (${i.qty} Pcs)`).join(', ');
+        }
+
+        // Format Nomor HP
+        let cleanPhone = String(order.customer_phone || '').replace(/[^0-9]/g, '');
+        if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1);
+
+        // Pesan WhatsApp Lengkap
+        let pesanWA = `Halo Kak *${order.customer_name}*,\n\nStatus pesanan Nota *#${order.order_id}* Anda di *Mustakim Phone* telah diperbarui.\n\n*Detail Pesanan:*\n- *Unit / Service:* ${itemRincian}\n- *Total Tagihan:* ${formatRupiah(order.total_price)}\n- *Status Terbaru:* *${statusBaru.toUpperCase()}*\n\nTerima kasih telah mempercayakan perbaikan HP Anda di Mustakim Phone!`;
+        
+        let waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(pesanWA)}`;
+
+        Swal.fire({
+            title: 'Status Diperbarui!',
+            text: `Status pesanan #${order.order_id} diubah menjadi "${statusBaru}". Kirim konfirmasi pesan lengkap ke WhatsApp pelanggan?`,
+            icon: 'success',
+            showCancelButton: true,
+            confirmButtonColor: '#25D366',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fa-brands fa-whatsapp me-1"></i> Kirim WA Pelanggan',
+            cancelButtonText: 'Tutup'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.open(waUrl, '_blank');
+            }
+        });
+
+        loadOrders();
+    } catch(e) {
+        Swal.fire('Gagal!', 'Gagal mengubah status: ' + e.message, 'error');
+    }
+}
+
+async function hapusOrder(id) {
+    Swal.fire({
+        title: 'Hapus Pesanan ini?',
+        text: 'Data pesanan yang dihapus tidak dapat dikembalikan!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Hapus'
+    }).then(async (res) => {
+        if (res.isConfirmed) {
+            try {
+                const { error } = await dbClient.from('orders').delete().eq('id', id);
+                if (error) throw error;
+                Swal.fire('Terhapus!', 'Pesanan berhasil dihapus.', 'success');
+                loadOrders();
+            } catch(e) {
+                Swal.fire('Gagal!', e.message, 'error');
+            }
+        }
+    });
+}
+
+// ==========================================
+// DATA LOADING & DASHBOARD
 // ==========================================
 async function loadData() {
   Swal.fire({ 
@@ -209,8 +395,7 @@ async function loadData() {
     });
 
     filteredData = [...globalData];
-    
-    // PEMANGGILAN FUNGSI DASHBOARD DIKEMBALIKAN
+
     updateDashboard();
     setupDashboardShortcuts(); 
     renderTable();
