@@ -1,7 +1,7 @@
 /**
  * PROYEK: MUSTAKIM PHONE - Admin Logic (Supabase Version)
  * FULL RESTORED VERSION + DASHBOARD STATS + CATEGORIES, BANNER & BRAND MANAGEMENT
- * INTEGRASI KELOLA PESANAN & STATUS NOTA VIA WHATSAPP LENGKAP
+ * INTEGRASI KELOLA PESANAN & STATUS NOTA VIA WHATSAPP LENGKAP (TANPA EMOJI)
  */
 
 // ==========================================
@@ -238,15 +238,37 @@ function renderOrdersTable() {
             day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
         }) : '-';
 
-        let itemRincian = order.note || '-';
+        let tipeHp = order.note ? order.note.trim() : '-';
+        let idPartsList = '-';
+        let itemRincian = '-';
+
         if (Array.isArray(order.items) && order.items.length > 0) {
-            itemRincian = order.items.map(i => `${i.title} (${i.qty} Pcs)`).join(', ');
+            idPartsList = order.items.map(i => {
+                let partId = i.id || '-';
+                let partKet = (i.keterangan && i.keterangan !== '-') ? ` (${i.keterangan})` : '';
+                return `${partId}${partKet}`;
+            }).join(', ');
+
+            itemRincian = order.items.map((i, idx) => `${idx + 1}. *${i.title}* (${i.qty} Pcs)`).join('\n');
         }
 
         let cleanPhone = String(order.customer_phone || '').replace(/[^0-9]/g, '');
         if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1);
 
-        let waMsg = `Halo Kak *${order.customer_name}*,\n\nMengenai pesanan nota *#${order.order_id}* di *Mustakim Phone* dengan rincian:\n- *Unit / Service:* ${itemRincian}\n- *Total Tagihan:* ${formatRupiah(order.total_price)}\n- *Status:* *${(order.status || 'Pending').toUpperCase()}*\n\nAda yang bisa kami bantu?`;
+        let waMsg = `*UPDATE STATUS PESANAN - MUSTAKIM PHONE*\n`;
+        waMsg += `==============================\n`;
+        waMsg += `*No. Nota:* #${order.order_id || '-'}\n`;
+        waMsg += `*Nama Pelanggan:* ${order.customer_name || '-'}\n`;
+        waMsg += `*Tipe HP Pelanggan:* ${tipeHp}\n`;
+        waMsg += `*ID Part:* ${idPartsList}\n`;
+        waMsg += `==============================\n`;
+        waMsg += `*STATUS PESANAN:* *${(order.status || 'Pending').toUpperCase()}*\n\n`;
+        waMsg += `*Detail Item:*\n${itemRincian}\n\n`;
+        waMsg += `==============================\n`;
+        waMsg += `*TOTAL TAGIHAN:* ${formatRupiah(order.total_price)}\n`;
+        waMsg += `==============================\n`;
+        waMsg += `_Ada yang bisa kami bantu seputar pesanan Anda?_`;
+
         let waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMsg)}`;
 
         return `
@@ -255,7 +277,7 @@ function renderOrdersTable() {
                 <td class="small text-muted">${tgl}</td>
                 <td class="fw-semibold text-dark">${order.customer_name || '-'}</td>
                 <td><span class="small text-muted">${order.customer_phone || '-'}</span></td>
-                <td style="max-width: 200px;"><span class="small text-dark text-truncate d-block" title="${itemRincian}">${itemRincian}</span></td>
+                <td style="max-width: 200px;"><span class="small text-dark text-truncate d-block" title="${tipeHp} (${idPartsList})">${tipeHp}</span></td>
                 <td class="fw-bold text-dark">${formatRupiah(order.total_price)}</td>
                 <td>
                     <select class="form-select form-select-sm fw-bold border-0 ${statusBadge}" style="width: auto; cursor: pointer;" onchange="ubahStatusOrder(${order.id}, this.value)">
@@ -289,24 +311,58 @@ async function ubahStatusOrder(orderDbId, statusBaru) {
 
         if (error) throw error;
 
-        // Susun rincian item / type HP & service
-        let itemRincian = order.note || '-';
+        // Ambil Tipe HP Pelanggan
+        let tipeHp = order.note ? order.note.trim() : '-';
+
+        // Ambil ID Part & Rincian Item
+        let idPartsList = '-';
+        let detailItemsText = '';
+
         if (Array.isArray(order.items) && order.items.length > 0) {
-            itemRincian = order.items.map(i => `${i.title} (${i.qty} Pcs)`).join(', ');
+            idPartsList = order.items.map(i => {
+                let partId = i.id || '-';
+                let partKet = (i.keterangan && i.keterangan !== '-') ? ` (${i.keterangan})` : '';
+                return `${partId}${partKet}`;
+            }).join(', ');
+
+            detailItemsText = order.items.map((i, idx) => `${idx + 1}. *${i.title}* (${i.qty} Pcs)`).join('\n');
         }
 
-        // Format Nomor HP
+        // Format Nomor HP (08 -> 628)
         let cleanPhone = String(order.customer_phone || '').replace(/[^0-9]/g, '');
         if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1);
 
-        // Pesan WhatsApp Lengkap
-        let pesanWA = `Halo Kak *${order.customer_name}*,\n\nStatus pesanan Nota *#${order.order_id}* Anda di *Mustakim Phone* telah diperbarui.\n\n*Detail Pesanan:*\n- *Unit / Service:* ${itemRincian}\n- *Total Tagihan:* ${formatRupiah(order.total_price)}\n- *Status Terbaru:* *${statusBaru.toUpperCase()}*\n\nTerima kasih telah mempercayakan perbaikan HP Anda di Mustakim Phone!`;
-        
+        // Pesan WhatsApp Lengkap (Teks Murni Tanpa Emoji)
+        let pesanWA = `*UPDATE STATUS PESANAN - MUSTAKIM PHONE*\n`;
+        pesanWA += `==============================\n`;
+        pesanWA += `*No. Nota:* #${order.order_id || '-'}\n`;
+        pesanWA += `*Nama Pelanggan:* ${order.customer_name || '-'}\n`;
+        pesanWA += `*Tipe HP Pelanggan:* ${tipeHp}\n`;
+        pesanWA += `*ID Part:* ${idPartsList}\n`;
+        pesanWA += `==============================\n`;
+        pesanWA += `*STATUS PESANAN:* *${statusBaru.toUpperCase()}*\n\n`;
+
+        if (detailItemsText) {
+            pesanWA += `*Detail Item:*\n${detailItemsText}\n\n`;
+        }
+
+        pesanWA += `==============================\n`;
+        pesanWA += `*TOTAL TAGIHAN:* ${formatRupiah(order.total_price)}\n`;
+        pesanWA += `==============================\n`;
+
+        if (statusBaru.toLowerCase() === 'selesai') {
+            pesanWA += `_Pesanan Anda telah selesai dikerjakan dan siap diambil. Terima kasih telah mempercayakan perbaikan HP Anda di Mustakim Phone!_`;
+        } else if (statusBaru.toLowerCase() === 'diproses') {
+            pesanWA += `_Pesanan Anda saat ini sedang dalam pengerjaan oleh teknisi kami._`;
+        } else {
+            pesanWA += `_Pesanan Anda telah diterima dan dalam antrean pengerjaan._`;
+        }
+
         let waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(pesanWA)}`;
 
         Swal.fire({
             title: 'Status Diperbarui!',
-            text: `Status pesanan #${order.order_id} diubah menjadi "${statusBaru}". Kirim konfirmasi pesan lengkap ke WhatsApp pelanggan?`,
+            text: `Status pesanan #${order.order_id} diubah menjadi "${statusBaru}". Kirim konfirmasi ke WhatsApp pelanggan?`,
             icon: 'success',
             showCancelButton: true,
             confirmButtonColor: '#25D366',

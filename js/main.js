@@ -612,7 +612,15 @@ function showDetail(idx) {
     const keterangan = row[6] ? String(row[6]).trim() : '';
     const stokStatus = row[7] ? String(row[7]).trim() : 'Tersedia';
     
-    currentViewedProduct = { id: kodeBarang, title: `${merk} ${type}`, price: hargaNum, service: service };
+    currentViewedProduct = { 
+        id: kodeBarang, 
+        title: `${service} ${merk} ${type}`, 
+        price: hargaNum, 
+        service: service,
+        merk: merk,
+        type: `${merk} ${type}`,
+        keterangan: keterangan || '-'
+    };
 
     const elTitle = document.getElementById('detailTitle');
     if (elTitle) elTitle.innerText = `${merk} ${type}`;
@@ -733,6 +741,8 @@ function orderSekarangLangsung() {
         title: currentViewedProduct.title,
         price: currentViewedProduct.price,
         service: currentViewedProduct.service,
+        merk: currentViewedProduct.merk || '',
+        keterangan: currentViewedProduct.keterangan || '-',
         qty: 1
     }];
 
@@ -742,8 +752,12 @@ function orderSekarangLangsung() {
     const summaryPriceEl = document.getElementById('summaryTotalPrice');
     if (summaryPriceEl) summaryPriceEl.innerText = formatRupiah(currentViewedProduct.price);
 
+    // Otomatis isi Merk HP + spasi (Contoh: "VIVO "), pelanggan tinggal lanjut ketik "Y21"
     const orderCatatanEl = document.getElementById('orderCatatan');
-    if (orderCatatanEl) orderCatatanEl.value = currentViewedProduct.title;
+    if (orderCatatanEl) {
+        let merkHP = currentViewedProduct.merk ? currentViewedProduct.merk.trim() : '';
+        orderCatatanEl.value = merkHP ? `${merkHP} ` : '';
+    }
 
     // Auto-fill data member jika login
     const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
@@ -1300,7 +1314,6 @@ function updateWaHeaderLink(customText) {
 // CHECKOUT WEB APP & SIMPAN TO SUPABASE
 // ==========================================
 function checkoutWA() {
-    // Digunakan saat checkout via menu keranjang
     window.directOrderItem = null;
     let cart = JSON.parse(localStorage.getItem('mustakimCart')) || [];
     if (cart.length === 0) {
@@ -1324,10 +1337,12 @@ function checkoutWA() {
         if (userSession.no_hp) document.getElementById('orderNoHp').value = userSession.no_hp;
     }
 
-    // Auto-fill Catatan dengan Rincian Item dari Keranjang
-    let detailItems = cart.map(item => item.title).join(', ');
+    // Ambil daftar Merk unik dari keranjang
     const orderCatatanEl = document.getElementById('orderCatatan');
-    if (orderCatatanEl) orderCatatanEl.value = detailItems;
+    if (orderCatatanEl) {
+        let listMerk = [...new Set(cart.map(item => item.merk).filter(Boolean))].join('/ ');
+        orderCatatanEl.value = listMerk ? `${listMerk.trim()} ` : '';
+    }
 
     const modalEl = document.getElementById('checkoutModal');
     if (modalEl) {
@@ -1337,7 +1352,6 @@ function checkoutWA() {
 }
 
 async function prosesCheckoutForm() {
-    // Cek transaksi: Direct Order atau dari Keranjang Belanja
     let cart = window.directOrderItem || JSON.parse(localStorage.getItem('mustakimCart')) || [];
     if (cart.length === 0) return;
 
@@ -1345,15 +1359,21 @@ async function prosesCheckoutForm() {
     const noHp = document.getElementById('orderNoHp').value.trim();
     const catatan = document.getElementById('orderCatatan').value.trim();
 
-    if (!nama || !noHp) {
-        showToast('Nama dan Nomor WhatsApp wajib diisi!');
+    // 1. Ambil daftar nama Merk dari barang yang dipesan (Contoh: "VIVO")
+    let daftarMerk = cart.map(item => item.merk ? item.merk.trim().toUpperCase() : '').filter(Boolean);
+
+    // 2. Cek apakah input pelanggan HANYA berisi nama Merk saja tanpa Tipe (misal cuma "VIVO")
+    let cumaIsiMerk = daftarMerk.some(m => m === catatan.toUpperCase());
+
+    // 3. Validasi: Wajib isi nama, no hp, dan Tipe HP LENGKAP (harus ada tipe seperti Y21)
+    if (!nama || !noHp || !catatan || cumaIsiMerk) {
+        showToast('Mohon lengkapi Tipe HP Pelanggan (Contoh: VIVO Y21)!');
         return;
     }
 
     let total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
     try {
-        // 1. Simpan ke Supabase & ambil ID Auto-Increment
         const { data, error } = await dbClient
             .from('orders')
             .insert([{
@@ -1370,31 +1390,40 @@ async function prosesCheckoutForm() {
 
         if (error) throw error;
 
-        // 2. Format Order ID Urut (contoh: MP-00001, MP-00002)
         const orderId = 'MP-' + String(data.id).padStart(5, '0');
         await dbClient.from('orders').update({ order_id: orderId }).eq('id', data.id);
 
-        // 3. Format Pesan Nota WA
+        let idPartsList = cart.map(item => {
+            let partId = item.id || '-';
+            let partKet = (item.keterangan && item.keterangan !== '-') ? ` (${item.keterangan})` : '';
+            return `${partId}${partKet}`;
+        }).join(', ');
+
         let text = `*PESANAN BARU - MUSTAKIM PHONE*\n`;
         text += `==============================\n`;
         text += `*No. Nota:* #${orderId}\n`;
         text += `*Nama:* ${nama}\n`;
         text += `*No. HP:* ${noHp}\n`;
-        if (catatan) text += `*Item / Catatan:* ${catatan}\n`;
+        text += `*Tipe HP Pelanggan:* ${catatan}\n`;
+        text += `*ID Part:* ${idPartsList}\n`;
         text += `==============================\n`;
-        text += `*DETAIL ITEM (Part + Free Jasa Pasang):*\n\n`;
+        text += `*DETAIL ITEM (Part + Jasa Pasang):*\n\n`;
 
         cart.forEach((item, idx) => {
             let subtotal = item.price * item.qty;
-            text += `${idx + 1}. *${item.title}*\n   • ${item.qty} Pcs x ${formatRupiah(item.price)} = ${formatRupiah(subtotal)}\n\n`;
+            let namaLengkap = item.title;
+            if (item.service && !namaLengkap.toUpperCase().includes(item.service.toUpperCase())) {
+                namaLengkap = `${item.service} ${item.title}`;
+            }
+
+            text += `${idx + 1}. *${namaLengkap}*\n   • ${item.qty} Pcs x ${formatRupiah(item.price)} = ${formatRupiah(subtotal)}\n\n`;
         });
 
         text += `==============================\n`;
         text += `*TOTAL PEMBAYARAN:* ${formatRupiah(total)}\n`;
         text += `==============================\n`;
-        text += `_Mohon konfirmasi ketersediaan stok & jadwal pengerjaan outlet._`;
+        text += `_Mohon konfirmasi ketersediaan stok & jadwal pengerjaan._`;
 
-        // Reset state & keranjang jika transaksi dari keranjang
         if (window.directOrderItem) {
             window.directOrderItem = null;
         } else {
@@ -1407,7 +1436,6 @@ async function prosesCheckoutForm() {
         const modal = bootstrap.Modal.getInstance(modalEl);
         if (modal) modal.hide();
 
-        // Buka WhatsApp Admin
         window.open(`https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(text)}`, '_blank');
 
     } catch (e) {
@@ -1454,6 +1482,19 @@ async function cariLacakPesanan() {
             if (order.status === 'Diproses') statusBadge = 'bg-info text-dark';
             if (order.status === 'Selesai') statusBadge = 'bg-success';
 
+            // Ambil Tipe HP Pelanggan dari kolom note
+            let tipeHp = order.note ? order.note.trim() : '-';
+
+            // Ambil ID Part beserta keterangan dari daftar items
+            let idPartsList = '-';
+            if (Array.isArray(order.items) && order.items.length > 0) {
+                idPartsList = order.items.map(item => {
+                    let partId = item.id || '-';
+                    let partKet = (item.keterangan && item.keterangan !== '-') ? ` (${item.keterangan})` : '';
+                    return `${partId}${partKet}`;
+                }).join(', ');
+            }
+
             html += `
             <div class="card border mb-2 shadow-sm" style="border-radius:10px;">
                 <div class="card-body p-3">
@@ -1462,6 +1503,8 @@ async function cariLacakPesanan() {
                         <span class="badge ${statusBadge}">${order.status}</span>
                     </div>
                     <div class="small text-muted mb-1">Pemesan: <strong>${order.customer_name}</strong></div>
+                    <div class="small text-muted mb-1">Tipe HP Pelanggan: <strong>${tipeHp}</strong></div>
+                    <div class="small text-muted mb-1">ID Part: <strong>${idPartsList}</strong></div>
                     <div class="small text-muted mb-2">Total Tagihan: <strong class="text-dark">${formatRupiah(order.total_price)}</strong></div>
                 </div>
             </div>`;
