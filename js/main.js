@@ -570,7 +570,6 @@ function filterAndDisplay(keyword) {
         const badgeClass = getBadgeClass(stokStatus);
         let imageUrl = getProductImage(service);
 
-        // BADGE MERK PART SEJAJAR DENGAN STATUS STOK (POJOK KANAN ATAS GAMBAR)
         let ketBadgeTopHtml = keterangan 
             ? `<span class="badge border position-absolute top-0 end-0 m-2 shadow-sm fw-bold" style="background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd !important; font-size: 0.58rem; padding: 3px 7px; border-radius: 6px;">${keterangan.toUpperCase()}</span>` 
             : '';
@@ -578,7 +577,6 @@ function filterAndDisplay(keyword) {
         html += `
         <div class="col-6 col-md-3">
             <div class="card h-100 border-0 shadow-sm product-card mb-2 me-2" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${idx})">
-              <!-- AREA GAMBAR: STATUS STOK (KIRI) SEJAJAR DENGAN MERK PART (KANAN) -->
               <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0;">
                     <span class="badge ${badgeClass} position-absolute top-0 start-0 m-2 shadow-sm" style="font-size: 0.6rem; padding: 4px 8px; border-radius: 6px;">${stokStatus.toUpperCase()}</span>
                     ${ketBadgeTopHtml}
@@ -733,7 +731,6 @@ function renderLatestProducts() {
         const badgeClass = getBadgeClass(stokStatus);
         let imageUrl = getProductImage(service);
 
-        // BADGE MERK PART SEJAJAR DENGAN STATUS STOK (POJOK KANAN ATAS GAMBAR)
         let ketBadgeTopHtml = keterangan 
             ? `<span class="badge border position-absolute top-0 end-0 m-2 shadow-sm fw-bold" style="background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd !important; font-size: 0.58rem; padding: 3px 7px; border-radius: 6px;">${keterangan.toUpperCase()}</span>` 
             : '';
@@ -741,7 +738,6 @@ function renderLatestProducts() {
         html += `
         <div class="col-6 col-md-4 mb-1">
             <div class="card border-0 shadow-sm product-card h-100" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${originalIndex})">
-                <!-- AREA GAMBAR: STATUS STOK (KIRI) SEJAJAR DENGAN MERK PART (KANAN) -->
                 <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0;">
                     <span class="badge ${badgeClass} position-absolute top-0 start-0 m-2 shadow-sm" style="font-size: 0.58rem; padding: 3px 7px; border-radius: 6px;">${stokStatus.toUpperCase()}</span>
                     ${ketBadgeTopHtml}
@@ -1464,37 +1460,67 @@ async function prosesCheckoutForm() {
     }
 }
 
+
 // ==========================================
-// HELPER HITUNG SISA GARANSI PELANGGAN
+// HELPER HITUNG SISA GARANSI PELANGGAN (AUTO DETEKSI LCD/BAT)
 // ==========================================
-function hitungSisaGaransi(tanggalSelesaiStr, masaGaransiStr) {
-    if (!tanggalSelesaiStr || !masaGaransiStr || masaGaransiStr === '-') {
-        return { status: 'Tidak Ada Garansi', class: 'bg-secondary' };
+function renderBadgeGaransi(order) {
+    // Garansi HANYA muncul jika status pesanan sudah "Selesai"
+    if (order.status.toLowerCase() !== 'selesai') {
+        return ''; 
     }
 
-    let angkaGaransi = parseInt(masaGaransiStr.replace(/[^0-9]/g, '')) || 0;
-    if (masaGaransiStr.toLowerCase().includes('bulan')) {
-        angkaGaransi *= 30;
+    // Gunakan tanggal selesai (prioritas: completed_at -> updated_at -> created_at)
+    let tglMulaiStr = order.completed_at || order.updated_at || order.created_at;
+    if (!tglMulaiStr) return '';
+    
+    let tglSelesai = new Date(tglMulaiStr);
+
+    // Cari tahu apakah ini pesanan Baterai atau LCD dari daftar item
+    let isBaterai = false;
+    let isLcd = false;
+    
+    if (order.items && Array.isArray(order.items)) {
+        let textGabungan = order.items.map(i => `${i.title} ${i.service} ${i.id}`).join(" ").toUpperCase();
+        if (textGabungan.includes("BAT") || textGabungan.includes("BATERAI")) isBaterai = true;
+        if (textGabungan.includes("LCD")) isLcd = true;
     }
 
-    const tglSelesai = new Date(tanggalSelesaiStr);
-    const tglKadaluarsa = new Date(tglSelesai);
-    tglKadaluarsa.setDate(tglSelesai.getDate() + angkaGaransi);
+    // Tentukan lama garansi
+    let lamaHari = 7; // Default 1 Minggu
+    if (isBaterai) {
+        lamaHari = 30; // Garansi Baterai 1 Bulan (30 Hari)
+    } else if (isLcd) {
+        lamaHari = 7;  // Garansi LCD 1 Minggu (7 Hari)
+    }
 
-    const hariIni = new Date();
-    const selisihWaktu = tglKadaluarsa.getTime() - hariIni.getTime();
-    const sisaHari = Math.ceil(selisihWaktu / (1000 * 3600 * 24));
+    // Hitung sisa hari
+    let tglKedaluwarsa = new Date(tglSelesai);
+    tglKedaluwarsa.setDate(tglSelesai.getDate() + lamaHari);
 
+    let hariIni = new Date();
+    let selisihWaktu = tglKedaluwarsa.getTime() - hariIni.getTime();
+    let sisaHari = Math.ceil(selisihWaktu / (1000 * 3600 * 24));
+
+    // Desain UI Garansi
     if (sisaHari > 0) {
-        return {
-            status: `Garansi Aktif (Sisa ${sisaHari} Hari)`,
-            class: 'bg-success text-white'
-        };
+        return `
+        <div class="mt-3 p-2 rounded-3 d-flex align-items-center" style="background-color: #ecfdf5; border: 1px solid #a7f3d0;">
+            <i class="fa-solid fa-shield-halved text-success me-2 fs-4 ms-1"></i>
+            <div class="ms-1">
+                <div class="text-success fw-bold" style="font-size: 0.72rem; text-transform: uppercase;">Masa Garansi Aktif (${lamaHari} Hari)</div>
+                <div class="text-dark fw-bold" style="font-size: 0.85rem;">Tersisa <span class="text-success">${sisaHari} Hari</span> Lagi</div>
+            </div>
+        </div>`;
     } else {
-        return {
-            status: 'Garansi Telah Habis',
-            class: 'bg-danger text-white'
-        };
+        return `
+        <div class="mt-3 p-2 rounded-3 d-flex align-items-center" style="background-color: #fef2f2; border: 1px solid #fecaca;">
+            <i class="fa-solid fa-shield-virus text-danger me-2 fs-4 ms-1"></i>
+            <div class="ms-1">
+                <div class="text-danger fw-bold" style="font-size: 0.72rem; text-transform: uppercase;">Garansi Berakhir</div>
+                <div class="text-muted fw-bold" style="font-size: 0.85rem;">Masa klaim sudah habis</div>
+            </div>
+        </div>`;
     }
 }
 
@@ -1502,20 +1528,18 @@ function hitungSisaGaransi(tanggalSelesaiStr, masaGaransiStr) {
 // LACAK PESANAN BY KODE NOTA / NO HP
 // ==========================================
 function bukaModalLacak() {
-    const modalEl = document.getElementById('lacakModal');
-    const modal = new bootstrap.Modal(modalEl);
-    modal.show();
+    // Fungsi ini bisa dibiarkan kosong jika sudah diarahkan ke Navbar Cek Servis
 }
 
 async function cariLacakPesanan() {
     const query = document.getElementById('inputLacakNota').value.trim();
     const container = document.getElementById('hasilLacakContainer');
     if (!query) {
-        container.innerHTML = '<p class="text-danger small">Masukkan Kode Nota atau No. HP!</p>';
+        container.innerHTML = '<p class="text-danger small text-center mt-3 fw-bold">Masukkan Kode Nota atau No. HP Anda!</p>';
         return;
     }
 
-    container.innerHTML = '<div class="spinner-border spinner-border-sm text-primary"></div> Mencari data...';
+    container.innerHTML = '<div class="text-center mt-4"><div class="spinner-border spinner-border-sm text-primary"></div><span class="ms-2 text-muted small">Mencari data servis...</span></div>';
 
     try {
         const { data, error } = await dbClient
@@ -1525,12 +1549,13 @@ async function cariLacakPesanan() {
             .order('created_at', { ascending: false });
 
         if (error || !data || data.length === 0) {
-            container.innerHTML = '<div class="alert alert-warning py-2 small">Pesanan tidak ditemukan. Periksa kembali input Anda.</div>';
+            container.innerHTML = '<div class="alert alert-warning py-3 small text-center mt-3 rounded-4 shadow-sm border-0"><strong>Tidak ditemukan.</strong><br>Pastikan Nomor WA atau Nota sudah benar.</div>';
             return;
         }
 
         let html = '';
         data.forEach(order => {
+            // Tentukan warna status
             let statusBadge = 'bg-secondary';
             if (order.status === 'Pending') statusBadge = 'bg-warning text-dark';
             if (order.status === 'Diproses') statusBadge = 'bg-info text-dark';
@@ -1538,6 +1563,7 @@ async function cariLacakPesanan() {
 
             let tipeHp = order.note ? order.note.trim() : '-';
 
+            // Ambil daftar parts
             let idPartsList = '-';
             if (Array.isArray(order.items) && order.items.length > 0) {
                 idPartsList = order.items.map(item => {
@@ -1547,30 +1573,53 @@ async function cariLacakPesanan() {
                 }).join(', ');
             }
 
-            let garansiInfo = '';
-            if (order.status === 'Selesai' && order.completed_at) {
-                let masaGaransi = order.items?.[0]?.garansi || '7 Hari';
-                let resGaransi = hitungSisaGaransi(order.completed_at, masaGaransi);
-                garansiInfo = `<div class="small mb-1">Garansi: <span class="badge ${resGaransi.class}">${resGaransi.status}</span></div>`;
-            }
+            // Panggil desain garansi hitungan mundur
+            let garansiInfo = renderBadgeGaransi(order);
+            
+            // Format Pesan Tanya WA
+            let waText = `Halo admin MustakimPhone, saya mau tanya detail pesanan untuk nota *#${order.order_id}* atas nama *${order.customer_name}*. Statusnya saat ini *${order.status}*...`;
 
             html += `
-            <div class="card border mb-2 shadow-sm" style="border-radius:10px;">
+            <div class="card border-0 mb-4 shadow-sm" style="border-radius:14px; overflow:hidden;">
+                <!-- Header Kartu -->
+                <div class="bg-light px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                    <span class="fw-bolder text-primary fs-6">#${order.order_id}</span>
+                    <span class="badge ${statusBadge} px-2 py-1 shadow-sm" style="font-size: 0.72rem; letter-spacing: 0.5px;">${order.status.toUpperCase()}</span>
+                </div>
+                
+                <!-- Body Kartu -->
                 <div class="card-body p-3">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="fw-bold text-primary">#${order.order_id}</span>
-                        <span class="badge ${statusBadge}">${order.status}</span>
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span class="small text-muted">Pemesan:</span>
+                        <strong class="text-dark small">${order.customer_name}</strong>
                     </div>
-                    <div class="small text-muted mb-1">Pemesan: <strong>${order.customer_name}</strong></div>
-                    <div class="small text-muted mb-1">Tipe HP Pelanggan: <strong>${tipeHp}</strong></div>
-                    <div class="small text-muted mb-1">ID Part: <strong>${idPartsList}</strong></div>
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span class="small text-muted">Tipe HP:</span>
+                        <strong class="text-dark small text-end" style="max-width: 65%;">${tipeHp}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span class="small text-muted">Part:</span>
+                        <strong class="text-dark small text-end" style="max-width: 65%;">${idPartsList}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="small fw-bold text-dark">Total Biaya:</span>
+                        <strong class="text-primary fs-6">${formatRupiah(order.total_price)}</strong>
+                    </div>
+                    
                     ${garansiInfo}
-                    <div class="small text-muted mb-2">Total Tagihan: <strong class="text-dark">${formatRupiah(order.total_price)}</strong></div>
+                    
+                    <!-- Tombol Tanya Admin Spesifik Per Nota -->
+                    <a href="https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(waText)}" 
+                       target="_blank" 
+                       class="btn btn-outline-success w-100 mt-3 fw-bold d-flex align-items-center justify-content-center" 
+                       style="border-radius: 10px; font-size: 0.85rem; padding: 10px 0;">
+                       <i class="fa-brands fa-whatsapp fs-5 me-2"></i> Tanya Admin via WA
+                    </a>
                 </div>
             </div>`;
         });
         container.innerHTML = html;
     } catch (e) {
-        container.innerHTML = '<p class="text-danger small">Gagal memuat status pesanan.</p>';
+        container.innerHTML = '<p class="text-danger small text-center mt-3">Gagal memuat status pesanan. Coba sesaat lagi.</p>';
     }
 }

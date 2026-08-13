@@ -98,7 +98,7 @@
           </div>
         </div>
 
-        <!-- Kategori -->
+        <!-- Kategori (Tombol Cepat) -->
         <div class="px-3 mb-4">
           <div class="d-flex justify-content-center gap-4">
             <div class="category-item text-center" onclick="searchCategory('LCD')">
@@ -171,30 +171,29 @@
         </div>
       </div>
 
-      <!-- 3. KATEGORI VIEW -->
-      <div id="kategoriView" class="d-none bg-light">
-        <div class="p-3 border-bottom bg-light">
-          <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-border-all text-primary me-2"></i>Semua Kategori</h6>
+      <!-- 3. HALAMAN CEK SERVIS (Menggantikan Kategori) -->
+      <div id="kategoriView" class="d-none bg-light min-vh-100 pb-5">
+        <div class="p-3 border-bottom bg-white shadow-sm d-flex align-items-center justify-content-center" style="position: sticky; top: 0; z-index: 10;">
+          <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-magnifying-glass-location text-primary me-2"></i>Lacak Status Servis</h6>
         </div>
-        <div class="row g-0">
-          <div class="col-4 p-3 border-end border-bottom text-center" onclick="searchCategory('LCD')" style="cursor:pointer;">
-            <div class="cat-circle mx-auto mb-2 bg-white d-flex align-items-center justify-content-center shadow-sm border">
-              <img src="https://i.postimg.cc/ncmGtdvm/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+        
+        <div class="p-3 mt-2">
+          <div class="bg-white p-4 rounded-4 shadow-sm border text-center">
+            <div class="mb-3">
+              <i class="fa-solid fa-mobile-retro text-primary" style="font-size: 3.5rem;"></i>
             </div>
-            <span class="fw-bold text-dark" style="font-size:0.8rem;">GANTI LCD</span>
-          </div>
-          <div class="col-4 p-3 border-end border-bottom text-center" onclick="searchCategory('BAT')" style="cursor:pointer;">
-            <div class="cat-circle mx-auto mb-2 bg-white d-flex align-items-center justify-content-center shadow-sm border">
-              <img src="https://i.postimg.cc/wBwhknd2/logo-bat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="BAT" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+            <h6 class="fw-bold text-dark mb-2">Cek Perbaikan HP Anda</h6>
+            <p class="text-muted mb-4" style="font-size: 0.85rem;">Masukkan Kode Nota atau Nomor WhatsApp terdaftar untuk melihat perkembangan servis.</p>
+            
+            <!-- Elemen Input Lacak -->
+            <div class="input-group mb-2 shadow-sm" style="border-radius: 12px; overflow: hidden; border: 1px solid #dee2e6;">
+              <input type="text" id="inputLacakNota" class="form-control border-0 bg-light" placeholder="No. WA / Nota..." style="padding: 12px 15px; font-size: 0.9rem;" autocomplete="off">
+              <button class="btn btn-primary fw-bold px-4" onclick="cariLacakPesanan()"><i class="fa-solid fa-search"></i></button>
             </div>
-            <span class="fw-bold text-dark" style="font-size:0.8rem;">BATERAI</span>
           </div>
-          <div class="col-4 p-3 border-bottom text-center" onclick="searchCategory('SERVICE')" style="cursor:pointer;">
-            <div class="cat-circle mx-auto mb-2 bg-white d-flex align-items-center justify-content-center shadow-sm border">
-              <img src="https://i.postimg.cc/brtkpJ2Z/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
-            </div>
-            <span class="fw-bold text-dark" style="font-size:0.8rem;">SERVICE</span>
-          </div>
+          
+          <!-- Container Hasil Pencarian -->
+          <div id="hasilLacakContainer" class="mt-4"></div>
         </div>
       </div>
 
@@ -388,7 +387,8 @@
             
             <div class="d-flex flex-column gap-3">
 
-              <button class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center" onclick="bukaModalLacak()">
+              <!-- TOMBOL LACAK YANG SUDAH DIREVISI -->
+              <button class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center" onclick="switchNav('Kategori', document.querySelectorAll('.nav-item')[1])">
                 <i class="fa-solid fa-magnifying-glass-location me-2"></i> Lacak Status Pesanan
               </button>
 
@@ -500,9 +500,12 @@
       <div class="nav-item active text-center d-flex flex-column align-items-center" onclick="switchNav('home', this)">
         <i class="fa-solid fa-house mb-1"></i><span>Home</span>
       </div>
+      
+      <!-- NAVBAR KATEGORI UBAH TAMPILAN KE CEK SERVIS -->
       <div class="nav-item text-center d-flex flex-column align-items-center" onclick="switchNav('Kategori', this)">
-        <i class="fa-solid fa-border-all mb-1"></i><span>Kategori</span>
+        <i class="fa-solid fa-magnifying-glass-location mb-1"></i><span>Cek Servis</span>
       </div>
+      
       <div class="nav-item text-center d-flex flex-column align-items-center" onclick="switchNav('Merek', this)">
         <i class="fa-solid fa-mobile-screen mb-1"></i><span>Merek</span>
       </div>
@@ -562,25 +565,6 @@
           <button onclick="prosesCheckoutForm()" class="btn btn-success w-100 fw-bold py-2 shadow-sm d-flex align-items-center justify-content-center" style="border-radius: 10px; background-color:#1fa91c; border-color:#1fa91c;">
             <i class="fa-brands fa-whatsapp fs-5 me-2"></i> Kirim Nota ke WhatsApp
           </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL LACAK PESANAN -->
-  <div class="modal fade" id="lacakModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-        <div class="modal-header border-0 pb-0">
-          <h6 class="modal-title fw-bold text-dark"><i class="fa-solid fa-magnifying-glass-location text-primary me-2"></i>Lacak Status Nota</h6>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="input-group mb-3">
-            <input type="text" id="inputLacakNota" class="form-control" placeholder="Masukkan Kode Nota (contoh: MP-00001) / No. HP">
-            <button class="btn btn-primary fw-bold" onclick="cariLacakPesanan()"><i class="fa-solid fa-search"></i> Cari</button>
-          </div>
-          <div id="hasilLacakContainer"></div>
         </div>
       </div>
     </div>
