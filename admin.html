@@ -221,7 +221,7 @@
                                         <th>Kode Barang (ID)</th>
                                         <th>Service</th>
                                         <th>Merk & Type</th>
-                                        <th>Harga</th>
+                                        <th>Harga Jual</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
@@ -303,7 +303,9 @@
                                 <th>Merk</th>
                                 <th>Type</th>
                                 <th>Service</th>
-                                <th>Harga</th>
+                                <th>Modal</th>
+                                <th>Harga Jual</th>
+                                <th>Untung</th>
                                 <th>Garansi</th>
                                 <th>Status</th>
                                 <th class="text-center">Aksi</th>
@@ -359,7 +361,14 @@
                             <input type="text" class="form-control" id="inputTypeHP" required placeholder="Contoh: iPhone 11 Pro">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold mb-2">Harga (Rp)</label>
+                            <label class="form-label small fw-bold mb-2">Modal / HPP (Rp)</label>
+                            <div class="input-group">
+                                <span class="input-group-text border-0 text-muted" style="background: #f4f7fe;">Rp</span>
+                                <input type="number" class="form-control border-0" id="inputModal" required placeholder="0" style="background: #f4f7fe;">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold mb-2">Harga Jual (Rp)</label>
                             <div class="input-group">
                                 <span class="input-group-text border-0 text-muted" style="background: #f4f7fe;">Rp</span>
                                 <input type="number" class="form-control border-0" id="inputHarga" required placeholder="0" style="background: #f4f7fe;">
@@ -382,9 +391,9 @@
                                 <option value="Kosong">Kosong (Habis)</option>
                             </select>
                         </div>
-                        <div class="col-12">
+                        <div class="col-md-6">
                             <label class="form-label small fw-bold mb-2">Merk Part / Keterangan</label>
-                            <input type="text" class="form-control" id="inputKeterangan" placeholder="Contoh: Life Future / Original / Kualitas OEM">
+                            <input type="text" class="form-control" id="inputKeterangan" placeholder="Contoh: SHUNSINE / MEETOO / POZI">
                         </div>
                     </div>
                     <div class="d-flex justify-content-end mt-5 pt-3 border-top">
@@ -499,7 +508,7 @@
 </div>
 
 <!-- ========================================== -->
-<!-- MODAL POPUP POPUP DASHBOARD FILTER -->
+<!-- MODAL POPUP DASHBOARD FILTER -->
 <!-- ========================================== -->
 
 <!-- MODAL PILIH MERK -->
@@ -604,7 +613,11 @@
                             <input type="text" class="form-control" id="editTypeHP" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small fw-bold">Harga (Rp)</label>
+                            <label class="form-label small fw-bold">Modal / HPP (Rp)</label>
+                            <input type="number" class="form-control" id="editModal" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Harga Jual (Rp)</label>
                             <input type="number" class="form-control" id="editHarga" required>
                         </div>
                         <div class="col-md-6">
@@ -623,7 +636,7 @@
                                 <option value="Kosong">Kosong (Habis)</option>
                             </select>
                         </div>
-                        <div class="col-12">
+                        <div class="col-md-6">
                             <label class="form-label small fw-bold">Merk Part / Keterangan</label>
                             <input type="text" class="form-control" id="editKeterangan">
                         </div>

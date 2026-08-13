@@ -445,7 +445,7 @@ async function loadData() {
 
     try {
         const { data, error } = await dbClient
-            .from('data_service')
+            .from('katalog_publik')
             .select('*');
 
         if (error) throw error;
@@ -1445,6 +1445,40 @@ async function prosesCheckoutForm() {
 }
 
 // ==========================================
+// HELPER HITUNG SISA GARANSI PELANGGAN
+// ==========================================
+function hitungSisaGaransi(tanggalSelesaiStr, masaGaransiStr) {
+    if (!tanggalSelesaiStr || !masaGaransiStr || masaGaransiStr === '-') {
+        return { status: 'Tidak Ada Garansi', class: 'bg-secondary' };
+    }
+
+    let angkaGaransi = parseInt(masaGaransiStr.replace(/[^0-9]/g, '')) || 0;
+    if (masaGaransiStr.toLowerCase().includes('bulan')) {
+        angkaGaransi *= 30;
+    }
+
+    const tglSelesai = new Date(tanggalSelesaiStr);
+    const tglKadaluarsa = new Date(tglSelesai);
+    tglKadaluarsa.setDate(tglSelesai.getDate() + angkaGaransi);
+
+    const hariIni = new Date();
+    const selisihWaktu = tglKadaluarsa.getTime() - hariIni.getTime();
+    const sisaHari = Math.ceil(selisihWaktu / (1000 * 3600 * 24));
+
+    if (sisaHari > 0) {
+        return {
+            status: `Garansi Aktif (Sisa ${sisaHari} Hari)`,
+            class: 'bg-success text-white'
+        };
+    } else {
+        return {
+            status: 'Garansi Telah Habis',
+            class: 'bg-danger text-white'
+        };
+    }
+}
+
+// ==========================================
 // LACAK PESANAN BY KODE NOTA / NO HP
 // ==========================================
 function bukaModalLacak() {
@@ -1482,10 +1516,8 @@ async function cariLacakPesanan() {
             if (order.status === 'Diproses') statusBadge = 'bg-info text-dark';
             if (order.status === 'Selesai') statusBadge = 'bg-success';
 
-            // Ambil Tipe HP Pelanggan dari kolom note
             let tipeHp = order.note ? order.note.trim() : '-';
 
-            // Ambil ID Part beserta keterangan dari daftar items
             let idPartsList = '-';
             if (Array.isArray(order.items) && order.items.length > 0) {
                 idPartsList = order.items.map(item => {
@@ -1493,6 +1525,14 @@ async function cariLacakPesanan() {
                     let partKet = (item.keterangan && item.keterangan !== '-') ? ` (${item.keterangan})` : '';
                     return `${partId}${partKet}`;
                 }).join(', ');
+            }
+
+            // Hitung status garansi otomatis jika pesanan sudah Selesai
+            let garansiInfo = '';
+            if (order.status === 'Selesai' && order.completed_at) {
+                let masaGaransi = order.items?.[0]?.garansi || '7 Hari';
+                let resGaransi = hitungSisaGaransi(order.completed_at, masaGaransi);
+                garansiInfo = `<div class="small mb-1">Garansi: <span class="badge ${resGaransi.class}">${resGaransi.status}</span></div>`;
             }
 
             html += `
@@ -1505,6 +1545,7 @@ async function cariLacakPesanan() {
                     <div class="small text-muted mb-1">Pemesan: <strong>${order.customer_name}</strong></div>
                     <div class="small text-muted mb-1">Tipe HP Pelanggan: <strong>${tipeHp}</strong></div>
                     <div class="small text-muted mb-1">ID Part: <strong>${idPartsList}</strong></div>
+                    ${garansiInfo}
                     <div class="small text-muted mb-2">Total Tagihan: <strong class="text-dark">${formatRupiah(order.total_price)}</strong></div>
                 </div>
             </div>`;

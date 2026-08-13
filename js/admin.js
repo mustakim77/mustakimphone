@@ -1,16 +1,19 @@
 /**
- * PROYEK: MUSTAKIM PHONE - Admin Logic (Supabase Version)
+ * PROYEK: MUSTAKIM PHONE - Admin Logic (Supabase Version + Google Sheets Sync)
  * FULL RESTORED VERSION + DASHBOARD STATS + CATEGORIES, BANNER & BRAND MANAGEMENT
- * INTEGRASI KELOLA PESANAN & STATUS NOTA VIA WHATSAPP LENGKAP (TANPA EMOJI)
+ * INTEGRASI KELOLA PESANAN, MODAL/LABA, STATUS NOTA VIA WHATSAPP & SINKRONISASI GOOGLE SHEETS
  */
 
 // ==========================================
-// KONEKSI SUPABASE
+// KONEKSI SUPABASE & APPS SCRIPT WEBHOOK
 // ==========================================
 const SUPABASE_URL = 'https://btlxqbebbwtddcpzpaet.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0bHhxYmViYnd0ZGRjcHpwYWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyODc3NzksImV4cCI6MjEwMDg2Mzc3OX0.UTuPztP57dSbHwt5kJ2u30sSpcE3KQJ6vioPoEM7eEs';
 
 const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// URL Web App Apps Script untuk sinkronisasi otomatis ke Google Sheets
+const APPS_SCRIPT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyHOz_ro10lI_R_rUoedDA3K2PoN3uGL06stSFHsF6W0SD6rhdPlWjsKNldEJbnBpI-/exec';
 
 // ==========================================
 // STATE MANAGEMENT
@@ -304,17 +307,22 @@ async function ubahStatusOrder(orderDbId, statusBaru) {
     if (!order) return;
 
     try {
+        let updatePayload = { status: statusBaru };
+        
+        // Catat tanggal selesai otomatis jika status diubah ke 'Selesai'
+        if (statusBaru.toLowerCase() === 'selesai') {
+            updatePayload.completed_at = new Date().toISOString();
+        }
+
         const { error } = await dbClient
             .from('orders')
-            .update({ status: statusBaru })
+            .update(updatePayload)
             .eq('id', orderDbId);
 
         if (error) throw error;
 
-        // Ambil Tipe HP Pelanggan
         let tipeHp = order.note ? order.note.trim() : '-';
 
-        // Ambil ID Part & Rincian Item
         let idPartsList = '-';
         let detailItemsText = '';
 
@@ -328,11 +336,9 @@ async function ubahStatusOrder(orderDbId, statusBaru) {
             detailItemsText = order.items.map((i, idx) => `${idx + 1}. *${i.title}* (${i.qty} Pcs)`).join('\n');
         }
 
-        // Format Nomor HP (08 -> 628)
         let cleanPhone = String(order.customer_phone || '').replace(/[^0-9]/g, '');
         if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1);
 
-        // Pesan WhatsApp Lengkap (Teks Murni Tanpa Emoji)
         let pesanWA = `*UPDATE STATUS PESANAN - MUSTAKIM PHONE*\n`;
         pesanWA += `==============================\n`;
         pesanWA += `*No. Nota:* #${order.order_id || '-'}\n`;
@@ -423,17 +429,19 @@ async function loadData() {
 
     if (error) throw error;
 
+    // Memetakan data_service termasuk kolom MODAL (HPP)
     globalData = (data || []).map(item => [
-        item.id,
-        item.merk_hp,
-        item.type_hp,
-        item.jenis_service,
-        item.harga,
-        item.garansi,
-        item.keterangan,
-        item.status,
-        item.update,
-        item.timestamp_asli
+        item.id,             // 0
+        item.merk_hp,        // 1
+        item.type_hp,        // 2
+        item.jenis_service,  // 3
+        item.harga,          // 4 (HARGA JUAL)
+        item.modal || 0,     // 5 (MODAL / HPP)
+        item.garansi,        // 6
+        item.keterangan,     // 7
+        item.status,         // 8
+        item.update,         // 9
+        item.timestamp_asli  // 10
     ]);
     
     globalData.sort((a, b) => {
@@ -752,18 +760,33 @@ document.getElementById('formTambahData').addEventListener('submit', async funct
   
   let baseMerkType = `${merk.toUpperCase()}${type.split(/[,\/]+/)[0].trim().toUpperCase().replace(/\s+/g, '')}`;
   let baseService = service.toUpperCase().replace('GANTI ', '').trim();
-  let uniqueCode = Math.floor(1000 + Math.random() * 9000); 
-  let id = `${baseMerkType}-${baseService}-${uniqueCode}`;
+
+  // Ambil 3 huruf pertama dari Keterangan (misal MEETOO -> MEE, OG -> OG)
+  let ketInput = (document.getElementById('inputKeterangan').value || '').trim().toUpperCase();
+  let ketClean = ketInput.replace(/[^A-Z0-9]/g, ''); // Hapus spasi & simbol
+  
+  let suffix = '';
+  if (ketClean.length > 0 && ketClean !== '-') {
+      suffix = ketClean.substring(0, 3); // Ambil maks 3 karakter
+  } else {
+      suffix = Math.floor(1000 + Math.random() * 9000); // Cadangan jika keterangan kosong
+  }
+
+  let id = `${baseMerkType}-${baseService}-${suffix}`;
 
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
   let waktuUpdate = new Date().toLocaleDateString('id-ID', options).replace(' pukul', ',');
+
+  let modalInput = document.getElementById('inputModal') ? parseInt(document.getElementById('inputModal').value) : 0;
+  let hargaJualInput = parseInt(document.getElementById('inputHarga').value) || 0;
 
   const payload = {
     id: id, 
     merk_hp: merk.toUpperCase(), 
     type_hp: type.toUpperCase(), 
     jenis_service: service,
-    harga: parseInt(document.getElementById('inputHarga').value) || 0,
+    modal: modalInput || 0,
+    harga: hargaJualInput,
     garansi: document.getElementById('inputGaransi').value,
     status: document.getElementById('inputStatus').value,
     keterangan: document.getElementById('inputKeterangan').value || '-',
@@ -773,10 +796,23 @@ document.getElementById('formTambahData').addEventListener('submit', async funct
   Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
   
   try {
+      // 1. Simpan ke Supabase Database
       const { error } = await dbClient.from('data_service').insert([payload]);
       if (error) throw error;
 
-      Swal.fire({ title: 'Berhasil!', text: 'Data baru berhasil disimpan.', icon: 'success' });
+      // 2. Kirim otomatis ke Google Sheets via Apps Script Webhook
+      try {
+          await fetch(APPS_SCRIPT_WEBHOOK_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+          });
+      } catch (sheetErr) {
+          console.error('Gagal sinkron ke Google Sheets:', sheetErr);
+      }
+
+      Swal.fire({ title: 'Berhasil!', text: 'Data baru berhasil disimpan ke Database dan Google Sheets.', icon: 'success' });
       document.getElementById('formTambahData').reset();
       document.getElementById('inputMerkLainnya').style.display = 'none'; 
       loadData();
@@ -793,15 +829,19 @@ window.openEditModal = function(id) {
   document.getElementById('editMerkHP').value = row[1];
   document.getElementById('editTypeHP').value = row[2];
   document.getElementById('editJenisService').value = row[3];
-  document.getElementById('editHarga').value = String(row[4]).replace(/[^0-9]/g, '');
-  document.getElementById('editGaransi').value = row[5];
   
-  let statusData = String(row[7] || '').toLowerCase().trim();
+  if (document.getElementById('editModal')) {
+      document.getElementById('editModal').value = String(row[5] || 0).replace(/[^0-9]/g, '');
+  }
+  document.getElementById('editHarga').value = String(row[4] || 0).replace(/[^0-9]/g, '');
+  document.getElementById('editGaransi').value = row[6];
+  
+  let statusData = String(row[8] || '').toLowerCase().trim();
   let selectStatus = document.getElementById('editStatus');
   for (let i = 0; i < selectStatus.options.length; i++) {
     if (selectStatus.options[i].value.toLowerCase() === statusData) { selectStatus.selectedIndex = i; break; }
   }
-  document.getElementById('editKeterangan').value = row[6] || "";
+  document.getElementById('editKeterangan').value = row[7] || "";
   new bootstrap.Modal(document.getElementById('modalEdit')).show();
 };
 
@@ -813,11 +853,15 @@ document.getElementById('btnUpdateData').addEventListener('click', async functio
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
   let waktuUpdate = new Date().toLocaleDateString('id-ID', options).replace(' pukul', ',');
 
+  let editModalInput = document.getElementById('editModal') ? parseInt(document.getElementById('editModal').value) : 0;
+  let editHargaInput = parseInt(document.getElementById('editHarga').value) || 0;
+
   const payload = {
     merk_hp: editMerkFinal.toUpperCase(), 
     type_hp: document.getElementById('editTypeHP').value.toUpperCase(), 
     jenis_service: document.getElementById('editJenisService').value,
-    harga: parseInt(document.getElementById('editHarga').value) || 0, 
+    modal: editModalInput || 0,
+    harga: editHargaInput, 
     garansi: document.getElementById('editGaransi').value,
     status: document.getElementById('editStatus').value, 
     keterangan: document.getElementById('editKeterangan').value || '-',
@@ -825,10 +869,23 @@ document.getElementById('btnUpdateData').addEventListener('click', async functio
   };
 
   try {
+      // 1. Update di Supabase Database
       const { error } = await dbClient.from('data_service').update(payload).eq('id', recordId);
       if (error) throw error;
 
-      Swal.fire({ title: 'Berhasil!', text: 'Data telah diperbarui.', icon: 'success' });
+      // 2. Kirim update ke Google Sheets via Webhook
+      try {
+          await fetch(APPS_SCRIPT_WEBHOOK_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: recordId, ...payload })
+          });
+      } catch (sheetErr) {
+          console.error('Gagal sinkron update ke Google Sheets:', sheetErr);
+      }
+
+      Swal.fire({ title: 'Berhasil!', text: 'Data telah diperbarui di Database & Google Sheets.', icon: 'success' });
       bootstrap.Modal.getInstance(document.getElementById('modalEdit')).hide();
       loadData();
   } catch (err) {
@@ -838,15 +895,34 @@ document.getElementById('btnUpdateData').addEventListener('click', async functio
 
 window.deleteRecord = function(id) {
   Swal.fire({ 
-      title: 'Yakin ingin menghapus?', text: "Data yang dihapus tidak dapat dikembalikan!", icon: 'warning', 
-      showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#f1f5f9',
-      confirmButtonText: 'Ya, Hapus', cancelButtonText: '<span class="text-dark">Batal</span>'
+      title: 'Yakin ingin menghapus?', 
+      text: "Data akan dihapus dari Supabase Database dan Google Sheets!", 
+      icon: 'warning', 
+      showCancelButton: true, 
+      confirmButtonColor: '#ef4444', 
+      cancelButtonColor: '#f1f5f9',
+      confirmButtonText: 'Ya, Hapus', 
+      cancelButtonText: '<span class="text-dark">Batal</span>'
   }).then(async (result) => {
     if (result.isConfirmed) { 
         try {
+            // 1. Hapus dari Supabase Database
             const { error } = await dbClient.from('data_service').delete().eq('id', id);
             if (error) throw error;
-            Swal.fire({ title: 'Terhapus!', text: 'Data berhasil dihapus.', icon: 'success', timer: 1500, showConfirmButton: false });
+
+            // 2. Kirim perintah hapus ke Google Sheets Webhook
+            try {
+                await fetch(APPS_SCRIPT_WEBHOOK_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'delete', id: id })
+                });
+            } catch (sheetErr) {
+                console.error('Gagal hapus di Google Sheets:', sheetErr);
+            }
+
+            Swal.fire({ title: 'Terhapus!', text: 'Data berhasil dihapus dari Supabase & Google Sheets.', icon: 'success', timer: 1500, showConfirmButton: false });
             loadData();
         } catch(err) {
             Swal.fire({ title: 'Gagal', text: err.message, icon: 'error' });
@@ -1069,7 +1145,11 @@ function renderTable() {
     const paginatedData = filteredData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
     
     paginatedData.forEach((row, index) => {
-        let statusText = row[7] ? String(row[7]).trim() : 'Kosong';
+        let modalVal = Number(row[5]) || 0;
+        let jualVal = Number(row[4]) || 0;
+        let labaVal = jualVal - modalVal;
+
+        let statusText = row[8] ? String(row[8]).trim() : 'Kosong';
         let badgeClass = statusText === 'Tersedia' ? 'status-ready' : (statusText === 'Preorder' ? 'status-preorder' : 'status-kosong');
         
         let tipeLengkap = row[2] ? row[2].toString() : '';
@@ -1085,8 +1165,10 @@ function renderTable() {
           <td class="fw-semibold text-dark">${row[1] || ''}</td>
           <td>${tipeTampil}</td>
           <td><span class="badge bg-light text-dark border px-2 py-1 fw-medium">${row[3] || ''}</span></td>
-          <td class="fw-semibold text-dark">${formatRupiah(row[4])}</td>
-          <td class="text-muted small">${row[5] || ''}</td>
+          <td class="text-muted small">${formatRupiah(modalVal)}</td>
+          <td class="fw-semibold text-dark">${formatRupiah(jualVal)}</td>
+          <td class="fw-semibold text-success">${formatRupiah(labaVal)}</td>
+          <td class="text-muted small">${row[6] || ''}</td>
           <td><span class="status-badge ${badgeClass}">${statusText}</span></td>
           <td class="text-center">
             <button onclick="openEditModal('${row[0]}')" class="btn btn-sm btn-light text-primary border-0 me-1 rounded-3 shadow-sm" title="Edit"><i class="fa-solid fa-pen"></i></button>
@@ -1117,8 +1199,8 @@ function renderRecentActivity(data) {
     if (!tbody) return;
 
     const sortedData = [...data].sort((a, b) => {
-        const timeA = parseIndonesianDate(a[8]);
-        const timeB = parseIndonesianDate(b[8]);
+        const timeA = parseIndonesianDate(a[9]);
+        const timeB = parseIndonesianDate(b[9]);
         return timeB - timeA;
     });
 
@@ -1126,7 +1208,7 @@ function renderRecentActivity(data) {
     if (recentData.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-4">Belum ada aktivitas data.</td></tr>`; return; }
 
     tbody.innerHTML = recentData.map(row => {
-        let statusText = row[7] ? String(row[7]).trim() : 'Kosong';
+        let statusText = row[8] ? String(row[8]).trim() : 'Kosong';
         let badgeClass = statusText === 'Tersedia' ? 'status-ready' : (statusText === 'Preorder' ? 'status-preorder' : 'status-kosong');
         return `<tr>
             <td class="fw-bold text-primary" style="font-size: 0.85rem;"><i class="fa-solid fa-hashtag text-muted me-1" style="font-size: 0.75rem;"></i>${row[0]}</td>
@@ -1141,7 +1223,7 @@ function renderRecentActivity(data) {
 function renderChart(data) {
     let ready = 0, preorder = 0, kosong = 0;
     data.forEach(row => {
-        let s = String(row[7] || '').trim();
+        let s = String(row[8] || '').trim();
         if (s === 'Tersedia') ready++; 
         else if (s === 'Preorder') preorder++; 
         else if (s === 'Kosong') kosong++;
