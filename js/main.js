@@ -457,9 +457,9 @@ async function loadData() {
             item.jenis_service,
             item.harga,
             item.garansi,
-            item.keterangan,
+            item.keterangan || item.merk_part || item.ket || '',
             item.status,
-            item.update
+            item.update || item.created_at || ''
         ]);
 
         if (loader) loader.style.display = 'none';
@@ -570,18 +570,22 @@ function filterAndDisplay(keyword) {
         const badgeClass = getBadgeClass(stokStatus);
         let imageUrl = getProductImage(service);
 
+        // BADGE MERK PART SEJAJAR DENGAN STATUS STOK (POJOK KANAN ATAS GAMBAR)
+        let ketBadgeTopHtml = keterangan 
+            ? `<span class="badge border position-absolute top-0 end-0 m-2 shadow-sm fw-bold" style="background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd !important; font-size: 0.58rem; padding: 3px 7px; border-radius: 6px;">${keterangan.toUpperCase()}</span>` 
+            : '';
+
         html += `
         <div class="col-6 col-md-3">
             <div class="card h-100 border-0 shadow-sm product-card mb-2 me-2" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${idx})">
+              <!-- AREA GAMBAR: STATUS STOK (KIRI) SEJAJAR DENGAN MERK PART (KANAN) -->
               <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0;">
                     <span class="badge ${badgeClass} position-absolute top-0 start-0 m-2 shadow-sm" style="font-size: 0.6rem; padding: 4px 8px; border-radius: 6px;">${stokStatus.toUpperCase()}</span>
+                    ${ketBadgeTopHtml}
                     <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 80px; max-width: 90%; object-fit: contain;">
                 </div>
                 <div class="card-body p-2 d-flex flex-column bg-white justify-content-between">
-                    <div>
-                        <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.8rem; line-height: 1.3;">${merk} ${type}</h6>
-                        <h6 class="fw-bold text-secondary text-truncate-2 mb-1" style="font-size: 0.72rem;">${keterangan}</h6>
-                    </div>
+                    <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.8rem; line-height: 1.3;">${merk} ${type}</h6>
                     <span class="text-primary fw-bolder mt-1" style="font-size: 0.82rem;">${harga}</span>
                 </div>
             </div>
@@ -626,13 +630,30 @@ function showDetail(idx) {
     if (elTitle) elTitle.innerText = `${merk} ${type}`;
 
     const elDesc = document.getElementById('detailFullDesc');
-    if (elDesc) elDesc.innerText = `${service} ${merk} ${type}${keterangan ? ' (' + keterangan + ')' : ''}`;
+    if (elDesc) elDesc.innerText = `${service} ${merk} ${type}`;
 
     const elService = document.getElementById('detailService');
     if (elService) elService.innerText = service;
 
     const elTag = document.getElementById('detailTag');
     if (elTag) elTag.innerText = garansi;
+
+    let ketBadgeEl = document.getElementById('detailKetBadge');
+    if (!ketBadgeEl && elTag && elTag.parentElement) {
+        ketBadgeEl = document.createElement('span');
+        ketBadgeEl.id = 'detailKetBadge';
+        ketBadgeEl.className = 'badge border px-2 py-1 rounded-2 fw-bold ms-2';
+        ketBadgeEl.style.cssText = 'background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd !important; font-size: 0.72rem; letter-spacing: 0.3px;';
+        elTag.parentElement.appendChild(ketBadgeEl);
+    }
+    if (ketBadgeEl) {
+        if (keterangan) {
+            ketBadgeEl.innerHTML = `<i class="fa-solid fa-tag me-1"></i>${keterangan.toUpperCase()}`;
+            ketBadgeEl.style.display = 'inline-block';
+        } else {
+            ketBadgeEl.style.display = 'none';
+        }
+    }
 
     const elPrice = document.getElementById('detailPrice');
     if (elPrice) elPrice.innerText = harga;
@@ -707,20 +728,28 @@ function renderLatestProducts() {
         const type = row[2] || '';
         const service = row[3] ? row[3].toUpperCase() : '';
         const harga = formatRupiah(row[4] || 0);
+        const keterangan = row[6] ? String(row[6]).trim() : ''; 
         const stokStatus = row[7] ? String(row[7]).trim() : 'Tersedia';
         const badgeClass = getBadgeClass(stokStatus);
         let imageUrl = getProductImage(service);
 
+        // BADGE MERK PART SEJAJAR DENGAN STATUS STOK (POJOK KANAN ATAS GAMBAR)
+        let ketBadgeTopHtml = keterangan 
+            ? `<span class="badge border position-absolute top-0 end-0 m-2 shadow-sm fw-bold" style="background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd !important; font-size: 0.58rem; padding: 3px 7px; border-radius: 6px;">${keterangan.toUpperCase()}</span>` 
+            : '';
+
         html += `
         <div class="col-6 col-md-4 mb-1">
             <div class="card border-0 shadow-sm product-card h-100" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${originalIndex})">
+                <!-- AREA GAMBAR: STATUS STOK (KIRI) SEJAJAR DENGAN MERK PART (KANAN) -->
                 <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0;">
                     <span class="badge ${badgeClass} position-absolute top-0 start-0 m-2 shadow-sm" style="font-size: 0.58rem; padding: 3px 7px; border-radius: 6px;">${stokStatus.toUpperCase()}</span>
+                    ${ketBadgeTopHtml}
                     <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 80px; max-width: 90%; object-fit: contain;">
                 </div>
                 <div class="card-body p-2 bg-white d-flex flex-column justify-content-between">
                     <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.78rem;">${merk} ${type}</h6>
-                    <span class="text-primary fw-bolder" style="font-size: 0.82rem;">${harga}</span>
+                    <span class="text-primary fw-bolder mt-1" style="font-size: 0.82rem;">${harga}</span>
                 </div>
             </div>
         </div>`;
@@ -735,7 +764,6 @@ function renderLatestProducts() {
 function orderSekarangLangsung() {
     if (!currentViewedProduct) return;
 
-    // Set item sementara (Direct Order)
     window.directOrderItem = [{
         id: currentViewedProduct.id,
         title: currentViewedProduct.title,
@@ -752,14 +780,12 @@ function orderSekarangLangsung() {
     const summaryPriceEl = document.getElementById('summaryTotalPrice');
     if (summaryPriceEl) summaryPriceEl.innerText = formatRupiah(currentViewedProduct.price);
 
-    // Otomatis isi Merk HP + spasi (Contoh: "VIVO "), pelanggan tinggal lanjut ketik "Y21"
     const orderCatatanEl = document.getElementById('orderCatatan');
     if (orderCatatanEl) {
         let merkHP = currentViewedProduct.merk ? currentViewedProduct.merk.trim() : '';
         orderCatatanEl.value = merkHP ? `${merkHP} ` : '';
     }
 
-    // Auto-fill data member jika login
     const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
     if (userSession) {
         if (userSession.username) document.getElementById('orderNama').value = userSession.username;
@@ -1330,14 +1356,12 @@ function checkoutWA() {
     const summaryPriceEl = document.getElementById('summaryTotalPrice');
     if (summaryPriceEl) summaryPriceEl.innerText = formatRupiah(totalPrice);
 
-    // Auto-fill Data Member Jika Sudah Login
     const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
     if (userSession) {
         if (userSession.username) document.getElementById('orderNama').value = userSession.username;
         if (userSession.no_hp) document.getElementById('orderNoHp').value = userSession.no_hp;
     }
 
-    // Ambil daftar Merk unik dari keranjang
     const orderCatatanEl = document.getElementById('orderCatatan');
     if (orderCatatanEl) {
         let listMerk = [...new Set(cart.map(item => item.merk).filter(Boolean))].join('/ ');
@@ -1359,13 +1383,9 @@ async function prosesCheckoutForm() {
     const noHp = document.getElementById('orderNoHp').value.trim();
     const catatan = document.getElementById('orderCatatan').value.trim();
 
-    // 1. Ambil daftar nama Merk dari barang yang dipesan (Contoh: "VIVO")
     let daftarMerk = cart.map(item => item.merk ? item.merk.trim().toUpperCase() : '').filter(Boolean);
-
-    // 2. Cek apakah input pelanggan HANYA berisi nama Merk saja tanpa Tipe (misal cuma "VIVO")
     let cumaIsiMerk = daftarMerk.some(m => m === catatan.toUpperCase());
 
-    // 3. Validasi: Wajib isi nama, no hp, dan Tipe HP LENGKAP (harus ada tipe seperti Y21)
     if (!nama || !noHp || !catatan || cumaIsiMerk) {
         showToast('Mohon lengkapi Tipe HP Pelanggan (Contoh: VIVO Y21)!');
         return;
@@ -1527,7 +1547,6 @@ async function cariLacakPesanan() {
                 }).join(', ');
             }
 
-            // Hitung status garansi otomatis jika pesanan sudah Selesai
             let garansiInfo = '';
             if (order.status === 'Selesai' && order.completed_at) {
                 let masaGaransi = order.items?.[0]?.garansi || '7 Hari';

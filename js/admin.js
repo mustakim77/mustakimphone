@@ -1159,12 +1159,16 @@ function renderTable() {
             tipeTampil = `<span class="fw-medium">${daftarTipe[0].trim()}</span> <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 ms-1 rounded-pill" style="font-size: 0.65rem;">+${daftarTipe.length - 1} Seri</span>`;
         }
 
+        // Format Keterangan / Merk Part (MEETOO, SUNSHINE, dll.)
+        let ketVal = row[6] ? String(row[6]).trim() : '';
+        let ketBadge = ketVal 
+            ? `<span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 rounded-2 fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">${ketVal.toUpperCase()}</span>` 
+            : `<span class="text-muted small">-</span>`;
+
         const tr = document.createElement('tr');
-        tr.style.cursor = 'pointer'; // Mengubah kursor jadi bentuk tangan saat diarahkan ke baris
+        tr.style.cursor = 'pointer';
         
-        // Klik di baris mana saja (termasuk teks OPPO) akan membuka Popup Edit
         tr.onclick = function(e) {
-            // Mencegah popup edit terbuka jika pengguna mengklik tombol hapus
             if (!e.target.closest('.btn-delete')) {
                 openEditModal(row[0]);
             }
@@ -1178,7 +1182,7 @@ function renderTable() {
           <td class="text-muted small">${formatRupiah(modalVal)}</td>
           <td class="fw-semibold text-dark">${formatRupiah(jualVal)}</td>
           <td class="fw-semibold text-success">${formatRupiah(labaVal)}</td>
-          <td class="text-muted small">${row[6] || ''}</td>
+          <td>${ketBadge}</td>
           <td><span class="status-badge ${badgeClass}">${statusText}</span></td>
           <td class="text-center">
             <button onclick="event.stopPropagation(); openEditModal('${row[0]}')" class="btn btn-sm btn-light text-primary border-0 me-1 rounded-3 shadow-sm" title="Edit"><i class="fa-solid fa-pen"></i></button>
