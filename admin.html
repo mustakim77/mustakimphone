@@ -351,6 +351,7 @@
                                 <option value="INFINIX">INFINIX</option>
                                 <option value="POCO">POCO</option>
                                 <option value="REDMI">REDMI</option>
+                                <option value="NARZO">NARZO</option>
                                 <option value="ASUS">ASUS</option>
                                 <option value="LAINNYA">Merek Lainnya...</option>
                             </select>
@@ -573,82 +574,106 @@
 
 <!-- MODAL EDIT DATA SERVICE -->
 <div class="modal fade" id="modalEdit" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content border-0 shadow rounded-4">
-            <div class="modal-header border-bottom pb-3">
-                <h5 class="modal-title fw-bold"><i class="fa-solid fa-pen-to-square text-primary me-2"></i>Edit Data Service</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content rounded-4 border-0 shadow">
+      
+      <div class="modal-header border-0 pb-0">
+        <h5 class="modal-title fw-bold text-primary">
+          <i class="fa-solid fa-pen-to-square me-2"></i>Edit Data Service
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body pt-3">
+        <form id="formEditData">
+          <input type="hidden" id="editDataId">
+          
+          <!-- Grid Form Responsif -->
+          <div class="row g-2 g-md-3">
+            
+            <!-- Baris 1: Jenis, Merk, Type -->
+            <div class="col-12 col-sm-6 col-md-4">
+              <label class="form-label fw-semibold small text-muted">Jenis Service</label>
+              <select class="form-select form-select-sm rounded-3" id="editJenisService" required>
+                <option value="GANTI LCD">GANTI LCD</option>
+                <option value="GANTI BAT">GANTI BAT</option>
+                <option value="SERVICE">SERVICE</option>
+              </select>
             </div>
-            <div class="modal-body p-4">
-                <form id="formEditData">
-                    <input type="hidden" id="editDataId">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold">Jenis Service</label>
-                            <select class="form-select" id="editJenisService" required>
-                                <option value="GANTI LCD">GANTI LCD</option>
-                                <option value="GANTI BAT">GANTI BAT</option>
-                                <option value="SERVICE">SERVICE</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold">Merk HP</label>
-                            <select class="form-select" id="editMerkHP" required>
-                                <option value="IPHONE">IPHONE</option>
-                                <option value="SAMSUNG">SAMSUNG</option>
-                                <option value="OPPO">OPPO</option>
-                                <option value="VIVO">VIVO</option>
-                                <option value="XIAOMI">XIAOMI</option>
-                                <option value="REALME">REALME</option>
-                                <option value="INFINIX">INFINIX</option>
-                                <option value="POCO">POCO</option>
-                                <option value="REDMI">REDMI</option>
-                                <option value="ASUS">ASUS</option>
-                                <option value="LAINNYA">Merek Lainnya...</option>
-                            </select>
-                            <input type="text" class="form-control mt-2" id="editMerkLainnya" placeholder="Ketik Merk HP manual..." style="display: none;">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold">Type HP</label>
-                            <input type="text" class="form-control" id="editTypeHP" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold">Modal / HPP (Rp)</label>
-                            <input type="number" class="form-control" id="editModal" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold">Harga Jual (Rp)</label>
-                            <input type="number" class="form-control" id="editHarga" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold">Garansi</label>
-                            <select class="form-select" id="editGaransi" required>
-                                <option value="1 Minggu">1 Minggu</option>
-                                <option value="1 Bulan">1 Bulan</option>
-                                <option value="Tidak ada">Tidak ada</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold">Status Stok</label>
-                            <select class="form-select" id="editStatus" required>
-                                <option value="Tersedia">Tersedia (Ready)</option>
-                                <option value="Preorder">Preorder (Indent)</option>
-                                <option value="Kosong">Kosong (Habis)</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label small fw-bold">Merk Part / Keterangan</label>
-                            <input type="text" class="form-control" id="editKeterangan">
-                        </div>
-                    </div>
-                </form>
+
+            <div class="col-6 col-sm-6 col-md-4">
+              <label class="form-label fw-semibold small text-muted">Merk HP</label>
+              <select class="form-select form-select-sm rounded-3" id="editMerkHP" required>
+                <option value="XIAOMI">XIAOMI</option>
+                <option value="IPHONE">IPHONE</option>
+                <option value="SAMSUNG">SAMSUNG</option>
+                <option value="OPPO">OPPO</option>
+                <option value="VIVO">VIVO</option>
+                <option value="REALME">REALME</option>
+                <option value="INFINIX">INFINIX</option>
+                <option value="POCO">POCO</option>
+                <option value="REDMI">REDMI</option>
+                <option value="NARZO">NARZO</option>
+                <option value="ASUS">ASUS</option>
+                <option value="LAINNYA">Merek Lainnya...</option>
+              </select>
+              <input type="text" class="form-control form-control-sm rounded-3 mt-1 text-uppercase" id="editMerkLainnya" placeholder="Ketik Merk..." style="display: none;">
             </div>
-            <div class="modal-footer border-top pt-3">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-primary px-4 fw-semibold" id="btnUpdateData" style="background: #4318ff;"><i class="fa-solid fa-save me-1"></i> Simpan Perubahan</button>
+
+            <div class="col-6 col-sm-6 col-md-4">
+              <label class="form-label fw-semibold small text-muted">Type HP</label>
+              <input type="text" class="form-control form-control-sm rounded-3 text-uppercase" id="editTypeHP" required>
             </div>
-        </div>
+
+            <!-- Baris 2: Modal, Harga Jual, Garansi -->
+            <div class="col-6 col-sm-6 col-md-4">
+              <label class="form-label fw-semibold small text-muted">Modal / HPP (Rp)</label>
+              <input type="number" class="form-control form-control-sm rounded-3" id="editModal" required>
+            </div>
+
+            <div class="col-6 col-sm-6 col-md-4">
+              <label class="form-label fw-semibold small text-muted">Harga Jual (Rp)</label>
+              <input type="number" class="form-control form-control-sm rounded-3" id="editHarga" required>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-4">
+              <label class="form-label fw-semibold small text-muted">Garansi</label>
+              <select class="form-select form-select-sm rounded-3" id="editGaransi">
+                <option value="1 Minggu">1 Minggu</option>
+                <option value="1 Bulan">1 Bulan</option>
+                <option value="Tidak ada">Tidak ada</option>
+              </select>
+            </div>
+
+            <!-- Baris 3: Status Stok & Keterangan -->
+            <div class="col-12 col-sm-6 col-md-6">
+              <label class="form-label fw-semibold small text-muted">Status Stok</label>
+              <select class="form-select form-select-sm rounded-3" id="editStatus">
+                <option value="Tersedia">Tersedia (Ready)</option>
+                <option value="Preorder">Preorder (Indent)</option>
+                <option value="Kosong">Kosong (Habis)</option>
+              </select>
+            </div>
+
+            <div class="col-12 col-sm-6 col-md-6">
+              <label class="form-label fw-semibold small text-muted">Merk Part / Keterangan</label>
+              <input type="text" class="form-control form-control-sm rounded-3 text-uppercase" id="editKeterangan" placeholder="Contoh: MEETOO, CROWN, OG">
+            </div>
+
+          </div>
+        </form>
+      </div>
+
+      <!-- Footer Tombol -->
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-light btn-sm rounded-3 px-3" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-primary btn-sm rounded-3 px-4 fw-semibold" id="btnUpdateData">
+          <i class="fa-solid fa-floppy-disk me-1"></i>Simpan Perubahan
+        </button>
+      </div>
+
     </div>
+  </div>
 </div>
 
 <!-- SCRIPTS -->

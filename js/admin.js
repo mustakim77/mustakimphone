@@ -1160,6 +1160,16 @@ function renderTable() {
         }
 
         const tr = document.createElement('tr');
+        tr.style.cursor = 'pointer'; // Mengubah kursor jadi bentuk tangan saat diarahkan ke baris
+        
+        // Klik di baris mana saja (termasuk teks OPPO) akan membuka Popup Edit
+        tr.onclick = function(e) {
+            // Mencegah popup edit terbuka jika pengguna mengklik tombol hapus
+            if (!e.target.closest('.btn-delete')) {
+                openEditModal(row[0]);
+            }
+        };
+
         tr.innerHTML = `
           <td class="text-center text-muted fw-medium">${((currentPage - 1) * rowsPerPage) + index + 1}</td>
           <td class="fw-semibold text-dark">${row[1] || ''}</td>
@@ -1171,8 +1181,8 @@ function renderTable() {
           <td class="text-muted small">${row[6] || ''}</td>
           <td><span class="status-badge ${badgeClass}">${statusText}</span></td>
           <td class="text-center">
-            <button onclick="openEditModal('${row[0]}')" class="btn btn-sm btn-light text-primary border-0 me-1 rounded-3 shadow-sm" title="Edit"><i class="fa-solid fa-pen"></i></button>
-            <button onclick="deleteRecord('${row[0]}')" class="btn btn-sm btn-light text-danger border-0 rounded-3 shadow-sm" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+            <button onclick="event.stopPropagation(); openEditModal('${row[0]}')" class="btn btn-sm btn-light text-primary border-0 me-1 rounded-3 shadow-sm" title="Edit"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="event.stopPropagation(); deleteRecord('${row[0]}')" class="btn btn-sm btn-light text-danger border-0 rounded-3 shadow-sm btn-delete" title="Hapus"><i class="fa-solid fa-trash"></i></button>
           </td>
         `;
         tbody.appendChild(tr);
