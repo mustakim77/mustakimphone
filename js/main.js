@@ -10,9 +10,13 @@ const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let globalData = [];
 let currentFilteredData = [];
 let currentViewedProduct = null;
-let currentSlide = 0;
-let totalSlides = 4;
-let autoSlideTimer;
+
+// VARIABEL BANNER SLIDER INFINITE LOOP
+let realBannerCount = 0;
+let bannerIndex = 1; // Index 1 = Banner pertama asli
+let autoSlideTimer = null;
+let rAFId = null; 
+
 const nomorWhatsAppAdmin = "6285799860406"; 
 const defaultImageFallback = "https://i.postimg.cc/sfk5KptM/logo-default.png";
 
@@ -29,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     checkDeepLinkProduk();
     loadBannersDinamis();
     loadBrandsDinamis();
-    startAutoSlide();
     updateCartBadge();
 
     // ==========================================
@@ -194,7 +197,6 @@ function switchNav(tabName, element) {
 
         if (tabName === 'home') {
             clearAndGoHome();
-        // PERBAIKAN: Mendukung 'CekServis' maupun 'Kategori'
         } else if (tabName === 'CekServis' || tabName === 'Kategori') {
             const sv = document.getElementById('cekservisView');
             if(sv) sv.classList.remove('d-none');
@@ -260,7 +262,7 @@ function closeDetail() {
 }
 
 // ==========================================
-// RENDER KATEGORI, BANNER & BRAND DINAMIS
+// RENDER KATEGORI & BRAND DINAMIS
 // ==========================================
 async function loadCategoriesDinamis() {
     try {
@@ -282,44 +284,191 @@ async function loadCategoriesDinamis() {
         const srvImgHome = document.querySelector(".category-item[onclick*='SERVICE'] img");
         if (srvImgHome && categoryImagesMap['SERVICE']) srvImgHome.src = categoryImagesMap['SERVICE'];
 
-        const lcdImgKat = document.querySelector("#kategoriView [onclick*='LCD'] img");
-        if (lcdImgKat && categoryImagesMap['GANTI LCD']) lcdImgKat.src = categoryImagesMap['GANTI LCD'];
-
-        const batImgKat = document.querySelector("#kategoriView [onclick*='BAT'] img");
-        if (batImgKat && categoryImagesMap['GANTI BAT']) batImgKat.src = categoryImagesMap['GANTI BAT'];
-
-        const srvImgKat = document.querySelector("#kategoriView [onclick*='SERVICE'] img");
-        if (srvImgKat && categoryImagesMap['SERVICE']) srvImgKat.src = categoryImagesMap['SERVICE'];
-
     } catch (e) {
         console.log("Menggunakan gambar kategori bawaan.");
     }
 }
 
+// ==========================================
+// BANNER SLIDER (LUNCTURAN HALUS 0.8 DETIK, JEDA 5 DETIK)
+// ==========================================
 async function loadBannersDinamis() {
     try {
         const { data: banners, error } = await dbClient.from('banners').select('*');
-        if (error || !banners || banners.length === 0) return;
-
         const slider = document.getElementById('bannerSlider');
         const dots = document.getElementById('bannerDots');
         if (!slider || !dots) return;
 
-        slider.innerHTML = banners.map(b => `
-            <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="${b.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${b.title || 'Banner Promo'}" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-        `).join('');
+        if (error || !banners || banners.length === 0) {
+            startAutoSlide();
+            initBannerSwipe();
+            return;
+        }
 
+        realBannerCount = banners.length;
+
+        // Render Dots
         dots.innerHTML = banners.map((_, i) => `
             <div class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>
         `).join('');
 
-        totalSlides = banners.length;
-        currentSlide = 0;
+        if (realBannerCount === 1) {
+            slider.innerHTML = `
+                <div class="banner-slide">
+                    <img src="${banners[0].image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy">
+                </div>`;
+            return;
+        }
+
+        // BUAT SLIDE KLON UNTUK INFINITE LOOP
+        const firstClone = banners[0];
+        const lastClone = banners[realBannerCount - 1];
+
+        let slidesHtml = `
+            <div class="banner-slide">
+                <img src="${lastClone.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy">
+            </div>
+        `;
+
+        slidesHtml += banners.map(b => `
+            <div class="banner-slide">
+                <img src="${b.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${b.title || 'Banner Promo'}">
+            </div>
+        `).join('');
+
+        slidesHtml += `
+            <div class="banner-slide">
+                <img src="${firstClone.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy">
+            </div>
+        `;
+
+        slider.innerHTML = slidesHtml;
+        bannerIndex = 1;
+
+        updateSliderView(false);
+
+        slider.removeEventListener('transitionend', handleBannerTransitionEnd);
+        slider.addEventListener('transitionend', handleBannerTransitionEnd);
+
+        startAutoSlide();
+        initBannerSwipe();
     } catch (e) {
-        console.log("Menggunakan banner bawaan.");
+        console.log("Menggunakan slider bawaan.");
+        startAutoSlide();
+        initBannerSwipe();
     }
+}
+
+function updateSliderView(animated = true) {
+    const slider = document.getElementById('bannerSlider');
+    const dots = document.querySelectorAll('#bannerDots .dot');
+    if (!slider) return;
+
+    if (animated) {
+        // Durasi 1.8 detik dengan kurva meluncur pelan & lembut
+        slider.style.transition = 'transform 1.8s cubic-bezier(0.16, 1, 0.3, 1)';
+    } else {
+        slider.style.transition = 'none';
+    }
+
+    // Pergeseran posisi banner menggunakan GPU 3D
+    slider.style.transform = `translate3d(-${bannerIndex * 100}%, 0, 0)`;
+
+    // Update Indikator Titik (Dots)
+    if (dots.length > 0 && realBannerCount > 0) {
+        let activeDot = (bannerIndex - 1 + realBannerCount) % realBannerCount;
+
+        dots.forEach((dot, idx) => {
+            if (idx === activeDot) dot.classList.add('active');
+            else dot.classList.remove('active');
+        });
+    }
+}
+
+function handleBannerTransitionEnd() {
+    if (bannerIndex >= realBannerCount + 1) {
+        bannerIndex = 1;
+        updateSliderView(false);
+    } else if (bannerIndex <= 0) {
+        bannerIndex = realBannerCount;
+        updateSliderView(false);
+    }
+}
+
+function startAutoSlide() {
+    clearInterval(autoSlideTimer);
+    autoSlideTimer = setInterval(() => {
+        bannerIndex++;
+        updateSliderView(true);
+    }, 5000); // Berganti otomatis setiap 5 detik agar santai & nyaman dibaca
+}
+
+function goToSlide(realIndex) {
+    bannerIndex = realIndex + 1;
+    updateSliderView(true);
+    startAutoSlide();
+}
+
+// LOGIKA SWIPE SENTUHAN HP & MOUSE DRAG SMOOTH
+function initBannerSwipe() {
+    const sliderBox = document.querySelector('.banner-box');
+    const slider = document.getElementById('bannerSlider');
+    if (!slider || !sliderBox || sliderBox.dataset.swipeInitialized) return;
+
+    sliderBox.dataset.swipeInitialized = "true";
+
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
+
+    const getX = (e) => e.touches ? e.touches[0].clientX : e.clientX;
+
+    const onStart = (e) => {
+        isDragging = true;
+        startX = getX(e);
+        currentX = startX;
+        clearInterval(autoSlideTimer);
+        slider.style.transition = 'none';
+    };
+
+    const onMove = (e) => {
+        if (!isDragging) return;
+        currentX = getX(e);
+
+        if (rAFId) cancelAnimationFrame(rAFId);
+        rAFId = requestAnimationFrame(() => {
+            const diffX = currentX - startX;
+            const containerWidth = sliderBox.clientWidth;
+            const currentTranslate = -bannerIndex * containerWidth + diffX;
+            slider.style.transform = `translate3d(${currentTranslate}px, 0, 0)`;
+        });
+    };
+
+    const onEnd = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        if (rAFId) cancelAnimationFrame(rAFId);
+
+        const diffX = currentX - startX;
+
+        if (diffX < -35) {
+            bannerIndex++;
+        } else if (diffX > 35) {
+            bannerIndex--;
+        }
+
+        updateSliderView(true);
+        startAutoSlide();
+    };
+
+    sliderBox.addEventListener('touchstart', onStart, { passive: true });
+    sliderBox.addEventListener('touchmove', onMove, { passive: true });
+    sliderBox.addEventListener('touchend', onEnd);
+
+    sliderBox.addEventListener('mousedown', onStart);
+    sliderBox.addEventListener('mousemove', onMove);
+    sliderBox.addEventListener('mouseup', onEnd);
+    sliderBox.addEventListener('mouseleave', () => { if (isDragging) onEnd(); });
 }
 
 async function loadBrandsDinamis() {
@@ -882,33 +1031,6 @@ function removeFromCart(index) {
     renderCart();
 }
 
-// ==========================================
-// FUNGSI BANNER SLIDER
-// ==========================================
-function startAutoSlide() {
-    clearInterval(autoSlideTimer); 
-    autoSlideTimer = setInterval(() => {
-        currentSlide = (currentSlide >= totalSlides - 1) ? 0 : currentSlide + 1; 
-        updateSliderView();
-    }, 5000);
-}
-
-function goToSlide(index) {
-    currentSlide = index;
-    updateSliderView();
-    startAutoSlide();
-}
-
-function updateSliderView() {
-    const slider = document.getElementById('bannerSlider');
-    const dots = document.querySelectorAll('#bannerDots .dot');
-    if (slider) slider.style.transform = `translateX(-${currentSlide * 100}%)`;
-    if (dots.length > 0) {
-        dots.forEach(dot => dot.classList.remove('active'));
-        if (dots[currentSlide]) dots[currentSlide].classList.add('active');
-    }
-}
-
 function formatRupiah(angka) {
     let cleanNumber = String(angka).replace(/[^0-9]/g, '');
     if (!cleanNumber || cleanNumber === "") return "Rp0";
@@ -946,7 +1068,6 @@ function kembaliKeProfilTamu() {
     clearAndGoHome();
 }
 
-// FUNGSI SHOW / HIDE PASSWORD
 function togglePassword(inputId, icon) {
     const input = document.getElementById(inputId);
     if (!input) return;
@@ -962,7 +1083,6 @@ function togglePassword(inputId, icon) {
     }
 }
 
-// FUNGSI SLIDING TAB SWITCHER
 function tampilkanLogin() {
     const slider = document.getElementById('authFormsSlider');
     const viewport = document.querySelector('.auth-forms-viewport');
@@ -1015,7 +1135,6 @@ function cekEnter(event) {
     }
 }
 
-// FUNGSI CEK KEKUATAN SANDI
 function cekKekuatanSandi(password) {
     const bar = document.getElementById('pwStrengthBar');
     if (!bar) return;
@@ -1035,7 +1154,6 @@ function cekKekuatanSandi(password) {
     }
 }
 
-// VERIFIKASI LOGIN
 async function verifikasiLogin() {
     const inputUser = document.getElementById('username').value.trim();
     const passwordInput = document.getElementById('password').value.trim();
@@ -1099,7 +1217,6 @@ async function verifikasiLogin() {
     }
 }
 
-// PENDAFTARAN MEMBER BARU
 async function prosesDaftar() {
     const regNoHpEl = document.getElementById('regNoHp');
     const regNoHp = regNoHpEl ? regNoHpEl.value.trim() : '';
@@ -1166,7 +1283,6 @@ async function prosesDaftar() {
     }
 }
 
-// RESET PASSWORD
 async function prosesResetPassword() {
     const resetNoHpEl = document.getElementById('resetNoHp');
     const resetPassBaruEl = document.getElementById('resetPassBaru');
@@ -1233,52 +1349,6 @@ function tutupFormGantiPassword() {
     document.getElementById('memberDashboardView').style.display = 'block';
 }
 
-// ==========================================
-// BADGE COUNTER KERANJANG
-// ==========================================
-function updateCartBadge() {
-    const badge = document.getElementById('cartBadge');
-    if (!badge) return;
-    
-    let cart = JSON.parse(localStorage.getItem('mustakimCart')) || [];
-    let totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
-    
-    if (totalQty > 0) {
-        badge.innerText = totalQty;
-        badge.classList.remove('d-none');
-    } else {
-        badge.classList.add('d-none');
-    }
-}
-
-// ==========================================
-// FITUR BAGIKAN PRODUK (WEB SHARE API + DEEP LINK)
-// ==========================================
-function shareProduct() {
-    if (!currentViewedProduct) return;
-    
-    // 1. Buat URL Spesifik Produk dengan Parameter ID
-    const baseUrl = window.location.origin + window.location.pathname;
-    const productId = currentViewedProduct.id || ''; // Ambil Kode Barang / ID Produk
-    const productUrl = `${baseUrl}?id=${encodeURIComponent(productId)}`;
-
-    // 2. Data yang akan dibagikan
-    const shareData = {
-        title: currentViewedProduct.title,
-        text: `Cek ${currentViewedProduct.title} di Mustakim Phone! Harga ${formatRupiah(currentViewedProduct.price)} (Sudah termasuk jasa pasang).`,
-        url: productUrl
-    };
-
-    // 3. Eksekusi Web Share API
-    if (navigator.share) {
-        navigator.share(shareData).catch(() => {});
-    } else {
-        // Fallback untuk browser PC (Salin Teks & Link ke Clipboard)
-        navigator.clipboard.writeText(`${shareData.text}\n${productUrl}`);
-        showToast('Link produk berhasil disalin!');
-    }
-}
-
 async function simpanPasswordBaru() {
     const passLama = document.getElementById('passLama').value.trim();
     const passBaru = document.getElementById('passBaru').value.trim();
@@ -1328,6 +1398,48 @@ async function simpanPasswordBaru() {
         console.error('Error Ganti Password:', err.message);
         pesanGantiPass.style.color = 'red';
         pesanGantiPass.innerText = 'Gagal mengubah password.';
+    }
+}
+
+// ==========================================
+// BADGE COUNTER KERANJANG
+// ==========================================
+function updateCartBadge() {
+    const badge = document.getElementById('cartBadge');
+    if (!badge) return;
+    
+    let cart = JSON.parse(localStorage.getItem('mustakimCart')) || [];
+    let totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+    
+    if (totalQty > 0) {
+        badge.innerText = totalQty;
+        badge.classList.remove('d-none');
+    } else {
+        badge.classList.add('d-none');
+    }
+}
+
+// ==========================================
+// FITUR BAGIKAN PRODUK
+// ==========================================
+function shareProduct() {
+    if (!currentViewedProduct) return;
+    
+    const baseUrl = window.location.origin + window.location.pathname;
+    const productId = currentViewedProduct.id || ''; 
+    const productUrl = `${baseUrl}?id=${encodeURIComponent(productId)}`;
+
+    const shareData = {
+        title: currentViewedProduct.title,
+        text: `Cek ${currentViewedProduct.title} di Mustakim Phone! Harga ${formatRupiah(currentViewedProduct.price)} (Sudah termasuk jasa pasang).`,
+        url: productUrl
+    };
+
+    if (navigator.share) {
+        navigator.share(shareData).catch(() => {});
+    } else {
+        navigator.clipboard.writeText(`${shareData.text}\n${productUrl}`);
+        showToast('Link produk berhasil disalin!');
     }
 }
 
@@ -1472,23 +1584,17 @@ async function prosesCheckoutForm() {
     }
 }
 
-
 // ==========================================
-// HELPER HITUNG SISA GARANSI PELANGGAN (AUTO DETEKSI LCD/BAT)
+// HELPER HITUNG SISA GARANSI
 // ==========================================
 function renderBadgeGaransi(order) {
-    // Garansi HANYA muncul jika status pesanan sudah "Selesai"
-    if (order.status.toLowerCase() !== 'selesai') {
-        return ''; 
-    }
+    if (order.status.toLowerCase() !== 'selesai') return '';
 
-    // Gunakan tanggal selesai (prioritas: completed_at -> updated_at -> created_at)
     let tglMulaiStr = order.completed_at || order.updated_at || order.created_at;
     if (!tglMulaiStr) return '';
     
     let tglSelesai = new Date(tglMulaiStr);
 
-    // Cari tahu apakah ini pesanan Baterai atau LCD dari daftar item
     let isBaterai = false;
     let isLcd = false;
     
@@ -1498,15 +1604,10 @@ function renderBadgeGaransi(order) {
         if (textGabungan.includes("LCD")) isLcd = true;
     }
 
-    // Tentukan lama garansi
-    let lamaHari = 7; // Default 1 Minggu
-    if (isBaterai) {
-        lamaHari = 30; // Garansi Baterai 1 Bulan (30 Hari)
-    } else if (isLcd) {
-        lamaHari = 7;  // Garansi LCD 1 Minggu (7 Hari)
-    }
+    let lamaHari = 7; 
+    if (isBaterai) lamaHari = 30; 
+    else if (isLcd) lamaHari = 7;  
 
-    // Hitung sisa hari
     let tglKedaluwarsa = new Date(tglSelesai);
     tglKedaluwarsa.setDate(tglSelesai.getDate() + lamaHari);
 
@@ -1514,7 +1615,6 @@ function renderBadgeGaransi(order) {
     let selisihWaktu = tglKedaluwarsa.getTime() - hariIni.getTime();
     let sisaHari = Math.ceil(selisihWaktu / (1000 * 3600 * 24));
 
-    // Desain UI Garansi
     if (sisaHari > 0) {
         return `
         <div class="mt-3 p-2 rounded-3 d-flex align-items-center" style="background-color: #ecfdf5; border: 1px solid #a7f3d0;">
@@ -1536,12 +1636,8 @@ function renderBadgeGaransi(order) {
     }
 }
 
-function bukaModalLacak() {
-    // Fungsi ini bisa dibiarkan kosong jika sudah diarahkan ke Navbar Cek Servis
-}
-
 // ==========================================
-// MEMUAT PESANAN OTOMATIS DI HALAMAN CEK SERVIS (FIX STRICT FILTER)
+// MEMUAT PESANAN OTOMATIS DI CEK SERVIS
 // ==========================================
 async function loadCekPesananOtomatis() {
     const secOtomatis = document.getElementById('sectionPesananOtomatis');
@@ -1572,7 +1668,6 @@ async function loadCekPesananOtomatis() {
         </div>`;
 
     try {
-        // PERBAIKAN: Gunakan exact match (.eq) agar username yang mirip tidak saling campur
         let queryConditions = [];
         if (userPhone) queryConditions.push(`customer_phone.eq.${userPhone}`);
         if (username) queryConditions.push(`customer_name.eq.${username}`);
@@ -1603,7 +1698,6 @@ async function loadCekPesananOtomatis() {
 
             let tipeHp = order.note ? order.note.trim() : '-';
 
-            // Ekstrak Jenis Service dari items
             let jenisServiceList = '-';
             if (Array.isArray(order.items) && order.items.length > 0) {
                 let services = order.items.map(item => item.service || item.title || '').filter(Boolean);
@@ -1658,7 +1752,7 @@ async function loadCekPesananOtomatis() {
 }
 
 // ==========================================
-// LACAK PESANAN MANUAL BY KODE NOTA / NO HP
+// LACAK PESANAN MANUAL
 // ==========================================
 async function cariLacakPesanan() {
     const query = document.getElementById('inputLacakNota').value.trim();
@@ -1691,7 +1785,6 @@ async function cariLacakPesanan() {
 
             let tipeHp = order.note ? order.note.trim() : '-';
 
-            // Ekstrak Jenis Service & ID Part dari items
             let jenisServiceList = '-';
             let idPartsList = '-';
             if (Array.isArray(order.items) && order.items.length > 0) {
@@ -1761,7 +1854,7 @@ async function cariLacakPesanan() {
 }
 
 // ==========================================
-// MODAL TAMPILAN NOTA DIGITAL UNTUK DICETAK (FIX STATUS PRECISION)
+// MODAL TAMPILAN NOTA DIGITAL UNTUK DICETAK
 // ==========================================
 async function bukaNotaDigital(orderId) {
     try {
@@ -1780,7 +1873,6 @@ async function bukaNotaDigital(orderId) {
             day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
         }) : '-';
 
-        // Tentukan warna & badge status secara dinamis
         let statusUpper = (order.status || 'PENDING').toUpperCase();
         let statusBadgeClass = 'bg-secondary text-white';
         if (statusUpper === 'PENDING') statusBadgeClass = 'bg-warning text-dark';
@@ -1835,7 +1927,6 @@ async function bukaNotaDigital(orderId) {
                 <span class="text-primary">${formatRupiah(order.total_price)}</span>
             </div>
             
-            <!-- BADGE STATUS PRESISI & DYNAMICAL -->
             <div class="d-flex justify-content-between align-items-center small text-muted mt-2">
                 <span style="font-size: 0.8rem; font-weight: 600;">Status:</span>
                 <span class="badge ${statusBadgeClass} shadow-sm" style="padding: 5px 12px; font-size: 0.72rem; font-weight: 800; border-radius: 6px; letter-spacing: 0.5px; display: inline-flex; align-items: center; justify-content: center; line-height: 1;">
@@ -1848,7 +1939,6 @@ async function bukaNotaDigital(orderId) {
                 <small class="text-muted d-block" style="font-size: 0.65rem;">Garansi berlaku sesuai ketentuan syarat nota.</small>
             </div>`;
 
-        // Sambungkan tombol Kirim Gambar Nota ke Canvas jika ada
         const btnCanvasWA = document.getElementById('btnShareNotaCanvasWA');
         if (btnCanvasWA) {
             btnCanvasWA.onclick = () => kirimNotaCanvasKeWA(order);
@@ -1862,7 +1952,7 @@ async function bukaNotaDigital(orderId) {
 }
 
 // ==========================================
-// FUNGSI SHARE NOTA DIGITAL KE WHATSAPP
+// SHARE NOTA DIGITAL KE WHATSAPP
 // ==========================================
 function kirimNotaKeWA(order) {
     if (!order) return;
@@ -1893,7 +1983,6 @@ function kirimNotaKeWA(order) {
     text += `==============================\n`;
     text += `_Terima kasih atas kepercayaan Anda di MUSTAKIM PHONE!_`;
 
-    // Format nomor HP pelanggan jika ada
     let noHpPelanggan = order.customer_phone ? String(order.customer_phone).replace(/[^0-9]/g, '') : '';
     if (noHpPelanggan.startsWith('0')) {
         noHpPelanggan = '62' + noHpPelanggan.slice(1);
@@ -1907,7 +1996,7 @@ function kirimNotaKeWA(order) {
 }
 
 // ==========================================
-// MENGUBAH ELEMEN NOTA MENJADI CANVAS & KIRIM KE WA
+// ELEMEN NOTA MENJADI CANVAS & KIRIM KE WA
 // ==========================================
 async function kirimNotaCanvasKeWA(order) {
     const notaElement = document.getElementById('printableNotaArea');
@@ -1915,7 +2004,6 @@ async function kirimNotaCanvasKeWA(order) {
 
     if (!notaElement || !order) return;
 
-    // Tampilan Loading indikator pada tombol
     const originalBtnText = btnCanvasWA ? btnCanvasWA.innerHTML : '';
     if (btnCanvasWA) {
         btnCanvasWA.disabled = true;
@@ -1923,14 +2011,12 @@ async function kirimNotaCanvasKeWA(order) {
     }
 
     try {
-        // 1. Rendernya HTML Nota menjadi elemen Canvas menggunakan html2canvas
         const canvas = await html2canvas(notaElement, {
-            scale: 2, // Resolusi gambar jernih
+            scale: 2,
             backgroundColor: '#ffffff',
             logging: false
         });
 
-        // 2. Konversi Canvas ke Blob File PNG
         canvas.toBlob(async (blob) => {
             if (!blob) {
                 showToast('Gagal memproses gambar nota.');
@@ -1944,7 +2030,6 @@ async function kirimNotaCanvasKeWA(order) {
             const fileName = `Nota-${order.order_id}.png`;
             const file = new File([blob], fileName, { type: 'image/png' });
 
-            // Format nomor HP WhatsApp tujuan
             let noHpPelanggan = order.customer_phone ? String(order.customer_phone).replace(/[^0-9]/g, '') : '';
             if (noHpPelanggan.startsWith('0')) {
                 noHpPelanggan = '62' + noHpPelanggan.slice(1);
@@ -1952,7 +2037,6 @@ async function kirimNotaCanvasKeWA(order) {
 
             let textChat = `Halo, berikut adalah Nota Digital resmi untuk pesanan #${order.order_id} di MUSTAKIM PHONE.`;
 
-            // 3. OPSI A: Jika Perangkat Mendukung Web Share API (Mobile Android / iOS)
             if (navigator.canShare && navigator.canShare({ files: [file] })) {
                 try {
                     await navigator.share({
@@ -1964,17 +2048,13 @@ async function kirimNotaCanvasKeWA(order) {
                 } catch (err) {
                     console.log('User membatalkan share atau error:', err);
                 }
-            } 
-            // 4. OPSI B: Fallback untuk Laptop / PC Desktop (Download Gambar + Buka WA)
-            else {
-                // Download file gambar nota
+            } else {
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
                 link.download = fileName;
                 link.click();
                 URL.revokeObjectURL(link.href);
 
-                // Buka chat WhatsApp
                 let urlWA = noHpPelanggan 
                     ? `https://wa.me/${noHpPelanggan}?text=${encodeURIComponent(textChat)}`
                     : `https://api.whatsapp.com/send?text=${encodeURIComponent(textChat)}`;
@@ -1983,7 +2063,6 @@ async function kirimNotaCanvasKeWA(order) {
                 showToast('Gambar nota diunduh! Silakan lampirkan gambar di chat WA.');
             }
 
-            // Kembalikan tombol ke kondisi semula
             if (btnCanvasWA) {
                 btnCanvasWA.disabled = false;
                 btnCanvasWA.innerHTML = originalBtnText;
@@ -2011,7 +2090,6 @@ function checkDeepLinkProduk() {
 
     const targetIdClean = String(productId).trim().toLowerCase();
     
-    // Cari urutan indeks (idx) produk yang cocok dengan ID
     const targetIndex = globalData.findIndex(row => row && String(row[0] || '').trim().toLowerCase() === targetIdClean);
 
     if (targetIndex !== -1) {

@@ -87,47 +87,74 @@ body.app-body {
 }
 
 /* =========================================
-   2. HOME BANNER & SLIDER (TAMPIL UTUH TANPA TERPOTONG)
+   2. HOME BANNER & SLIDER (SMOOTH & RELAXED)
    ========================================= */
 .banner-box {
-  border-radius: var(--ios-radius-lg);
   position: relative;
-  overflow: hidden;
+  overflow: hidden !important;
+  width: 100%;
+  border-radius: var(--ios-radius-lg);
   background-color: #f8fafc;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  contain: content;
 }
 
 .banner-slider {
-  display: flex;
-  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex !important;
+  width: 100%;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  transition: transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  cursor: grab;
+}
+
+.banner-slider:active {
+  cursor: grabbing;
 }
 
 .banner-slide {
+  min-width: 100% !important;
   width: 100% !important;
-  flex-shrink: 0;
-  height: auto !important; /* Tinggi otomatis menyesuaikan proporsi gambar asli */
+  flex-shrink: 0 !important;
   border-radius: var(--ios-radius-lg);
   overflow: hidden;
+  transform: translate3d(0, 0, 0);
+  contain: layout paint;
+  
+  /* TAMBAHKAN 2 BARIS INI UNTUK MEMBERI SPASI ANTA-BANNER */
+  padding: 0 6px !important; /* Memberi jarak 6px di kiri & kanan (total spasi 12px) */
+  box-sizing: border-box !important;
 }
 
 .banner-slide img {
   width: 100% !important;
   height: auto !important;
   display: block !important;
-  object-fit: contain !important; /* Menampilkan seluruh isi gambar secara utuh */
+  object-fit: cover !important;
+  border-radius: var(--ios-radius-lg);
+  pointer-events: none;
+  -webkit-user-drag: none;
 }
 
+/* INDIKATOR TITIK (DOTS WITH SOFT TRANSITION) */
 .dot { 
-  width: 6px; 
-  height: 6px; 
+  width: 8px; 
+  height: 8px; 
   background-color: #d1d1d6; 
   border-radius: 50%; 
-  transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
+  /* Perubahan lebar titik aktif dibuat mengalir pelan (0.8 detik) */
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
+              background-color 0.6s ease; 
   cursor: pointer;
 }
 
 .dot.active { 
   background-color: var(--app-blue); 
-  width: 14px; 
+  width: 22px; 
   border-radius: 10px; 
 }
 
@@ -276,11 +303,11 @@ body.app-body {
   padding: 14px 16px;
   box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
   text-align: center;
-  margin-top: 12px;    /* Memberikan jarak atas yang konsisten */
+  margin-top: 12px;
   margin-bottom: 12px; 
-  margin-left: 0 !important;   /* Memastikan rata kiri dengan kontainer */
-  margin-right: 0 !important;  /* Memastikan rata kanan dengan kontainer */
-  width: 100% !important;      /* Memenuhi lebar penuh kontainer yang sama */
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: 100% !important;
   box-sizing: border-box !important;
   position: relative;
   overflow: hidden; 
@@ -452,7 +479,7 @@ body.app-body {
    ======================================================== */
 .app-bottom-nav {
     position: fixed !important;
-    bottom: 6px !important; /* Posisi diturunkan agar sedikit lebih ke bawah */
+    bottom: 6px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     width: 92% !important;
@@ -575,7 +602,7 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 .dribbble-auth-card {
   background: #ffffff;
   border-radius: 20px;
-  padding: 18px 16px; /* Padding dikurangi dari 32px 28px */
+  padding: 18px 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(226, 232, 240, 0.8);
   transition: all 0.3s ease;
@@ -595,7 +622,7 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
   flex: 1;
   border: none;
   background: transparent;
-  padding: 8px 12px; /* Dikurangi dari 10px 16px */
+  padding: 8px 12px;
   border-radius: 12px;
   font-size: 0.82rem;
   font-weight: 700;
@@ -616,7 +643,7 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 .auth-title {
   font-weight: 800;
   color: #0f172a;
-  font-size: 1.18rem; /* Dikurangi dari 1.35rem */
+  font-size: 1.18rem;
   letter-spacing: -0.5px;
   margin-bottom: 2px;
 }
@@ -645,7 +672,7 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 
 .auth-input-field {
   width: 100%;
-  height: 44px; /* Tinggi input dikurangi dari 52px */
+  height: 44px;
   padding: 0 16px 0 42px;
   background: #f8fafc;
   border: 1.5px solid #e2e8f0;
@@ -674,7 +701,7 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 }
 
 .btn-dribbble-primary {
-  height: 44px; /* Tinggi tombol dikurangi dari 52px */
+  height: 44px;
   background: linear-gradient(135deg, #007aff 0%, #0056b3 100%);
   color: #ffffff;
   border: none;
@@ -700,7 +727,7 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 }
 
 .btn-dribbble-outline {
-  height: 40px; /* Tinggi tombol dikurangi dari 48px */
+  height: 40px;
   background: #f8fafc;
   color: #64748b;
   border: 1px solid #e2e8f0;
@@ -838,7 +865,7 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 }
 
 .custom-close-btn:hover, .custom-close-btn:focus {
-  background-color: #fee2e2; /* Berwarna kemerahan saat ditekan/dihover */
+  background-color: #fee2e2;
   opacity: 1;
   transform: scale(1.08);
   box-shadow: none;
