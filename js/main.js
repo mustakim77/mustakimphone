@@ -468,6 +468,7 @@ async function loadData() {
         if (loader) loader.style.display = 'none';
         filterAndDisplay('');
         renderLatestProducts();
+        checkDeepLinkProduk();
     } catch (e) {
         showError("Gagal memuat data: " + e.message);
     }
@@ -531,7 +532,7 @@ function filterAndDisplay(keyword) {
     
     let results = globalData.filter(row => {
         if(!row) return false;
-        const searchString = `${row[1]} ${row[2]} ${row[3]} ${row[6]}`.toLowerCase();
+        const searchString = `${row[0] || ''} ${row[1] || ''} ${row[2] || ''} ${row[3] || ''} ${row[6] || ''}`.toLowerCase();
         const service = String(row[3] || '').toUpperCase();
         const status = String(row[7] || '').trim().toLowerCase() || 'kosong';
 
@@ -2000,18 +2001,20 @@ async function kirimNotaCanvasKeWA(order) {
 }
 
 // ==========================================
-// CEK URL PARAMETER SAAT HALAMAN DIMUAT
+// CEK URL PARAMETER SAAT HALAMAN DIMUAT (DEEP LINK)
 // ==========================================
 function checkDeepLinkProduk() {
     const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('id'); // Mengambil nilai dari ?id=...
+    const productId = urlParams.get('id');
 
-    if (productId) {
-        // Berikan sedikit jeda agar data produk selesai dimuat terlebih dahulu
-        setTimeout(() => {
-            if (typeof bukaDetailProduk === 'function') {
-                bukaDetailProduk(productId);
-            }
-        }, 500);
+    if (!productId || !globalData || globalData.length === 0) return;
+
+    const targetIdClean = String(productId).trim().toLowerCase();
+    
+    // Cari urutan indeks (idx) produk yang cocok dengan ID
+    const targetIndex = globalData.findIndex(row => row && String(row[0] || '').trim().toLowerCase() === targetIdClean);
+
+    if (targetIndex !== -1) {
+        showDetail(targetIndex);
     }
 }
