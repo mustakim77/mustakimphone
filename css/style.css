@@ -267,13 +267,6 @@ body.app-body {
   background-color: #ffffff;
 }
 
-@media (min-width: 768px) {
-  .latest-products-container .card img,
-  .product-card img {
-    height: 140px !important;
-  }
-}
-
 /* BANNER TEKS "RIMBERIO STYLE" */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,900;1,900&family=Poppins:ital,wght@0,600;1,600&display=swap');
 
@@ -577,12 +570,12 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 }
 
 /* ============================================================
-   MODERN DRIBBLE STYLE AUTHENTICATION CARD
+   MODERN DRIBBLE STYLE AUTHENTICATION CARD (COMPACT VERSION)
    ============================================================ */
 .dribbble-auth-card {
   background: #ffffff;
-  border-radius: 28px;
-  padding: 32px 28px;
+  border-radius: 20px;
+  padding: 18px 16px; /* Padding dikurangi dari 32px 28px */
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(226, 232, 240, 0.8);
   transition: all 0.3s ease;
@@ -592,9 +585,9 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 .auth-tab-switcher {
   display: flex;
   background: #f2f4f8;
-  padding: 5px;
-  border-radius: 18px;
-  gap: 5px;
+  padding: 4px;
+  border-radius: 14px;
+  gap: 4px;
   position: relative;
 }
 
@@ -602,9 +595,9 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
   flex: 1;
   border: none;
   background: transparent;
-  padding: 10px 16px;
-  border-radius: 14px;
-  font-size: 0.88rem;
+  padding: 8px 12px; /* Dikurangi dari 10px 16px */
+  border-radius: 12px;
+  font-size: 0.82rem;
   font-weight: 700;
   color: #64748b;
   cursor: pointer;
@@ -623,13 +616,13 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 .auth-title {
   font-weight: 800;
   color: #0f172a;
-  font-size: 1.35rem;
+  font-size: 1.18rem; /* Dikurangi dari 1.35rem */
   letter-spacing: -0.5px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .auth-subtitle {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: #64748b;
   margin: 0;
 }
@@ -641,23 +634,23 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 
 .auth-input-wrapper .input-icon {
   position: absolute;
-  left: 18px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: #94a3b8;
-  font-size: 1rem;
+  font-size: 0.9rem;
   transition: color 0.25s ease;
   pointer-events: none;
 }
 
 .auth-input-field {
   width: 100%;
-  height: 52px;
-  padding: 0 18px 0 48px;
+  height: 44px; /* Tinggi input dikurangi dari 52px */
+  padding: 0 16px 0 42px;
   background: #f8fafc;
   border: 1.5px solid #e2e8f0;
-  border-radius: 18px;
-  font-size: 0.9rem;
+  border-radius: 14px;
+  font-size: 0.85rem;
   font-weight: 500;
   color: #0f172a;
   outline: none;
@@ -681,13 +674,13 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 }
 
 .btn-dribbble-primary {
-  height: 52px;
+  height: 44px; /* Tinggi tombol dikurangi dari 52px */
   background: linear-gradient(135deg, #007aff 0%, #0056b3 100%);
   color: #ffffff;
   border: none;
-  border-radius: 18px;
+  border-radius: 14px;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   transition: all 0.25s ease;
@@ -707,13 +700,13 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 }
 
 .btn-dribbble-outline {
-  height: 48px;
+  height: 40px; /* Tinggi tombol dikurangi dari 48px */
   background: #f8fafc;
   color: #64748b;
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
+  border-radius: 14px;
   font-weight: 600;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: none !important;
@@ -727,9 +720,9 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 
 .auth-pesan {
   font-weight: 600;
-  font-size: 0.85rem;
-  min-height: 20px;
-  margin: 4px 0;
+  font-size: 0.8rem;
+  min-height: 18px;
+  margin: 2px 0;
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -738,7 +731,7 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 .auth-forgot-link {
   color: #007aff;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   text-decoration: none;
   transition: color 0.2s ease;
 }
@@ -768,12 +761,12 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 
 .toggle-password {
   position: absolute;
-  right: 18px;
+  right: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: #94a3b8;
   cursor: pointer;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   transition: color 0.2s ease;
   z-index: 5;
 }
@@ -789,14 +782,14 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
   width: calc(50% - 4px);
   height: calc(100% - 8px);
   background: #ffffff;
-  border-radius: 14px;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1;
 }
 
 .auth-wa-help {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: #64748b;
   text-decoration: none;

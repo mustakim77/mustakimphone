@@ -17,44 +17,7 @@
     <link rel="icon" type="image/png" href="https://i.postimg.cc/7LYYBwGp/logo-mp4.png">
     <link rel="stylesheet" href="css/admin.css">
 
-    <style>
-        /* Style Tambahan untuk Popup Grid Brand Box */
-        .brand-box {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-        }
-        .brand-box:hover {
-            transform: translateY(-3px);
-            border-color: #4318ff;
-            box-shadow: 0 10px 20px rgba(67, 24, 255, 0.1);
-        }
-        .brand-card-img-wrap {
-            width: 50px;
-            height: 50px;
-            margin: 0 auto 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f8fafc;
-            border-radius: 10px;
-        }
-        .brand-box h5 {
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-            color: #1e293b;
-        }
-        .brand-badge {
-            font-size: 0.75rem;
-            color: #64748b;
-            font-weight: 500;
-        }
-    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- PROTEKSI ADMIN -->
     <script>
@@ -65,20 +28,13 @@
     }
     </script>
     
-    <!-- GLOBAL IMAGE FALLBACK UNTUK JARINGAN LEMAH (ADMIN) -->
+    <!-- GLOBAL IMAGE FALLBACK -->
     <script>
       document.addEventListener("error", function (e) {
         if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === "img") {
           e.target.onerror = null;
           e.target.src = "https://i.ibb.co/p6xxsTqv/logo-default.png";
         }
-      }, true);
-      document.addEventListener("load", function(e) {
-          if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === "img") {
-              if (e.target.src.includes('ibb.co') && e.target.naturalWidth > 0 && e.target.naturalWidth <= 160) {
-                  e.target.src = "https://i.ibb.co/p6xxsTqv/logo-default.png";
-              }
-          }
       }, true);
     </script>
 </head>
@@ -88,33 +44,33 @@
     <!-- Sidebar -->
     <div id="sidebar-wrapper">
         <div class="sidebar-heading">
-            <i class="fa-solid fa-mobile-screen-button me-2"></i> MUSTAKIM
+            <i class="fa-solid fa-mobile-screen-button me-2"></i> MUSTAKIM PHONE
         </div>
         <div class="list-group list-group-flush mt-2 px-3 gap-1">
             <a href="#" class="list-group-item active" id="menu-dashboard">
-                <i class="fa-solid fa-house"></i> Dashboard
+                <i class="fa-solid fa-house"></i> <span>Dashboard</span>
             </a>
             <a href="#" class="list-group-item" id="menu-orders">
-                <i class="fa-solid fa-receipt"></i> Kelola Pesanan
+                <i class="fa-solid fa-receipt"></i> <span>Kelola Pesanan</span>
             </a>
             <a href="#" class="list-group-item" id="menu-data">
-                <i class="fa-solid fa-table-list"></i> Data Harga
+                <i class="fa-solid fa-table-list"></i> <span>Data Harga</span>
             </a>
             <a href="#" class="list-group-item" id="menu-tambah">
-                <i class="fa-solid fa-folder-plus"></i> Tambah Data
+                <i class="fa-solid fa-folder-plus"></i> <span>Tambah Data</span>
             </a>
             <a href="#" class="list-group-item" id="menu-kategori">
-                <i class="fa-solid fa-border-all"></i> Gambar Kategori
+                <i class="fa-solid fa-border-all"></i> <span>Gambar Kategori</span>
             </a>
             <a href="#" class="list-group-item" id="menu-banner">
-                <i class="fa-solid fa-images"></i> Banner Slide
+                <i class="fa-solid fa-images"></i> <span>Banner Slide</span>
             </a>
             <a href="#" class="list-group-item" id="menu-merek">
-                <i class="fa-solid fa-tags"></i> Kelola Merek
+                <i class="fa-solid fa-tags"></i> <span>Kelola Merek</span>
             </a>
             <div style="flex-grow: 1;"></div> 
             <a href="./" class="list-group-item text-danger mb-3" id="menu-logout">
-                <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> <span>Logout</span>
             </a>
         </div>
     </div>
@@ -124,10 +80,10 @@
         <!-- Navbar -->
         <nav class="navbar admin-navbar d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <button class="btn border-0 me-3 rounded-3 px-3 py-2 menu-btn" id="menu-toggle">
+                <button class="btn border-0 me-2 me-md-3 rounded-3 px-3 py-2 menu-btn" id="menu-toggle">
                     <i class="fa-solid fa-bars"></i>
                 </button>
-                <h4 class="m-0 fw-bold fs-5" id="pageTitle">Dashboard</h4>
+                <h4 class="m-0 fw-bold fs-5 text-truncate" id="pageTitle">Dashboard</h4>
             </div>
             <div>
                 <span class="badge rounded-pill px-3 py-2 fw-semibold" style="background: #e0e5f2; color: #4318ff;">
@@ -138,8 +94,9 @@
 
         <!-- SECTION: DASHBOARD -->
         <div id="section-dashboard" class="section-content">
-            <div class="row g-3 mb-4">
-                <div class="col-4 col-md-2">
+            <!-- Grid Stat Cards: HP 2 Kolom (col-6), Tablet 3 Kolom (col-sm-4), Desktop 6 Kolom (col-lg-2) -->
+            <div class="row g-2 g-md-3 mb-4">
+                <div class="col-6 col-sm-4 col-lg-2">
                     <div class="stat-card h-100" id="card-merk">
                         <div class="stat-icon" style="background: #eef2ff; color: #4318ff;"><i class="fa-brands fa-apple"></i></div>
                         <div class="stat-details">
@@ -148,7 +105,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-4 col-md-2">
+                <div class="col-6 col-sm-4 col-lg-2">
                     <div class="stat-card h-100" id="card-type">
                         <div class="stat-icon" style="background: #f3e8ff; color: #9333ea;"><i class="fa-solid fa-mobile-screen"></i></div>
                         <div class="stat-details">
@@ -157,7 +114,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-4 col-md-2">
+                <div class="col-6 col-sm-4 col-lg-2">
                     <div class="stat-card h-100" id="card-lcd">
                         <div class="stat-icon" style="background: #dcfce7; color: #15803d;"><i class="fa-solid fa-layer-group"></i></div>
                         <div class="stat-details">
@@ -166,7 +123,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-4 col-md-2">
+                <div class="col-6 col-sm-4 col-lg-2">
                     <div class="stat-card h-100" id="card-bat">
                         <div class="stat-icon" style="background: #fef3c7; color: #d97706;"><i class="fa-solid fa-battery-full"></i></div>
                         <div class="stat-details">
@@ -175,7 +132,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-4 col-md-2">
+                <div class="col-6 col-sm-4 col-lg-2">
                     <div class="stat-card h-100">
                         <div class="stat-icon" style="background: #fee2e2; color: #dc2626;"><i class="fa-solid fa-database"></i></div>
                         <div class="stat-details">
@@ -184,7 +141,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-4 col-md-2">
+                <div class="col-6 col-sm-4 col-lg-2">
                     <div class="stat-card h-100">
                         <div class="stat-icon" style="background: #f1f5f9; color: #475569;"><i class="fa-solid fa-eye"></i></div>
                         <div class="stat-details">
@@ -194,28 +151,86 @@
                     </div>
                 </div>
             </div>
+
+            <!-- FINANCIAL REKAP CARD (OMZET, MODAL, PROFIT) -->
+            <div class="premium-card mb-4">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-3 gap-2">
+                    <div>
+                        <h6 class="fw-bold m-0"><i class="fa-solid fa-wallet text-primary me-2"></i> Rekap Keuangan Modal & Untung</h6>
+                        <small class="text-muted">Dihitung otomatis dari pesanan berstatus <span class="badge bg-success-subtle text-success fw-bold">SELESAI</span></small>
+                    </div>
+                    <div style="min-width: 160px;">
+                        <select class="form-select form-select-sm fw-bold border-primary-subtle" id="filterPeriodeKeuangan" onchange="loadFinancialReport()">
+                            <option value="semua">Semua Waktu</option>
+                            <option value="bulan_ini" selected>Bulan Ini</option>
+                            <option value="hari_ini">Hari Ini</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <!-- 1. Total Omzet -->
+                    <div class="col-12 col-md-4">
+                        <div class="p-3 rounded-4 border bg-light-subtle d-flex align-items-center">
+                            <div class="stat-icon me-3 bg-primary-subtle text-primary mb-0" style="width: 48px; height: 48px; font-size: 1.3rem;">
+                                <i class="fa-solid fa-money-bill-wave"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted fw-bold d-block text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Total Omzet (Revenue)</small>
+                                <h4 class="fw-extrabold text-dark m-0" id="statTotalOmset">Rp 0</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Total Modal / HPP -->
+                    <div class="col-12 col-md-4">
+                        <div class="p-3 rounded-4 border bg-light-subtle d-flex align-items-center">
+                            <div class="stat-icon me-3 bg-warning-subtle text-warning mb-0" style="width: 48px; height: 48px; font-size: 1.3rem;">
+                                <i class="fa-solid fa-boxes-packing"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted fw-bold d-block text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Total Modal (HPP)</small>
+                                <h4 class="fw-extrabold text-dark m-0" id="statTotalModal">Rp 0</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Keuntungan Bersih / Profit -->
+                    <div class="col-12 col-md-4">
+                        <div class="p-3 rounded-4 border bg-success-subtle border-success-subtle d-flex align-items-center">
+                            <div class="stat-icon me-3 bg-success text-white mb-0" style="width: 48px; height: 48px; font-size: 1.3rem;">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <small class="text-success-emphasis fw-bold d-block text-uppercase" style="font-size: 0.68rem; letter-spacing: 0.5px;">Keuntungan (Profit)</small>
+                                <h4 class="fw-extrabold text-success m-0" id="statTotalProfit">Rp 0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            <div class="row g-4 mt-2">
-                <div class="col-12 col-md-6">
+            <div class="row g-3 g-md-4 mt-1">
+                <div class="col-12 col-lg-6">
                     <div class="premium-card h-100">
-                        <h6 class="fw-bold mb-4"><i class="fa-solid fa-chart-pie me-2 text-primary"></i> Grafik Status Stok</h6>
+                        <h6 class="fw-bold mb-3 mb-md-4"><i class="fa-solid fa-chart-pie me-2 text-primary"></i> Grafik Status Stok</h6>
                         <div class="chart-wrapper"><canvas id="statusChart"></canvas></div>
                     </div>
                 </div>
-                <div class="col-12 col-md-6">
+                <div class="col-12 col-lg-6">
                     <div class="premium-card h-100">
-                        <h6 class="fw-bold mb-4"><i class="fa-solid fa-fire me-2 text-danger"></i> Top 5 Pencarian</h6>
+                        <h6 class="fw-bold mb-3 mb-md-4"><i class="fa-solid fa-fire me-2 text-danger"></i> Top 5 Pencarian</h6>
                         <div class="chart-wrapper"><canvas id="searchChart"></canvas></div>
                     </div>
                 </div>
             </div>
 
-            <div class="row mt-4">
+            <div class="row mt-3 mt-md-4">
                 <div class="col-12">
                     <div class="premium-card">
-                        <h6 class="fw-bold mb-4"><i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i> 5 Data Terakhir Ditambahkan</h6>
+                        <h6 class="fw-bold mb-3 mb-md-4"><i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i> 5 Data Terakhir Ditambahkan</h6>
                         <div class="table-responsive">
-                            <table class="table align-middle mb-0" style="font-size: 0.95rem;">
+                            <table class="table align-middle mb-0" style="font-size: 0.9rem;">
                                 <thead>
                                     <tr>
                                         <th>Kode Barang (ID)</th>
@@ -240,8 +255,8 @@
             <div class="premium-card">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                     <h5 class="fw-bold m-0"><i class="fa-solid fa-receipt me-2 text-primary"></i> Kelola Pesanan & Status Nota</h5>
-                    <div class="d-flex flex-column flex-sm-row gap-3 w-100" style="max-width: 550px;">
-                        <select class="form-select fw-medium" id="filterOrderStatus" style="min-width: 150px;">
+                    <div class="d-flex flex-column flex-sm-row gap-2 gap-sm-3 w-100" style="max-width: 550px;">
+                        <select class="form-select fw-medium" id="filterOrderStatus">
                             <option value="">Semua Status</option>
                             <option value="Pending">Pending</option>
                             <option value="Diproses">Diproses</option>
@@ -262,7 +277,7 @@
                                 <th>Tanggal</th>
                                 <th>Pemesan</th>
                                 <th>No. WA</th>
-                                <th>Item / Service</th>
+                                <th>Service</th>
                                 <th>Total</th>
                                 <th>Status</th>
                                 <th class="text-center">Aksi</th>
@@ -281,8 +296,8 @@
             <div class="premium-card">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
                     <h5 class="fw-bold m-0"><i class="fa-solid fa-list-check me-2 text-primary"></i> Manajemen Data Harga</h5>
-                    <div class="d-flex flex-column flex-sm-row gap-3 w-100" style="max-width: 550px;">
-                        <select class="form-select fw-medium" id="filterService" style="min-width: 150px;">
+                    <div class="d-flex flex-column flex-sm-row gap-2 gap-sm-3 w-100" style="max-width: 550px;">
+                        <select class="form-select fw-medium" id="filterService">
                             <option value="">Semua Service</option>
                             <option value="GANTI LCD">GANTI LCD</option>
                             <option value="GANTI BAT">GANTI BAT</option>
@@ -322,14 +337,14 @@
 
         <!-- SECTION: TAMBAH DATA -->
         <div id="section-form" class="section-content" style="display:none;">
-            <div class="premium-card mx-auto" style="max-width: 800px;">
+            <div class="premium-card mx-auto" style="max-width: 900px;">
                 <div class="border-bottom pb-3 mb-4">
                     <h5 class="fw-bold m-0"><i class="fa-solid fa-folder-plus me-2 text-primary"></i> Tambah Data Baru</h5>
                     <p class="text-muted small mt-1 mb-0">Pastikan data yang dimasukkan sudah benar sebelum disimpan.</p>
                 </div>
                 <form id="formTambahData">
-                    <div class="row g-4">
-                        <div class="col-md-6">
+                    <div class="row g-3 g-md-4">
+                        <div class="col-12 col-md-6 col-lg-4">
                             <label class="form-label small fw-bold mb-2">Jenis Service</label>
                             <select class="form-select" id="inputJenisService" required>
                                 <option value="" selected disabled>-- Pilih Service --</option>
@@ -338,7 +353,7 @@
                                 <option value="SERVICE">SERVICE</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6 col-lg-4">
                             <label class="form-label small fw-bold mb-2">Merk HP</label>
                             <select class="form-select" id="inputMerkHP" required>
                                 <option value="" selected disabled>-- Pilih Merk --</option>
@@ -357,25 +372,25 @@
                             </select>
                             <input type="text" class="form-control mt-2" id="inputMerkLainnya" placeholder="Ketik Merk HP manual..." style="display: none;">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6 col-lg-4">
                             <label class="form-label small fw-bold mb-2">Type HP</label>
                             <input type="text" class="form-control" id="inputTypeHP" required placeholder="Contoh: iPhone 11 Pro">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6 col-lg-4">
                             <label class="form-label small fw-bold mb-2">Modal / HPP (Rp)</label>
                             <div class="input-group">
                                 <span class="input-group-text border-0 text-muted" style="background: #f4f7fe;">Rp</span>
                                 <input type="number" class="form-control border-0" id="inputModal" required placeholder="0" style="background: #f4f7fe;">
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6 col-lg-4">
                             <label class="form-label small fw-bold mb-2">Harga Jual (Rp)</label>
                             <div class="input-group">
                                 <span class="input-group-text border-0 text-muted" style="background: #f4f7fe;">Rp</span>
                                 <input type="number" class="form-control border-0" id="inputHarga" required placeholder="0" style="background: #f4f7fe;">
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6 col-lg-4">
                             <label class="form-label small fw-bold mb-2">Garansi</label>
                             <select class="form-select" id="inputGaransi" required>
                                 <option value="" selected disabled>-- Pilih Garansi --</option>
@@ -384,7 +399,7 @@
                                 <option value="Tidak ada">Tidak ada</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label class="form-label small fw-bold mb-2">Status Stok</label>
                             <select class="form-select" id="inputStatus" required>
                                 <option value="Tersedia">Tersedia (Ready)</option>
@@ -392,14 +407,14 @@
                                 <option value="Kosong">Kosong (Habis)</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label class="form-label small fw-bold mb-2">Merk Part / Keterangan</label>
                             <input type="text" class="form-control" id="inputKeterangan" placeholder="Contoh: SHUNSINE / MEETOO / POZI">
                         </div>
                     </div>
-                    <div class="d-flex justify-content-end mt-5 pt-3 border-top">
-                        <button type="reset" class="btn btn-light me-3 fw-semibold px-4 rounded-3 text-secondary">Reset</button>
-                        <button type="submit" class="btn text-white px-5 fw-semibold shadow-sm rounded-3" style="background: #4318ff;"><i class="fa-solid fa-save me-2"></i> Simpan Data</button>
+                    <div class="d-flex justify-content-end mt-4 pt-3 border-top gap-2">
+                        <button type="reset" class="btn btn-light fw-semibold px-4 rounded-3 text-secondary">Reset</button>
+                        <button type="submit" class="btn text-white px-4 px-md-5 fw-semibold shadow-sm rounded-3" style="background: #4318ff;"><i class="fa-solid fa-save me-2"></i> Simpan Data</button>
                     </div>
                 </form>
             </div>
@@ -407,14 +422,14 @@
 
         <!-- SECTION: KELOLA GAMBAR KATEGORI -->
         <div id="section-kategori" class="section-content" style="display:none;">
-            <div class="premium-card mx-auto mb-4" style="max-width: 800px;">
+            <div class="premium-card mx-auto mb-4" style="max-width: 900px;">
                 <div class="border-bottom pb-3 mb-4">
                     <h5 class="fw-bold m-0"><i class="fa-solid fa-border-all me-2 text-primary"></i> Kelola Gambar Kategori</h5>
                     <p class="text-muted small mt-1 mb-0">Atur URL Gambar ikon untuk kategori GANTI LCD, GANTI BAT, dan SERVICE.</p>
                 </div>
                 <form id="formUbahKategori">
                     <div class="row g-3">
-                        <div class="col-md-5">
+                        <div class="col-12 col-md-5">
                             <label class="form-label small fw-bold">Pilih Kategori</label>
                             <select id="selectKategoriName" class="form-select" required>
                                 <option value="GANTI LCD">GANTI LCD</option>
@@ -422,7 +437,7 @@
                                 <option value="SERVICE">SERVICE</option>
                             </select>
                         </div>
-                        <div class="col-md-7">
+                        <div class="col-12 col-md-7">
                             <label class="form-label small fw-bold">URL Gambar Ikon Kategori</label>
                             <input type="url" id="inputKategoriUrl" class="form-control" placeholder="https://i.postimg.cc/..." required>
                         </div>
@@ -433,9 +448,9 @@
                 </form>
             </div>
 
-            <div class="premium-card mx-auto" style="max-width: 800px;">
+            <div class="premium-card mx-auto" style="max-width: 900px;">
                 <h6 class="fw-bold mb-3"><i class="fa-solid fa-list me-2 text-primary"></i> Gambar Kategori Terpasang</h6>
-                <div id="containerListKategori" class="row g-3">
+                <div id="containerListKategori" class="row g-2 g-md-3">
                     <div class="col-12 text-center text-muted py-3">Memuat gambar kategori...</div>
                 </div>
             </div>
@@ -443,18 +458,18 @@
 
         <!-- SECTION: BANNER SLIDE -->
         <div id="section-banner" class="section-content" style="display:none;">
-            <div class="premium-card mx-auto mb-4" style="max-width: 800px;">
+            <div class="premium-card mx-auto mb-4" style="max-width: 900px;">
                 <div class="border-bottom pb-3 mb-4">
                     <h5 class="fw-bold m-0"><i class="fa-solid fa-images me-2 text-primary"></i> Kelola Banner Slide</h5>
                     <p class="text-muted small mt-1 mb-0">Tambah atau hapus gambar promo yang tampil di halaman utama.</p>
                 </div>
                 <form id="formTambahBanner">
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label class="form-label small fw-bold">Judul Banner (Opsional)</label>
                             <input type="text" id="inputBannerTitle" class="form-control" placeholder="Contoh: Promo Ganti LCD">
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label class="form-label small fw-bold">URL Gambar Banner</label>
                             <input type="url" id="inputBannerUrl" class="form-control" placeholder="https://i.postimg.cc/..." required>
                         </div>
@@ -465,9 +480,9 @@
                 </form>
             </div>
 
-            <div class="premium-card mx-auto" style="max-width: 800px;">
+            <div class="premium-card mx-auto" style="max-width: 900px;">
                 <h6 class="fw-bold mb-3"><i class="fa-solid fa-list me-2 text-primary"></i> Daftar Banner Aktif</h6>
-                <div id="containerListBanner" class="row g-3">
+                <div id="containerListBanner" class="row g-2 g-md-3">
                     <div class="col-12 text-center text-muted py-3">Memuat banner...</div>
                 </div>
             </div>
@@ -475,18 +490,18 @@
 
         <!-- SECTION: KELOLA MEREK -->
         <div id="section-merek" class="section-content" style="display:none;">
-            <div class="premium-card mx-auto mb-4" style="max-width: 800px;">
+            <div class="premium-card mx-auto mb-4" style="max-width: 900px;">
                 <div class="border-bottom pb-3 mb-4">
                     <h5 class="fw-bold m-0"><i class="fa-solid fa-tags me-2 text-primary"></i> Kelola Merek HP</h5>
                     <p class="text-muted small mt-1 mb-0">Tambah merek HP beserta logo untuk tampilan navigasi merek.</p>
                 </div>
                 <form id="formTambahMerek">
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label class="form-label small fw-bold">Nama Merek</label>
                             <input type="text" id="inputMerekName" class="form-control" placeholder="Contoh: IPHONE, SAMSUNG, OPPO" required>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-12 col-md-6">
                             <label class="form-label small fw-bold">URL Logo / Gambar Merek</label>
                             <input type="url" id="inputMerekUrl" class="form-control" placeholder="https://i.postimg.cc/..." required>
                         </div>
@@ -497,9 +512,9 @@
                 </form>
             </div>
 
-            <div class="premium-card mx-auto" style="max-width: 800px;">
+            <div class="premium-card mx-auto" style="max-width: 900px;">
                 <h6 class="fw-bold mb-3"><i class="fa-solid fa-list me-2 text-primary"></i> Daftar Merek Terdaftar</h6>
-                <div id="containerListMerek" class="row g-3">
+                <div id="containerListMerek" class="row g-2 g-md-3">
                     <div class="col-12 text-center text-muted py-3">Memuat data merek...</div>
                 </div>
             </div>
@@ -508,11 +523,7 @@
     </div>
 </div>
 
-<!-- ========================================== -->
-<!-- MODAL POPUP DASHBOARD FILTER -->
-<!-- ========================================== -->
-
-<!-- MODAL PILIH MERK -->
+<!-- MODAL POPUPS FILTER DASHBOARD -->
 <div class="modal fade" id="modalPilihMerk" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow rounded-4">
@@ -520,14 +531,13 @@
                 <h5 class="modal-title fw-bold"><i class="fa-solid fa-tags text-primary me-2"></i>Pilih Merk HP</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-4">
-                <div class="row g-3" id="containerGridMerk"></div>
+            <div class="modal-body p-3 p-md-4">
+                <div class="row g-2 g-md-3" id="containerGridMerk"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- MODAL PILIH TYPE -->
 <div class="modal fade" id="modalPilihType" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow rounded-4">
@@ -535,14 +545,13 @@
                 <h5 class="modal-title fw-bold"><i class="fa-solid fa-mobile-screen text-purple me-2"></i>Pilih Tipe HP</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-4">
-                <div class="row g-3" id="containerGridType"></div>
+            <div class="modal-body p-3 p-md-4">
+                <div class="row g-2 g-md-3" id="containerGridType"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- MODAL PILIH LCD -->
 <div class="modal fade" id="modalPilihLcd" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow rounded-4">
@@ -550,14 +559,13 @@
                 <h5 class="modal-title fw-bold"><i class="fa-solid fa-layer-group text-success me-2"></i>Filter Service GANTI LCD</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-4">
-                <div class="row g-3" id="containerGridLcd"></div>
+            <div class="modal-body p-3 p-md-4">
+                <div class="row g-2 g-md-3" id="containerGridLcd"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- MODAL PILIH BAT -->
 <div class="modal fade" id="modalPilihBat" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow rounded-4">
@@ -565,14 +573,14 @@
                 <h5 class="modal-title fw-bold"><i class="fa-solid fa-battery-full text-warning me-2"></i>Filter Service GANTI BAT</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body p-4">
-                <div class="row g-3" id="containerGridBat"></div>
+            <div class="modal-body p-3 p-md-4">
+                <div class="row g-2 g-md-3" id="containerGridBat"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- MODAL EDIT DATA SERVICE -->
+<!-- MODAL EDIT DATA -->
 <div class="modal fade" id="modalEdit" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content rounded-4 border-0 shadow">
@@ -587,11 +595,7 @@
       <div class="modal-body pt-3">
         <form id="formEditData">
           <input type="hidden" id="editDataId">
-          
-          <!-- Grid Form Responsif -->
           <div class="row g-2 g-md-3">
-            
-            <!-- Baris 1: Jenis, Merk, Type -->
             <div class="col-12 col-sm-6 col-md-4">
               <label class="form-label fw-semibold small text-muted">Jenis Service</label>
               <select class="form-select form-select-sm rounded-3" id="editJenisService" required>
@@ -625,7 +629,6 @@
               <input type="text" class="form-control form-control-sm rounded-3 text-uppercase" id="editTypeHP" required>
             </div>
 
-            <!-- Baris 2: Modal, Harga Jual, Garansi -->
             <div class="col-6 col-sm-6 col-md-4">
               <label class="form-label fw-semibold small text-muted">Modal / HPP (Rp)</label>
               <input type="number" class="form-control form-control-sm rounded-3" id="editModal" required>
@@ -645,7 +648,6 @@
               </select>
             </div>
 
-            <!-- Baris 3: Status Stok & Keterangan -->
             <div class="col-12 col-sm-6 col-md-6">
               <label class="form-label fw-semibold small text-muted">Status Stok</label>
               <select class="form-select form-select-sm rounded-3" id="editStatus">
@@ -659,12 +661,10 @@
               <label class="form-label fw-semibold small text-muted">Merk Part / Keterangan</label>
               <input type="text" class="form-control form-control-sm rounded-3 text-uppercase" id="editKeterangan" placeholder="Contoh: MEETOO, CROWN, OG">
             </div>
-
           </div>
         </form>
       </div>
 
-      <!-- Footer Tombol -->
       <div class="modal-footer border-0 pt-0">
         <button type="button" class="btn btn-light btn-sm rounded-3 px-3" data-bs-dismiss="modal">Batal</button>
         <button type="button" class="btn btn-primary btn-sm rounded-3 px-4 fw-semibold" id="btnUpdateData">
@@ -672,6 +672,32 @@
         </button>
       </div>
 
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOTA DIGITAL ADMIN -->
+<div class="modal fade" id="modalNotaDigital" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+      <div class="modal-header border-0 pb-0">
+        <h6 class="modal-title fw-bold text-dark">
+          <i class="fa-solid fa-file-invoice text-primary me-2"></i>Nota Digital Pelanggan
+        </h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4" id="printableNotaArea">
+        <!-- Konten Nota Diisi via JS -->
+      </div>
+      <div class="modal-footer border-0 pt-0 gap-2">
+        <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Tutup</button>
+        <button type="button" class="btn btn-success fw-bold text-white px-3" id="btnShareNotaCanvasWA" style="background-color: #1fa91c; border-color: #1fa91c;">
+          <i class="fa-brands fa-whatsapp me-1"></i> Kirim Gambar Nota
+        </button>
+        <button type="button" class="btn btn-primary fw-bold px-3" onclick="window.print()">
+          <i class="fa-solid fa-print me-1"></i> Cetak / PDF
+        </button>
+      </div>
     </div>
   </div>
 </div>

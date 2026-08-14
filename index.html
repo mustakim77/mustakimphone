@@ -13,6 +13,8 @@
   <link rel="icon" type="image/png" href="https://i.postimg.cc/7LYYBwGp/logo-mp4.png">
   <link rel="stylesheet" href="css/style.css">
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
   <!-- GLOBAL IMAGE FALLBACK UNTUK JARINGAN LEMAH -->
   <script>
     document.addEventListener("error", function (e) {
@@ -171,29 +173,42 @@
         </div>
       </div>
 
-      <!-- 3. HALAMAN CEK SERVIS (Menggantikan Kategori) -->
-      <div id="kategoriView" class="d-none bg-light min-vh-100 pb-5">
+      <!-- 3. HALAMAN CEK SERVIS & PESANAN -->
+      <div id="cekservisView" class="d-none bg-light min-vh-100 pb-5">
         <div class="p-3 border-bottom bg-white shadow-sm d-flex align-items-center justify-content-center" style="position: sticky; top: 0; z-index: 10;">
-          <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-magnifying-glass-location text-primary me-2"></i>Lacak Status Servis</h6>
+          <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-magnifying-glass-location text-primary me-2"></i>Cek Status Pesanan & Servis</h6>
         </div>
         
-        <div class="p-3 mt-2">
-          <div class="bg-white p-4 rounded-4 shadow-sm border text-center">
+        <div class="p-3 mt-1">
+          <!-- 1. KOTAK PENCARIAN MANUAL (DIATAS) -->
+          <div class="bg-white p-4 rounded-4 shadow-sm border text-center mb-4">
             <div class="mb-3">
-              <i class="fa-solid fa-mobile-retro text-primary" style="font-size: 3.5rem;"></i>
+              <i class="fa-solid fa-mobile-retro text-primary" style="font-size: 3.2rem;"></i>
             </div>
-            <h6 class="fw-bold text-dark mb-2">Cek Perbaikan HP Anda</h6>
-            <p class="text-muted mb-4" style="font-size: 0.85rem;">Masukkan Kode Nota atau Nomor WhatsApp terdaftar untuk melihat perkembangan servis.</p>
+            <h6 class="fw-bold text-dark mb-2">Cek / Lacak Perbaikan HP</h6>
+            <p class="text-muted mb-3" style="font-size: 0.82rem;">Masukkan Kode Nota atau Nomor WhatsApp terdaftar untuk melihat perkembangan perbaikan.</p>
             
-            <!-- Elemen Input Lacak -->
+            <!-- Input Lacak -->
             <div class="input-group mb-2 shadow-sm" style="border-radius: 12px; overflow: hidden; border: 1px solid #dee2e6;">
-              <input type="text" id="inputLacakNota" class="form-control border-0 bg-light" placeholder="No. WA / Nota..." style="padding: 12px 15px; font-size: 0.9rem;" autocomplete="off">
+              <input type="text" id="inputLacakNota" class="form-control border-0 bg-light" placeholder="No. WA / Kode Nota..." style="padding: 12px 15px; font-size: 0.9rem;" autocomplete="off">
               <button class="btn btn-primary fw-bold px-4" onclick="cariLacakPesanan()"><i class="fa-solid fa-search"></i></button>
             </div>
           </div>
           
-          <!-- Container Hasil Pencarian -->
-          <div id="hasilLacakContainer" class="mt-4"></div>
+          <!-- Container Hasil Pencarian Manual -->
+          <div id="hasilLacakContainer" class="mb-4"></div>
+
+          <!-- 2. WADAH PESANAN OTOMATIS MEMBER (DIBAWAH PENCARIAN) -->
+          <div id="sectionPesananOtomatis" class="mb-4 d-none">
+            <div class="d-flex align-items-center justify-content-between mb-2 px-1">
+              <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">
+                <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Pesanan Saya
+              </h6>
+              <span id="badgeMemberOrderCount" class="badge bg-primary rounded-pill px-2 py-1" style="font-size: 0.7rem;">0</span>
+            </div>
+            <div id="containerPesananOtomatis"></div>
+          </div>
+
         </div>
       </div>
 
@@ -232,11 +247,11 @@
       <div id="memberView" class="d-none bg-light min-vh-100 p-3 pb-5">
       
         <!-- KOTAK FORM LOGIN & DAFTAR -->
-        <div id="akunContainer" class="mx-auto" style="display: none; max-width: 420px; margin-top: 15px;">
+        <div id="akunContainer" class="mx-auto" style="display: none; max-width: 420px; margin-top: 5px;">
           <div class="dribbble-auth-card">
             
             <!-- TAB SWITCHER DENGAN SLIDING PILL -->
-            <div class="auth-tab-switcher mb-4">
+            <div class="auth-tab-switcher mb-3">
               <div id="tabIndicator" class="tab-pill-indicator"></div>
               <button type="button" id="tabBtnLogin" class="auth-tab-btn active" onclick="tampilkanLogin()">
                 <i class="fa-solid fa-right-to-bracket me-2"></i>Login
@@ -252,12 +267,12 @@
                 
                 <!-- 1. FORM LOGIN MEMBER -->
                 <div id="formLoginContainer" class="auth-form-slide">
-                  <div class="auth-header text-center mb-4">
+                  <div class="auth-header text-center mb-2">
                     <h4 class="auth-title">Selamat Datang!</h4>
                     <p class="auth-subtitle">Masuk ke akun Anda untuk melanjutkan</p>
                   </div>
 
-                  <div class="auth-input-wrapper mb-3">
+                  <div class="auth-input-wrapper mb-2">
                     <i class="fa-solid fa-user input-icon"></i>
                     <input type="text" id="username" class="auth-input-field" placeholder="Username / No. HP" onkeypress="cekEnter(event)">
                   </div>
@@ -268,9 +283,9 @@
                     <i class="fa-solid fa-eye toggle-password" onclick="togglePassword('password', this)"></i>
                   </div>
 
-                  <div class="d-flex justify-content-between align-items-center mb-4">
-                    <label class="d-flex align-items-center text-muted" style="font-size: 0.8rem; cursor: pointer;">
-                      <input type="checkbox" class="form-check-input me-2" style="border-radius: 4px;"> Ingat saya
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <label class="d-flex align-items-center text-muted" style="font-size: 0.78rem; cursor: pointer;">
+                      <input type="checkbox" class="form-check-input me-1" style="border-radius: 4px;"> Ingat saya
                     </label>
                     <a href="#" onclick="tampilkanResetPassword()" class="auth-forgot-link">
                       Lupa Password?
@@ -282,26 +297,26 @@
                     <i class="fa-solid fa-arrow-right ms-2"></i>
                   </button>
 
-                  <div id="pesanLogin" class="mt-3 text-center auth-pesan"></div>
+                  <div id="pesanLogin" class="mt-1 text-center auth-pesan"></div>
 
-                  <button onclick="kembaliKeProfilTamu()" class="btn-dribbble-outline w-100 mt-3">
+                  <button onclick="kembaliKeProfilTamu()" class="btn-dribbble-outline w-100 mt-2">
                     <i class="fa-solid fa-xmark me-1"></i> Batal / Kembali
                   </button>
                 </div>
 
                 <!-- 2. FORM DAFTAR MEMBER -->
                 <div id="formDaftarContainer" class="auth-form-slide">
-                  <div class="auth-header text-center mb-4">
+                  <div class="auth-header text-center mb-2">
                     <h4 class="auth-title">Buat Akun Baru</h4>
                     <p class="auth-subtitle">Daftar gratis untuk akses fitur member</p>
                   </div>
 
-                  <div class="auth-input-wrapper mb-3">
+                  <div class="auth-input-wrapper mb-2">
                     <i class="fa-brands fa-whatsapp input-icon"></i>
                     <input type="tel" id="regNoHp" class="auth-input-field" placeholder="Nomor HP / WhatsApp">
                   </div>
 
-                  <div class="auth-input-wrapper mb-3">
+                  <div class="auth-input-wrapper mb-2">
                     <i class="fa-solid fa-user input-icon"></i>
                     <input type="text" id="regUsername" class="auth-input-field" placeholder="Buat Username">
                   </div>
@@ -311,19 +326,20 @@
                     <input type="password" id="regPassword" class="auth-input-field" placeholder="Buat Password (Min. 6 Karakter)" oninput="cekKekuatanSandi(this.value)">
                     <i class="fa-solid fa-eye toggle-password" onclick="togglePassword('regPassword', this)"></i>
                   </div>
+
                   <!-- INDIKATOR KEKUATAN PASSWORD -->
-                   <div class="progress mb-3" style="height: 4px; border-radius: 2px; background: #e2e8f0;">
+                  <div class="progress mb-2" style="height: 4px; border-radius: 2px; background: #e2e8f0;">
                     <div id="pwStrengthBar" class="progress-bar" role="progressbar" style="width: 0%; transition: all 0.3s ease;"></div>
                   </div>
 
-                  <button onclick="prosesDaftar()" class="btn-dribbble-primary w-100 mt-2">
+                  <button onclick="prosesDaftar()" class="btn-dribbble-primary w-100 mt-1">
                     <span>Daftar Member</span>
                     <i class="fa-solid fa-user-check ms-2"></i>
                   </button>
 
-                  <div id="pesanDaftar" class="mt-3 text-center auth-pesan"></div>
+                  <div id="pesanDaftar" class="mt-1 text-center auth-pesan"></div>
 
-                  <button onclick="kembaliKeProfilTamu()" class="btn-dribbble-outline w-100 mt-3">
+                  <button onclick="kembaliKeProfilTamu()" class="btn-dribbble-outline w-100 mt-2">
                     <i class="fa-solid fa-xmark me-1"></i> Batal / Kembali
                   </button>
                 </div>
@@ -333,17 +349,17 @@
 
             <!-- 3. FORM RESET PASSWORD (DILUAR SLIDER) -->
             <div id="formResetContainer" style="display: none;">
-              <div class="auth-header text-center mb-4">
+              <div class="auth-header text-center mb-2">
                 <h4 class="auth-title">Reset Password 🔑</h4>
                 <p class="auth-subtitle">Masukkan No. HP terdaftar Anda</p>
               </div>
 
-              <div class="auth-input-wrapper mb-3">
+              <div class="auth-input-wrapper mb-2">
                 <i class="fa-brands fa-whatsapp input-icon"></i>
                 <input type="tel" id="resetNoHp" class="auth-input-field" placeholder="Nomor HP Terdaftar">
               </div>
 
-              <div class="auth-input-wrapper mb-3">
+              <div class="auth-input-wrapper mb-2">
                 <i class="fa-solid fa-lock input-icon"></i>
                 <input type="password" id="resetPassBaru" class="auth-input-field" placeholder="Masukkan Password Baru">
               </div>
@@ -353,15 +369,15 @@
                 <i class="fa-solid fa-floppy-disk ms-2"></i>
               </button>
 
-              <div id="pesanReset" class="mt-3 text-center auth-pesan"></div>
+              <div id="pesanReset" class="mt-1 text-center auth-pesan"></div>
 
-              <button onclick="tampilkanLogin()" class="btn-dribbble-outline w-100 mt-3">
+              <button onclick="tampilkanLogin()" class="btn-dribbble-outline w-100 mt-2">
                 <i class="fa-solid fa-arrow-left me-1"></i> Kembali ke Login
               </button>
             </div>
 
             <!-- TOMBOL QUICK WA HELP -->
-            <div class="text-center mt-4 pt-2 border-top">
+            <div class="text-center mt-3 pt-2 border-top">
               <a href="https://wa.me/6285799860406?text=Halo%20Admin,%20saya%20butuh%20bantuan%20login/daftar%20member" target="_blank" class="auth-wa-help">
                 <i class="fa-brands fa-whatsapp text-success me-1"></i> Butuh Bantuan? Chat Admin
               </a>
@@ -564,6 +580,30 @@
 
           <button onclick="prosesCheckoutForm()" class="btn btn-success w-100 fw-bold py-2 shadow-sm d-flex align-items-center justify-content-center" style="border-radius: 10px; background-color:#1fa91c; border-color:#1fa91c;">
             <i class="fa-brands fa-whatsapp fs-5 me-2"></i> Kirim Nota ke WhatsApp
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CETAK / LIHAT NOTA DIGITAL -->
+  <div class="modal fade" id="modalNotaDigital" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+        <div class="modal-header border-0 pb-0">
+          <h6 class="modal-title fw-bold text-dark"><i class="fa-solid fa-receipt text-primary me-2"></i>Nota Digital</h6>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4" id="printableNotaArea">
+          <!-- Konten Struk Diisi via JS -->
+        </div>
+        <div class="modal-footer border-0 pt-0 gap-2">
+          <button type="button" class="btn btn-light fw-bold" data-bs-dismiss="modal">Tutup</button>
+          <button type="button" class="btn btn-success fw-bold text-white px-3" id="btnShareNotaCanvasWA" style="background-color: #1fa91c; border-color: #1fa91c;">
+            <i class="fa-brands fa-whatsapp me-1"></i> Kirim Gambar Nota
+          </button>
+          <button type="button" class="btn btn-primary fw-bold px-3" onclick="window.print()">
+            <i class="fa-solid fa-print me-1"></i> Cetak / PDF
           </button>
         </div>
       </div>

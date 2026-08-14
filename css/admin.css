@@ -1,5 +1,5 @@
 /* ====================================
-   CSS VARIABLES & BASE SETUP (PREMIUM)
+   1. CSS VARIABLES & BASE SETUP (UNIVERSAL)
 ==================================== */
 :root {
   --bg-body: #f4f7fe;
@@ -7,10 +7,9 @@
   --text-main: #2b3674;
   --text-muted: #a3aed1;
   --primary: #4318ff;
-  --border-soft: rgba(226, 232, 240, 0.4);
+  --border-soft: rgba(226, 232, 240, 0.6);
   --shadow-soft: 0px 18px 40px rgba(112, 144, 176, 0.12);
-  --shadow-hover: 0 20px 40px -10px rgba(67, 24, 255, 0.1);
-  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
@@ -21,102 +20,63 @@ body {
   color: var(--text-main);
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* CUSTOM SCROLLBAR ELEGAN */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+/* SCROLLBAR ELEGAN */
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-/* ====================================
-   SIDEBAR MENU
-==================================== */
+/* LAYOUT UTAMA */
 #wrapper { display: flex; transition: var(--transition-smooth); position: relative; }
-
-#sidebar-wrapper {
-  min-height: 100vh;
-  width: 270px;
-  background: var(--bg-surface);
-  box-shadow: var(--shadow-soft);
-  transition: var(--transition-smooth);
-  z-index: 1040;
-  display: flex;
-  flex-direction: column;
-}
-
-#wrapper.toggled #sidebar-wrapper { margin-left: -270px; }
+#page-content-wrapper { width: 100%; transition: var(--transition-smooth); min-width: 0; }
 
 .sidebar-heading {
-  padding: 2rem 1.5rem;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 800;
   color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1.5rem 1rem 1rem 1rem;
 }
 
 .list-group-item {
   border: none;
-  padding: 0 18px; 
-  margin: 6px 16px;
   border-radius: 12px;
   color: var(--text-muted);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   transition: var(--transition-smooth);
   background: transparent;
   cursor: pointer;
   display: flex;
   align-items: center;
-  height: 50px; 
+  height: 48px; 
 }
 
-.list-group-item i { width: 34px; font-size: 1.15rem; transition: transform 0.3s ease; }
-.list-group-item:hover { background: rgba(67, 24, 255, 0.04); color: var(--primary); }
-.list-group-item:hover i { transform: scale(1.15) translateX(3px); }
+.list-group-item i { width: 30px; font-size: 1.1rem; }
+.list-group-item:hover { background: rgba(67, 24, 255, 0.05); color: var(--primary); }
 
 .list-group-item.active {
   background: var(--primary);
-  color: #ffffff;
-  box-shadow: 0 8px 20px rgba(67, 24, 255, 0.3);
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(67, 24, 255, 0.25);
 }
-.list-group-item.active i { color: #ffffff; }
-
-.list-group-item.text-danger:hover {
-  background: #fef2f2;
-  color: #ef4444 !important;
-  box-shadow: 0 4px 15px rgba(239, 68, 68, 0.1);
-}
-
-/* ====================================
-   PAGE CONTENT & NAVBAR
-==================================== */
-#page-content-wrapper { width: 100%; padding: 24px; transition: var(--transition-smooth); min-width: 0; }
 
 .admin-navbar {
   background: var(--bg-surface);
-  border-radius: 20px;
+  border-radius: 16px;
   box-shadow: var(--shadow-soft);
-  padding: 14px 28px;
-  margin-bottom: 30px;
   border: none;
 }
 
-.menu-btn {
-  background: #f4f7fe;
-  color: #2b3674;
-}
+.menu-btn { background: #f4f7fe; color: #2b3674; }
 
-/* ====================================
-   DASHBOARD STAT CARDS
-==================================== */
+/* CARDS & KONTEN */
 .stat-card {
   background: var(--bg-surface);
-  border-radius: 20px;
-  padding: 24px 12px;
+  border-radius: 16px;
   box-shadow: var(--shadow-soft);
   display: flex;
   flex-direction: column;
@@ -124,26 +84,21 @@ body {
   justify-content: center;
   text-align: center;
   transition: var(--transition-smooth);
-  border: none;
-  cursor: pointer;
+  border: 1px solid var(--border-soft);
 }
 
-.stat-card:hover { transform: translateY(-5px); }
+.stat-card:active { transform: scale(0.98); }
 
 .stat-icon {
-  width: 54px;
-  height: 54px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .stat-details h3 {
   color: var(--text-main);
-  font-size: 1.7rem;
   font-weight: 800;
   margin: 0;
   line-height: 1;
@@ -151,77 +106,60 @@ body {
 
 .stat-details h6 {
   color: var(--text-muted);
-  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 8px;
+  margin-top: 4px;
   margin-bottom: 0;
 }
 
-/* ====================================
-   PREMIUM CARDS, TABLES, FORMS
-==================================== */
 .premium-card {
   background: var(--bg-surface);
-  border-radius: 24px;
+  border-radius: 20px;
   box-shadow: var(--shadow-soft);
-  padding: 28px;
-  margin-bottom: 24px;
-  border: none;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-soft);
 }
 
-.chart-wrapper { position: relative; height: 250px; width: 100%; }
+.chart-wrapper { position: relative; height: 240px; width: 100%; }
 
 .form-control, .form-select {
-  border-radius: 12px;
-  padding: 10px 14px;
+  border-radius: 10px;
   border: 1.5px solid #e2e8f0;
   background-color: var(--bg-body);
   color: var(--text-main);
   font-weight: 500;
-  font-size: 0.92rem;
   box-shadow: none !important;
-}
-
-.form-select {
-  padding-right: 2.25rem !important; /* Mencegah teks bertumpuk dengan panah dropdown */
-  background-position: right 0.75rem center !important;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .form-control:focus, .form-select:focus {
   background-color: var(--bg-surface);
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(67, 24, 255, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(67, 24, 255, 0.12) !important;
 }
 
-.table { margin-bottom: 0; }
 .table thead th {
-  background: transparent;
   color: var(--text-muted);
   font-weight: 700;
   text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.8px;
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
   border-bottom: 2px solid #f4f7fe;
-  padding: 18px 16px;
+  padding: 12px 10px;
 }
+
 .table tbody td {
-  padding: 18px 16px;
+  padding: 12px 10px;
   vertical-align: middle;
-  color: var(--text-main);
   font-weight: 600;
   border-bottom: 1px solid #f4f7fe;
 }
 
-/* STATUS BADGE & DROPDOWN STATUS PESANAN */
 .status-badge {
-  padding: 6px 14px;         
-  border-radius: 20px;     
-  font-size: 0.7rem;        
-  font-weight: 700;          
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
 }
@@ -229,157 +167,196 @@ body {
 .status-preorder { background-color: #fef3c7; color: #b45309; }
 .status-kosong { background-color: #fee2e2; color: #b91c1c; }
 
-.table .form-select-sm {
-  border-radius: 20px;
-  padding: 5px 26px 5px 12px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: var(--transition-smooth);
-}
-
 /* ====================================
-   MODAL PROFESIONAL & RESPONSIF
-==================================== */
-.modal-dialog {
-  transition: var(--transition-smooth);
-}
-
-@media (min-width: 992px) {
-  .modal-dialog {
-    max-width: 900px !important;
-  }
-}
-
-@media (min-width: 1200px) {
-  .modal-dialog {
-    max-width: 1000px !important;
-  }
-}
-
-.modal-body {
-  max-height: 80vh !important;
-  overflow-y: auto !important;
-  padding: 20px !important;
-}
-
-/* Khusus Tampilan HP / Mobile (Aman & Tidak Terdesak) */
-@media (max-width: 768px) {
-  .modal-dialog {
-    max-width: 95% !important;
-    margin: 0.5rem auto !important;
-  }
-
-  .modal-body {
-    padding: 14px 12px !important;
-  }
-
-  /* Ukuran teks input & label yang pas untuk HP */
-  .modal-body .form-select {
-    font-size: 0.82rem !important;
-    padding: 8px 32px 8px 10px !important; /* Preserves padding-right untuk panah dropdown */
-    background-position: right 0.5rem center !important;
-    height: 38px !important;
-  }
-
-  .modal-body .form-control {
-    font-size: 0.82rem !important;
-    padding: 8px 10px !important;
-    height: 38px !important;
-  }
-
-  .modal-body .form-label {
-    font-size: 0.75rem !important;
-    margin-bottom: 3px !important;
-    font-weight: 600;
-  }
-}
-
-/* ====================================
-   BRAND BOX (AMAN DARI TEKS KELUAR KOTAK)
+   BRAND GRID BOX (FIX TEXT OVERFLOW)
 ==================================== */
 .brand-box {
   background: #ffffff;
-  border-radius: 16px;
-  padding: 14px 8px;
+  border-radius: 14px;
+  padding: 10px 8px;
   text-align: center;
-  cursor: pointer;
   border: 1px solid var(--border-soft);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-  transition: var(--transition-smooth);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.02);
   height: 100%;
-  min-height: 130px;
+  min-height: 125px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   overflow: hidden;
+  position: relative;
 }
 
 .brand-box:hover {
-  transform: translateY(-3px);
   border-color: var(--primary);
-  box-shadow: 0 8px 25px rgba(67, 24, 255, 0.12);
+  box-shadow: 0 6px 18px rgba(67, 24, 255, 0.12);
 }
 
 .brand-card-img-wrap {
-  width: 44px;
-  height: 44px;
+  width: 36px;
+  height: 36px;
   background: #f4f7fe;
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   flex-shrink: 0;
 }
 
-.brand-card-img-wrap img {
-  max-width: 75%;
-  max-height: 75%;
-  object-fit: contain;
-}
-
 .brand-box h5 {
-  font-size: 0.6rem !important;
+  font-size: 0.72rem !important;
   font-weight: 700;
   color: var(--text-main);
-  margin: 2px 0;
-  word-break: break-all !important;
-  overflow-wrap: break-word !important;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  margin: 4px 0;
   line-height: 1.25;
   width: 100%;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* Batasi maksimal 2 baris agar rapi */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .brand-badge {
   background: #e0e7ff;
   color: var(--primary);
-  border-radius: 20px;
+  border-radius: 12px;
   padding: 2px 8px;
-  font-size: 0.55rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  margin-top: auto;
   flex-shrink: 0;
+  margin-top: 4px;
 }
 
-/* Responsif Umum HP */
-@media (max-width: 768px) {
+/* ====================================
+   2. TAMPILAN 1: HP / MOBILE (< 576px)
+==================================== */
+@media (max-width: 575.98px) {
+  #page-content-wrapper { padding: 10px; }
+  
+  .admin-navbar { padding: 10px 14px; margin-bottom: 15px; }
+
+  /* OVERLAY SIDEBAR DRAWER MELAYANG */
+  #sidebar-wrapper {
+    position: fixed;
+    top: 0; left: -280px;
+    width: 280px; height: 100vh;
+    background: #ffffff;
+    z-index: 1050;
+    box-shadow: 10px 0 30px rgba(0,0,0,0.15);
+    transition: var(--transition-smooth);
+  }
+  #wrapper.toggled #sidebar-wrapper { left: 0; }
   #wrapper.toggled::before {
     content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-    background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 1030;
+    background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); z-index: 1045;
   }
+
+  /* KARTU STATISTIK HP (2 PER BARIS) */
+  .stat-card { padding: 12px 8px; }
+  .stat-icon { width: 38px; height: 38px; font-size: 1.1rem; }
+  .stat-details h3 { font-size: 1.25rem; }
+  .stat-details h6 { font-size: 0.58rem; }
+
+  .premium-card { padding: 14px; border-radius: 16px; margin-bottom: 14px; }
+  .chart-wrapper { height: 200px; }
+
+  /* FORM HP TERUKUR */
+  .form-control, .form-select {
+    font-size: 0.82rem !important;
+    padding: 8px 10px !important;
+    height: 40px;
+  }
+
+  .table thead th, .table tbody td {
+    padding: 10px 8px;
+    font-size: 0.78rem;
+  }
+}
+
+
+/* ====================================
+   3. TAMPILAN 2: TABLET (576px - 991px)
+==================================== */
+@media (min-width: 576px) and (max-width: 991.98px) {
+  #page-content-wrapper { padding: 18px; }
+
+  .admin-navbar { padding: 12px 20px; margin-bottom: 20px; }
+
+  /* OVERLAY SIDEBAR TABLET */
   #sidebar-wrapper {
-    margin-left: -280px; width: 280px; position: fixed; height: 100vh; z-index: 1040;
+    position: fixed;
+    top: 0; left: -270px;
+    width: 270px; height: 100vh;
+    background: #ffffff;
+    z-index: 1050;
+    box-shadow: 10px 0 30px rgba(0,0,0,0.12);
+    transition: var(--transition-smooth);
   }
-  #wrapper.toggled #sidebar-wrapper { margin-left: 0; }
-  #page-content-wrapper { padding: 12px; }
-  .stat-card { padding: 16px 8px; border-radius: 16px; }
-  .stat-icon { width: 44px; height: 44px; font-size: 1.2rem; }
-  .stat-details h3 { font-size: 1.3rem; }
-  .stat-details h6 { font-size: 0.6rem; margin-top: 6px; }
+  #wrapper.toggled #sidebar-wrapper { left: 0; }
+  #wrapper.toggled::before {
+    content: ''; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(15, 23, 42, 0.3); backdrop-filter: blur(3px); z-index: 1045;
+  }
+
+  /* KARTU STATISTIK TABLET (3 PER BARIS) */
+  .stat-card { padding: 16px 10px; }
+  .stat-icon { width: 44px; height: 44px; font-size: 1.25rem; }
+  .stat-details h3 { font-size: 1.45rem; }
+  .stat-details h6 { font-size: 0.65rem; }
+
+  .premium-card { padding: 20px; }
+  .chart-wrapper { height: 220px; }
+}
+
+
+/* ====================================
+   4. TAMPILAN 3: LAPTOP / DESKTOP (≥ 992px)
+==================================== */
+@media (min-width: 992px) {
+  #page-content-wrapper { padding: 24px 30px; }
+
+  /* SIDEBAR PERMANEN DI KIRI */
+  #sidebar-wrapper {
+    min-height: 100vh;
+    width: 270px;
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-soft);
+    position: relative;
+    margin-left: 0;
+    flex-shrink: 0;
+  }
+
+  #wrapper.toggled #sidebar-wrapper { margin-left: -270px; }
+
+  .admin-navbar { padding: 14px 28px; margin-bottom: 28px; }
+
+  /* KARTU STATISTIK DESKTOP (6 UTUH SEBARIS) */
+  .stat-card { padding: 22px 10px; }
+  .stat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(67, 24, 255, 0.12); }
+  .stat-icon { width: 50px; height: 50px; font-size: 1.4rem; }
+  .stat-details h3 { font-size: 1.6rem; }
+  .stat-details h6 { font-size: 0.68rem; }
+
+  .premium-card { padding: 26px; }
+  .chart-wrapper { height: 250px; }
+}
+
+.fw-extrabold {
+  font-weight: 800 !important;
+}
+
+.bg-success-subtle {
+  background-color: #d1fae5 !important;
+}
+
+.bg-primary-subtle {
+  background-color: #e0e7ff !important;
+}
+
+.bg-warning-subtle {
+  background-color: #fef3c7 !important;
 }

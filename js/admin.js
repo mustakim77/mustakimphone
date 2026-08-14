@@ -145,7 +145,7 @@ function setupSidebar() {
     };
 
     document.querySelectorAll('#sidebar-wrapper .list-group-item').forEach(item => {
-        if(item.id === 'menu-logout') return; 
+        if (item.id === 'menu-logout') return; 
 
         item.addEventListener('click', function(e) {
             const targetId = menuMapping[this.id];
@@ -175,7 +175,10 @@ function setupSidebar() {
                     loadOrders();
                 }
                 
-                if (window.innerWidth <= 768) document.getElementById('wrapper').classList.remove('toggled');
+                // Tutup sidebar otomatis untuk tampilan HP & Tablet (< 992px)
+                if (window.innerWidth < 992) {
+                    document.getElementById('wrapper').classList.remove('toggled');
+                }
             }
         });
     });
@@ -197,8 +200,8 @@ async function loadOrders() {
         if (error) throw error;
 
         globalOrders = data || [];
-        filteredOrders = [...globalOrders];
-        renderOrdersTable();
+        applyOrderFilters();
+        loadFinancialReport();
     } catch(err) {
         console.error("Gagal memuat orders:", err);
         tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Gagal memuat data pesanan: ${err.message}</td></tr>`;
@@ -243,7 +246,6 @@ function renderOrdersTable() {
 
         let tipeHp = order.note ? order.note.trim() : '-';
         let idPartsList = '-';
-        let itemRincian = '-';
 
         if (Array.isArray(order.items) && order.items.length > 0) {
             idPartsList = order.items.map(i => {
@@ -251,32 +253,15 @@ function renderOrdersTable() {
                 let partKet = (i.keterangan && i.keterangan !== '-') ? ` (${i.keterangan})` : '';
                 return `${partId}${partKet}`;
             }).join(', ');
-
-            itemRincian = order.items.map((i, idx) => `${idx + 1}. *${i.title}* (${i.qty} Pcs)`).join('\n');
         }
-
-        let cleanPhone = String(order.customer_phone || '').replace(/[^0-9]/g, '');
-        if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1);
-
-        let waMsg = `*UPDATE STATUS PESANAN - MUSTAKIM PHONE*\n`;
-        waMsg += `==============================\n`;
-        waMsg += `*No. Nota:* #${order.order_id || '-'}\n`;
-        waMsg += `*Nama Pelanggan:* ${order.customer_name || '-'}\n`;
-        waMsg += `*Tipe HP Pelanggan:* ${tipeHp}\n`;
-        waMsg += `*ID Part:* ${idPartsList}\n`;
-        waMsg += `==============================\n`;
-        waMsg += `*STATUS PESANAN:* *${(order.status || 'Pending').toUpperCase()}*\n\n`;
-        waMsg += `*Detail Item:*\n${itemRincian}\n\n`;
-        waMsg += `==============================\n`;
-        waMsg += `*TOTAL TAGIHAN:* ${formatRupiah(order.total_price)}\n`;
-        waMsg += `==============================\n`;
-        waMsg += `_Ada yang bisa kami bantu seputar pesanan Anda?_`;
-
-        let waLink = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMsg)}`;
 
         return `
             <tr>
-                <td class="fw-bold text-primary">#${order.order_id}</td>
+                <td>
+                    <a href="javascript:void(0)" onclick="bukaNotaDigitalAdmin('${order.order_id}')" class="fw-bold text-primary text-decoration-none">
+                        #${order.order_id}
+                    </a>
+                </td>
                 <td class="small text-muted">${tgl}</td>
                 <td class="fw-semibold text-dark">${order.customer_name || '-'}</td>
                 <td><span class="small text-muted">${order.customer_phone || '-'}</span></td>
@@ -290,10 +275,10 @@ function renderOrdersTable() {
                     </select>
                 </td>
                 <td class="text-center">
-                    <a href="${waLink}" target="_blank" class="btn btn-sm btn-success rounded-3 me-1" title="Chat WA Pemesan">
+                    <button onclick="bukaNotaDigitalAdmin('${order.order_id}')" class="btn btn-sm btn-success rounded-3 me-1 shadow-sm" title="Buka & Kirim Gambar Nota WA" style="background-color: #1fa91c; border-color: #1fa91c;">
                         <i class="fa-brands fa-whatsapp fs-6"></i>
-                    </a>
-                    <button onclick="hapusOrder(${order.id})" class="btn btn-sm btn-light text-danger rounded-3" title="Hapus Order">
+                    </button>
+                    <button onclick="hapusOrder(${order.id})" class="btn btn-sm btn-light text-danger rounded-3 shadow-sm" title="Hapus Order">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 </td>
@@ -309,7 +294,6 @@ async function ubahStatusOrder(orderDbId, statusBaru) {
     try {
         let updatePayload = { status: statusBaru };
         
-        // Catat tanggal selesai otomatis jika status diubah ke 'Selesai'
         if (statusBaru.toLowerCase() === 'selesai') {
             updatePayload.completed_at = new Date().toISOString();
         }
@@ -322,7 +306,6 @@ async function ubahStatusOrder(orderDbId, statusBaru) {
         if (error) throw error;
 
         let tipeHp = order.note ? order.note.trim() : '-';
-
         let idPartsList = '-';
         let detailItemsText = '';
 
@@ -411,6 +394,91 @@ async function hapusOrder(id) {
 }
 
 // ==========================================
+// HITUNG & MUAT REKAP KEUANGAN (OMZET, MODAL, PROFIT)
+// ==========================================
+async function loadFinancialReport() {
+    const elOmset = document.getElementById('statTotalOmset');
+    const elModal = document.getElementById('statTotalModal');
+    const elProfit = document.getElementById('statTotalProfit');
+    const filterPeriode = document.getElementById('filterPeriodeKeuangan') ? document.getElementById('filterPeriodeKeuangan').value : 'bulan_ini';
+
+    if (!elOmset || !elModal || !elProfit) return;
+
+    try {
+        const { data: orders, error } = await dbClient
+            .from('orders')
+            .select('*')
+            .ilike('status', 'Selesai');
+
+        if (error) throw error;
+
+        let totalOmset = 0;
+        let totalModal = 0;
+
+        const sekarang = new Date();
+        const bulanSekarang = sekarang.getMonth();
+        const tahunSekarang = sekarang.getFullYear();
+        const tanggalSekarangStr = sekarang.toDateString();
+
+        // Map Katalog Modal dari globalData (index 0 = ID, index 5 = Modal/HPP)
+        const mapModalCatalog = {};
+        if (Array.isArray(globalData)) {
+            globalData.forEach(row => {
+                const idItem = String(row[0] || '').trim();
+                const hppNum = parseInt(String(row[5] || '0').replace(/[^0-9]/g, '')) || 0; // FIXED INDEX 5
+                if (idItem) {
+                    mapModalCatalog[idItem] = hppNum;
+                }
+            });
+        }
+
+        orders.forEach(order => {
+            const tglOrder = new Date(order.created_at || order.updated_at);
+
+            if (filterPeriode === 'hari_ini') {
+                if (tglOrder.toDateString() !== tanggalSekarangStr) return;
+            } else if (filterPeriode === 'bulan_ini') {
+                if (tglOrder.getMonth() !== bulanSekarang || tglOrder.getFullYear() !== tahunSekarang) return;
+            }
+
+            const omsetOrder = parseInt(order.total_price) || 0;
+            totalOmset += omsetOrder;
+
+            if (Array.isArray(order.items)) {
+                order.items.forEach(item => {
+                    const itemId = item.id ? String(item.id).trim() : '';
+                    const qty = parseInt(item.qty) || 1;
+
+                    let modalSatuan = item.modal || mapModalCatalog[itemId] || 0;
+                    if (!modalSatuan && item.price) {
+                        modalSatuan = Math.round(item.price * 0.7);
+                    }
+
+                    totalModal += (modalSatuan * qty);
+                });
+            }
+        });
+
+        const totalProfit = totalOmset - totalModal;
+
+        elOmset.innerText = formatRupiahAdmin(totalOmset);
+        elModal.innerText = formatRupiahAdmin(totalModal);
+        elProfit.innerText = formatRupiahAdmin(totalProfit);
+
+    } catch (err) {
+        console.error("Gagal memuat rekap keuangan:", err);
+    }
+}
+
+function formatRupiahAdmin(angka) {
+    return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+    }).format(angka).replace(/\s/g, '');
+}
+
+// ==========================================
 // DATA LOADING & DASHBOARD
 // ==========================================
 async function loadData() {
@@ -429,7 +497,6 @@ async function loadData() {
 
     if (error) throw error;
 
-    // Memetakan data_service termasuk kolom MODAL (HPP)
     globalData = (data || []).map(item => [
         item.id,             // 0
         item.merk_hp,        // 1
@@ -465,6 +532,7 @@ async function loadData() {
     renderTable();
     renderRecentActivity(globalData);
     renderChart(globalData);
+    loadFinancialReport();
     
     renderTopSearchesChart([['LCD', 5], ['Baterai', 3], ['Infinix', 2]]);
     const visitorEl = document.getElementById('stat-visitors');
@@ -532,7 +600,7 @@ function showMerkModal() {
     container.innerHTML = '';
 
     const divSemua = document.createElement('div');
-    divSemua.className = 'col-6 col-md-3';
+    divSemua.className = 'col-6 col-sm-4 col-md-3';
     divSemua.innerHTML = `
         <div class="brand-box" onclick="filterBySpecificMerk('SEMUA')">
             <div class="brand-card-img-wrap"><i class="fa-solid fa-layer-group text-primary fs-4"></i></div>
@@ -544,10 +612,11 @@ function showMerkModal() {
 
     Object.keys(merkCounts).sort().forEach(merk => {
         const count = merkCounts[merk];
+        const safeMerk = merk.replace(/'/g, "\\'");
         const div = document.createElement('div');
-        div.className = 'col-6 col-md-3';
+        div.className = 'col-6 col-sm-4 col-md-3';
         div.innerHTML = `
-            <div class="brand-box" onclick="filterBySpecificMerk('${merk}')">
+            <div class="brand-box" onclick="filterBySpecificMerk('${safeMerk}')" title="${merk}">
                 <div class="brand-card-img-wrap"><i class="fa-solid fa-mobile-screen-button text-dark fs-4"></i></div>
                 <h5>${merk}</h5>
                 <div class="brand-badge">${count} Tipe</div>
@@ -557,27 +626,6 @@ function showMerkModal() {
     });
 
     new bootstrap.Modal(document.getElementById('modalPilihMerk')).show();
-}
-
-window.filterBySpecificMerk = function(merkName) {
-    const modalEl = document.getElementById('modalPilihMerk');
-    if (modalEl) {
-        const modalInstance = bootstrap.Modal.getInstance(modalEl);
-        if (modalInstance) modalInstance.hide();
-    }
-
-    document.getElementById('searchInput').value = '';
-    document.getElementById('filterService').value = '';
-
-    if (merkName === 'SEMUA') {
-        filteredData = [...globalData];
-    } else {
-        filteredData = globalData.filter(row => String(row[1] || '').toUpperCase().trim() === merkName);
-    }
-
-    currentPage = 1;
-    renderTable();
-    document.getElementById('menu-data').click();
 }
 
 // --- MODAL TYPE ---
@@ -593,7 +641,7 @@ function showTypeModal() {
     container.innerHTML = '';
 
     const divSemua = document.createElement('div');
-    divSemua.className = 'col-6 col-md-3';
+    divSemua.className = 'col-6 col-sm-4 col-md-3';
     divSemua.innerHTML = `
         <div class="brand-box" onclick="filterBySpecificType('SEMUA')">
             <div class="brand-card-img-wrap"><i class="fa-solid fa-layer-group text-primary fs-4"></i></div>
@@ -605,10 +653,11 @@ function showTypeModal() {
 
     Object.keys(typeCounts).sort().forEach(type => {
         const count = typeCounts[type];
+        const safeType = type.replace(/'/g, "\\'");
         const div = document.createElement('div');
-        div.className = 'col-6 col-md-3';
+        div.className = 'col-6 col-sm-4 col-md-3';
         div.innerHTML = `
-            <div class="brand-box" onclick="filterBySpecificType('${type}')">
+            <div class="brand-box" onclick="filterBySpecificType('${safeType}')" title="${type}">
                 <div class="brand-card-img-wrap"><i class="fa-solid fa-mobile-screen text-dark fs-4"></i></div>
                 <h5>${type}</h5>
                 <div class="brand-badge">${count} Item</div>
@@ -618,21 +667,6 @@ function showTypeModal() {
     });
 
     new bootstrap.Modal(document.getElementById('modalPilihType')).show();
-}
-
-window.filterBySpecificType = function(typeName) {
-    bootstrap.Modal.getInstance(document.getElementById('modalPilihType')).hide();
-    document.getElementById('searchInput').value = '';
-    document.getElementById('filterService').value = '';
-
-    if (typeName === 'SEMUA') {
-        filteredData = [...globalData];
-    } else {
-        filteredData = globalData.filter(row => String(row[2] || '').toUpperCase().trim() === typeName);
-    }
-    currentPage = 1;
-    renderTable();
-    document.getElementById('menu-data').click();
 }
 
 // --- MODAL LCD ---
@@ -649,7 +683,7 @@ function showLcdModal() {
     container.innerHTML = '';
 
     const divSemua = document.createElement('div');
-    divSemua.className = 'col-6 col-md-3';
+    divSemua.className = 'col-6 col-sm-4 col-md-3';
     divSemua.innerHTML = `
         <div class="brand-box" onclick="filterBySpecificLcdMerk('SEMUA')">
             <div class="brand-card-img-wrap"><i class="fa-solid fa-layer-group text-success fs-4"></i></div>
@@ -661,10 +695,11 @@ function showLcdModal() {
 
     Object.keys(merkCounts).sort().forEach(merk => {
         const count = merkCounts[merk];
+        const safeMerk = merk.replace(/'/g, "\\'");
         const div = document.createElement('div');
-        div.className = 'col-6 col-md-3';
+        div.className = 'col-6 col-sm-4 col-md-3';
         div.innerHTML = `
-            <div class="brand-box" onclick="filterBySpecificLcdMerk('${merk}')">
+            <div class="brand-box" onclick="filterBySpecificLcdMerk('${safeMerk}')" title="${merk}">
                 <div class="brand-card-img-wrap"><i class="fa-solid fa-mobile-screen-button text-success fs-4"></i></div>
                 <h5>${merk}</h5>
                 <div class="brand-badge">${count} LCD</div>
@@ -674,21 +709,6 @@ function showLcdModal() {
     });
 
     new bootstrap.Modal(document.getElementById('modalPilihLcd')).show();
-}
-
-window.filterBySpecificLcdMerk = function(merkName) {
-    bootstrap.Modal.getInstance(document.getElementById('modalPilihLcd')).hide();
-    document.getElementById('searchInput').value = '';
-    document.getElementById('filterService').value = 'GANTI LCD';
-
-    if (merkName === 'SEMUA') {
-        filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('LCD'));
-    } else {
-        filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('LCD') && String(row[1] || '').toUpperCase().trim() === merkName);
-    }
-    currentPage = 1;
-    renderTable();
-    document.getElementById('menu-data').click();
 }
 
 // --- MODAL BATTERY ---
@@ -705,7 +725,7 @@ function showBatModal() {
     container.innerHTML = '';
 
     const divSemua = document.createElement('div');
-    divSemua.className = 'col-6 col-md-3';
+    divSemua.className = 'col-6 col-sm-4 col-md-3';
     divSemua.innerHTML = `
         <div class="brand-box" onclick="filterBySpecificBatMerk('SEMUA')">
             <div class="brand-card-img-wrap"><i class="fa-solid fa-battery-full text-warning fs-4"></i></div>
@@ -717,10 +737,11 @@ function showBatModal() {
 
     Object.keys(merkCounts).sort().forEach(merk => {
         const count = merkCounts[merk];
+        const safeMerk = merk.replace(/'/g, "\\'");
         const div = document.createElement('div');
-        div.className = 'col-6 col-md-3';
+        div.className = 'col-6 col-sm-4 col-md-3';
         div.innerHTML = `
-            <div class="brand-box" onclick="filterBySpecificBatMerk('${merk}')">
+            <div class="brand-box" onclick="filterBySpecificBatMerk('${safeMerk}')" title="${merk}">
                 <div class="brand-card-img-wrap"><i class="fa-solid fa-battery-full text-warning fs-4"></i></div>
                 <h5>${merk}</h5>
                 <div class="brand-badge">${count} Bat</div>
@@ -761,15 +782,14 @@ document.getElementById('formTambahData').addEventListener('submit', async funct
   let baseMerkType = `${merk.toUpperCase()}${type.split(/[,\/]+/)[0].trim().toUpperCase().replace(/\s+/g, '')}`;
   let baseService = service.toUpperCase().replace('GANTI ', '').trim();
 
-  // Ambil 3 huruf pertama dari Keterangan (misal MEETOO -> MEE, OG -> OG)
   let ketInput = (document.getElementById('inputKeterangan').value || '').trim().toUpperCase();
-  let ketClean = ketInput.replace(/[^A-Z0-9]/g, ''); // Hapus spasi & simbol
+  let ketClean = ketInput.replace(/[^A-Z0-9]/g, '');
   
   let suffix = '';
   if (ketClean.length > 0 && ketClean !== '-') {
-      suffix = ketClean.substring(0, 3); // Ambil maks 3 karakter
+      suffix = ketClean.substring(0, 3);
   } else {
-      suffix = Math.floor(1000 + Math.random() * 9000); // Cadangan jika keterangan kosong
+      suffix = Math.floor(1000 + Math.random() * 9000);
   }
 
   let id = `${baseMerkType}-${baseService}-${suffix}`;
@@ -796,11 +816,9 @@ document.getElementById('formTambahData').addEventListener('submit', async funct
   Swal.fire({ title: 'Menyimpan...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
   
   try {
-      // 1. Simpan ke Supabase Database
       const { error } = await dbClient.from('data_service').insert([payload]);
       if (error) throw error;
 
-      // 2. Kirim otomatis ke Google Sheets via Apps Script Webhook
       try {
           await fetch(APPS_SCRIPT_WEBHOOK_URL, {
               method: 'POST',
@@ -869,11 +887,9 @@ document.getElementById('btnUpdateData').addEventListener('click', async functio
   };
 
   try {
-      // 1. Update di Supabase Database
       const { error } = await dbClient.from('data_service').update(payload).eq('id', recordId);
       if (error) throw error;
 
-      // 2. Kirim update ke Google Sheets via Webhook
       try {
           await fetch(APPS_SCRIPT_WEBHOOK_URL, {
               method: 'POST',
@@ -906,11 +922,9 @@ window.deleteRecord = function(id) {
   }).then(async (result) => {
     if (result.isConfirmed) { 
         try {
-            // 1. Hapus dari Supabase Database
             const { error } = await dbClient.from('data_service').delete().eq('id', id);
             if (error) throw error;
 
-            // 2. Kirim perintah hapus ke Google Sheets Webhook
             try {
                 await fetch(APPS_SCRIPT_WEBHOOK_URL, {
                     method: 'POST',
@@ -1159,8 +1173,7 @@ function renderTable() {
             tipeTampil = `<span class="fw-medium">${daftarTipe[0].trim()}</span> <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 ms-1 rounded-pill" style="font-size: 0.65rem;">+${daftarTipe.length - 1} Seri</span>`;
         }
 
-        // Format Keterangan / Merk Part (MEETOO, SUNSHINE, dll.)
-        let ketVal = row[6] ? String(row[6]).trim() : '';
+        let ketVal = row[7] ? String(row[7]).trim() : '';
         let ketBadge = ketVal 
             ? `<span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 rounded-2 fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">${ketVal.toUpperCase()}</span>` 
             : `<span class="text-muted small">-</span>`;
@@ -1272,6 +1285,187 @@ function renderTopSearchesChart(data) {
 }
 
 function formatRupiah(angka) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(String(angka).replace(/[^0-9]/g, '') || 0); }
+
+// ==========================================
+// BUKA MODAL NOTA DIGITAL SISI ADMIN
+// ==========================================
+async function bukaNotaDigitalAdmin(orderId) {
+    try {
+        const { data: order, error } = await dbClient
+            .from('orders')
+            .select('*')
+            .eq('order_id', orderId)
+            .single();
+
+        if (error || !order) {
+            Swal.fire('Error', 'Gagal memuat detail nota pesanan.', 'error');
+            return;
+        }
+
+        let tgl = order.created_at ? new Date(order.created_at).toLocaleString('id-ID', {
+            day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        }) : '-';
+
+        let statusUpper = (order.status || 'PENDING').toUpperCase();
+        let statusBadgeClass = 'bg-secondary text-white';
+        if (statusUpper === 'PENDING') statusBadgeClass = 'bg-warning text-dark';
+        if (statusUpper === 'DIPROSES') statusBadgeClass = 'bg-info text-dark';
+        if (statusUpper === 'SELESAI') statusBadgeClass = 'bg-success text-white';
+
+        let itemsHtml = '';
+        if (Array.isArray(order.items)) {
+            order.items.forEach((item, idx) => {
+                let subtotal = item.price * item.qty;
+                itemsHtml += `
+                <tr style="border-bottom: 1px dashed #dee2e6;">
+                    <td style="padding: 6px 0; font-size: 0.8rem;">${idx + 1}. ${item.title}</td>
+                    <td style="padding: 6px 0; font-size: 0.8rem; text-align: center;">${item.qty}</td>
+                    <td style="padding: 6px 0; font-size: 0.8rem; text-align: right;">${formatRupiahAdmin(subtotal)}</td>
+                </tr>`;
+            });
+        }
+
+        const printableArea = document.getElementById('printableNotaArea');
+        printableArea.innerHTML = `
+            <div class="text-center mb-3">
+                <h5 class="fw-bolder mb-0 text-primary">MUSTAKIM PHONE</h5>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">Service HP & Mini ATM</small>
+                <small class="text-muted d-block" style="font-size: 0.7rem;">WA: 0857-9986-0406</small>
+            </div>
+            <hr style="border-top: 1.5px dashed #000; margin: 8px 0;">
+            <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>No. Nota: <strong>#${order.order_id}</strong></span>
+                <span>${tgl}</span>
+            </div>
+            <div class="d-flex justify-content-between small text-muted mb-2">
+                <span>Pelanggan: <strong>${order.customer_name}</strong></span>
+                <span>Tipe: <strong>${order.note || '-'}</strong></span>
+            </div>
+            <hr style="border-top: 1.5px dashed #000; margin: 8px 0;">
+            <table class="w-100 mb-2">
+                <thead>
+                    <tr style="border-bottom: 1px solid #000; font-size: 0.75rem;">
+                        <th class="py-1">Item</th>
+                        <th class="py-1 text-center">Qty</th>
+                        <th class="py-1 text-end">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsHtml}
+                </tbody>
+            </table>
+            <hr style="border-top: 1.5px dashed #000; margin: 8px 0;">
+            <div class="d-flex justify-content-between fw-bold fs-6 text-dark mt-2">
+                <span>TOTAL BAYAR:</span>
+                <span class="text-primary">${formatRupiahAdmin(order.total_price)}</span>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center small text-muted mt-2">
+                <span style="font-size: 0.8rem; font-weight: 600;">Status:</span>
+                <span class="badge ${statusBadgeClass} shadow-sm" style="padding: 5px 12px; font-size: 0.72rem; font-weight: 800; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; line-height: 1;">
+                    ${statusUpper}
+                </span>
+            </div>
+
+            <div class="text-center mt-4 pt-2 border-top">
+                <small class="text-muted d-block" style="font-size: 0.7rem;">Terima Kasih atas Kepercayaan Anda!</small>
+                <small class="text-muted d-block" style="font-size: 0.65rem;">Garansi berlaku sesuai ketentuan syarat nota.</small>
+            </div>`;
+
+        const btnCanvasWA = document.getElementById('btnShareNotaCanvasWA');
+        if (btnCanvasWA) {
+            btnCanvasWA.onclick = () => kirimNotaCanvasKeWAAdmin(order);
+        }
+
+        const modalNota = new bootstrap.Modal(document.getElementById('modalNotaDigital'));
+        modalNota.show();
+
+    } catch (e) {
+        console.error("Error modal nota admin:", e);
+    }
+}
+
+// ==========================================
+// KONVERSI CANVAS & KIRIM KE WA PELANGGAN
+// ==========================================
+async function kirimNotaCanvasKeWAAdmin(order) {
+    const notaElement = document.getElementById('printableNotaArea');
+    const btnCanvasWA = document.getElementById('btnShareNotaCanvasWA');
+
+    if (!notaElement || !order) return;
+
+    const originalBtnText = btnCanvasWA ? btnCanvasWA.innerHTML : '';
+    if (btnCanvasWA) {
+        btnCanvasWA.disabled = true;
+        btnCanvasWA.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Memproses...`;
+    }
+
+    try {
+        const canvas = await html2canvas(notaElement, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            logging: false
+        });
+
+        canvas.toBlob(async (blob) => {
+            if (!blob) {
+                Swal.fire('Gagal', 'Gagal memproses gambar nota.', 'error');
+                if (btnCanvasWA) {
+                    btnCanvasWA.disabled = false;
+                    btnCanvasWA.innerHTML = originalBtnText;
+                }
+                return;
+            }
+
+            const fileName = `Nota-${order.order_id}.png`;
+            const file = new File([blob], fileName, { type: 'image/png' });
+
+            let noHpPelanggan = order.customer_phone ? String(order.customer_phone).replace(/[^0-9]/g, '') : '';
+            if (noHpPelanggan.startsWith('0')) {
+                noHpPelanggan = '62' + noHpPelanggan.slice(1);
+            }
+
+            let textChat = `Halo Kak ${order.customer_name}, berikut adalah Nota Digital resmi perbaikan/pesanan #${order.order_id} di MUSTAKIM PHONE.`;
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: `Nota ${order.order_id}`,
+                        text: textChat
+                    });
+                } catch (err) {
+                    console.log('User cancel share:', err);
+                }
+            } 
+            else {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                link.click();
+                URL.revokeObjectURL(link.href);
+
+                let urlWA = noHpPelanggan 
+                    ? `https://wa.me/${noHpPelanggan}?text=${encodeURIComponent(textChat)}`
+                    : `https://api.whatsapp.com/send?text=${encodeURIComponent(textChat)}`;
+
+                window.open(urlWA, '_blank');
+            }
+
+            if (btnCanvasWA) {
+                btnCanvasWA.disabled = false;
+                btnCanvasWA.innerHTML = originalBtnText;
+            }
+        }, 'image/png');
+
+    } catch (error) {
+        console.error('Error Canvas Admin:', error);
+        if (btnCanvasWA) {
+            btnCanvasWA.disabled = false;
+            btnCanvasWA.innerHTML = originalBtnText;
+        }
+    }
+}
 
 // ==========================================
 // LOGOUT

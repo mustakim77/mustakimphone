@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.head.appendChild(styleAnimasi);
 
     const daftarLayar = [
-        'homeView', 'searchView', 'kategoriView', 'merekView', 
+        'homeView', 'searchView', 'cekservisView', 'merekView', 
         'keranjangView', 'memberView', 'detailWorkspace', 
         'akunContainer'
     ];
@@ -110,7 +110,7 @@ function getSkeletonHTML(count = 6) {
     let html = '<div class="row g-2 px-1">';
     for (let i = 0; i < count; i++) {
         html += `
-        <div class="col-6 col-md-3 mb-2">
+        <div class="col-6 mb-2">
             <div class="card border-0 shadow-sm skeleton-card"></div>
         </div>`;
     }
@@ -176,7 +176,7 @@ function switchNav(tabName, element) {
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         if (element) element.classList.add('active');
 
-        const views = ['homeView', 'searchView', 'kategoriView', 'merekView', 'keranjangView', 'memberView'];
+        const views = ['homeView', 'searchView', 'cekservisView', 'merekView', 'keranjangView', 'memberView'];
         views.forEach(viewId => {
             const v = document.getElementById(viewId);
             if (v) v.classList.add('d-none');
@@ -193,9 +193,11 @@ function switchNav(tabName, element) {
 
         if (tabName === 'home') {
             clearAndGoHome();
-        } else if (tabName === 'Kategori') {
-            const kv = document.getElementById('kategoriView');
-            if(kv) kv.classList.remove('d-none');
+        // PERBAIKAN: Mendukung 'CekServis' maupun 'Kategori'
+        } else if (tabName === 'CekServis' || tabName === 'Kategori') {
+            const sv = document.getElementById('cekservisView');
+            if(sv) sv.classList.remove('d-none');
+            if(typeof loadCekPesananOtomatis === 'function') loadCekPesananOtomatis();
             window.scrollTo(0, 0);
         } else if (tabName === 'Merek') {
             const mv = document.getElementById('merekView');
@@ -390,7 +392,7 @@ function searchCategory(keyword) {
         else filterService.value = 'ALL';
     }
     
-    const kv = document.getElementById('kategoriView');
+    const kv = document.getElementById('cekservisView');
     if(kv) kv.classList.add('d-none');
     
     const mv = document.getElementById('merekView');
@@ -420,7 +422,7 @@ function clearAndGoHome() {
     closeDetail(); 
     currentFilteredData = []; 
     
-    const kv = document.getElementById('kategoriView');
+    const kv = document.getElementById('cekservisView');
     if(kv) kv.classList.add('d-none');
     const mv = document.getElementById('merekView');
     if(mv) mv.classList.add('d-none');
@@ -575,8 +577,8 @@ function filterAndDisplay(keyword) {
             : '';
 
         html += `
-        <div class="col-6 col-md-3">
-            <div class="card h-100 border-0 shadow-sm product-card mb-2 me-2" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${idx})">
+        <div class="col-6 mb-2">
+            <div class="card h-100 border-0 shadow-sm product-card" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${idx})">
               <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0;">
                     <span class="badge ${badgeClass} position-absolute top-0 start-0 m-2 shadow-sm" style="font-size: 0.6rem; padding: 4px 8px; border-radius: 6px;">${stokStatus.toUpperCase()}</span>
                     ${ketBadgeTopHtml}
@@ -736,7 +738,7 @@ function renderLatestProducts() {
             : '';
 
         html += `
-        <div class="col-6 col-md-4 mb-1">
+        <div class="col-6 mb-2">
             <div class="card border-0 shadow-sm product-card h-100" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${originalIndex})">
                 <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0;">
                     <span class="badge ${badgeClass} position-absolute top-0 start-0 m-2 shadow-sm" style="font-size: 0.58rem; padding: 3px 7px; border-radius: 6px;">${stokStatus.toUpperCase()}</span>
@@ -1524,13 +1526,130 @@ function renderBadgeGaransi(order) {
     }
 }
 
-// ==========================================
-// LACAK PESANAN BY KODE NOTA / NO HP
-// ==========================================
 function bukaModalLacak() {
     // Fungsi ini bisa dibiarkan kosong jika sudah diarahkan ke Navbar Cek Servis
 }
 
+// ==========================================
+// MEMUAT PESANAN OTOMATIS DI HALAMAN CEK SERVIS (FIX STRICT FILTER)
+// ==========================================
+async function loadCekPesananOtomatis() {
+    const secOtomatis = document.getElementById('sectionPesananOtomatis');
+    const containerOtomatis = document.getElementById('containerPesananOtomatis');
+    const badgeCount = document.getElementById('badgeMemberOrderCount');
+    
+    if (!secOtomatis || !containerOtomatis) return;
+
+    const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
+    if (!userSession) {
+        secOtomatis.classList.add('d-none');
+        return;
+    }
+
+    let userPhone = userSession.no_hp ? String(userSession.no_hp).trim() : '';
+    let username = userSession.username ? String(userSession.username).trim() : '';
+
+    if (!userPhone && !username) {
+        secOtomatis.classList.add('d-none');
+        return;
+    }
+
+    secOtomatis.classList.remove('d-none');
+    containerOtomatis.innerHTML = `
+        <div class="text-center py-3 bg-white rounded-4 border shadow-sm">
+            <div class="spinner-border spinner-border-sm text-primary"></div>
+            <span class="ms-2 text-muted small">Memuat data pesanan Anda...</span>
+        </div>`;
+
+    try {
+        // PERBAIKAN: Gunakan exact match (.eq) agar username yang mirip tidak saling campur
+        let queryConditions = [];
+        if (userPhone) queryConditions.push(`customer_phone.eq.${userPhone}`);
+        if (username) queryConditions.push(`customer_name.eq.${username}`);
+
+        const { data, error } = await dbClient
+            .from('orders')
+            .select('*')
+            .or(queryConditions.join(','))
+            .order('created_at', { ascending: false });
+
+        if (error || !data || data.length === 0) {
+            if (badgeCount) badgeCount.innerText = '0';
+            containerOtomatis.innerHTML = `
+                <div class="bg-white p-3 rounded-4 text-center border shadow-sm">
+                    <p class="text-muted small mb-0"><i class="fa-solid fa-circle-info text-primary me-1"></i> Belum ada riwayat pesanan untuk akun Anda.</p>
+                </div>`;
+            return;
+        }
+
+        if (badgeCount) badgeCount.innerText = data.length;
+
+        let html = '';
+        data.forEach(order => {
+            let statusBadge = 'bg-secondary';
+            if (order.status === 'Pending') statusBadge = 'bg-warning text-dark';
+            if (order.status === 'Diproses') statusBadge = 'bg-info text-dark';
+            if (order.status === 'Selesai') statusBadge = 'bg-success';
+
+            let tipeHp = order.note ? order.note.trim() : '-';
+
+            // Ekstrak Jenis Service dari items
+            let jenisServiceList = '-';
+            if (Array.isArray(order.items) && order.items.length > 0) {
+                let services = order.items.map(item => item.service || item.title || '').filter(Boolean);
+                let uniqueServices = [...new Set(services.map(s => s.toUpperCase()))];
+                jenisServiceList = uniqueServices.join(', ');
+            }
+
+            let garansiInfo = renderBadgeGaransi(order);
+            let waText = `Halo admin MustakimPhone, saya mau tanya status pesanan saya #${order.order_id}...`;
+
+            html += `
+            <div class="card border-0 mb-3 shadow-sm" style="border-radius:14px; overflow:hidden;">
+                <div class="bg-light px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
+                    <span class="fw-bolder text-primary fs-6">#${order.order_id}</span>
+                    <span class="badge ${statusBadge} px-2 py-1 shadow-sm" style="font-size: 0.72rem;">${order.status.toUpperCase()}</span>
+                </div>
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span class="small text-muted">Pemesan:</span>
+                        <strong class="text-dark small">${order.customer_name}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span class="small text-muted">Jenis Service:</span>
+                        <strong class="text-primary small text-end fw-bold">${jenisServiceList}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span class="small text-muted">Tipe HP:</span>
+                        <strong class="text-dark small text-end">${tipeHp}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small fw-bold text-dark">Total Biaya:</span>
+                        <strong class="text-primary fs-6">${formatRupiah(order.total_price)}</strong>
+                    </div>
+
+                    ${garansiInfo}
+
+                    <div class="d-flex gap-2 mt-3">
+                        <button onclick="bukaNotaDigital('${order.order_id}')" class="btn btn-outline-primary flex-grow-1 fw-bold py-2 rounded-3" style="font-size: 0.8rem;">
+                            <i class="fa-solid fa-file-invoice me-1"></i> Nota Digital
+                        </button>
+                        <a href="https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(waText)}" target="_blank" class="btn btn-success flex-grow-1 fw-bold py-2 rounded-3 text-center" style="font-size: 0.8rem; background-color:#1fa91c; border-color:#1fa91c;">
+                            <i class="fa-brands fa-whatsapp me-1"></i> Tanya Admin
+                        </a>
+                    </div>
+                </div>
+            </div>`;
+        });
+        containerOtomatis.innerHTML = html;
+    } catch (e) {
+        containerOtomatis.innerHTML = '<p class="text-danger small text-center">Gagal memuat pesanan otomatis.</p>';
+    }
+}
+
+// ==========================================
+// LACAK PESANAN MANUAL BY KODE NOTA / NO HP
+// ==========================================
 async function cariLacakPesanan() {
     const query = document.getElementById('inputLacakNota').value.trim();
     const container = document.getElementById('hasilLacakContainer');
@@ -1555,7 +1674,6 @@ async function cariLacakPesanan() {
 
         let html = '';
         data.forEach(order => {
-            // Tentukan warna status
             let statusBadge = 'bg-secondary';
             if (order.status === 'Pending') statusBadge = 'bg-warning text-dark';
             if (order.status === 'Diproses') statusBadge = 'bg-info text-dark';
@@ -1563,9 +1681,14 @@ async function cariLacakPesanan() {
 
             let tipeHp = order.note ? order.note.trim() : '-';
 
-            // Ambil daftar parts
+            // Ekstrak Jenis Service & ID Part dari items
+            let jenisServiceList = '-';
             let idPartsList = '-';
             if (Array.isArray(order.items) && order.items.length > 0) {
+                let services = order.items.map(item => item.service || item.title || '').filter(Boolean);
+                let uniqueServices = [...new Set(services.map(s => s.toUpperCase()))];
+                jenisServiceList = uniqueServices.join(', ');
+
                 idPartsList = order.items.map(item => {
                     let partId = item.id || '-';
                     let partKet = (item.keterangan && item.keterangan !== '-') ? ` (${item.keterangan})` : '';
@@ -1573,32 +1696,31 @@ async function cariLacakPesanan() {
                 }).join(', ');
             }
 
-            // Panggil desain garansi hitungan mundur
             let garansiInfo = renderBadgeGaransi(order);
-            
-            // Format Pesan Tanya WA
             let waText = `Halo admin MustakimPhone, saya mau tanya detail pesanan untuk nota *#${order.order_id}* atas nama *${order.customer_name}*. Statusnya saat ini *${order.status}*...`;
 
             html += `
             <div class="card border-0 mb-4 shadow-sm" style="border-radius:14px; overflow:hidden;">
-                <!-- Header Kartu -->
                 <div class="bg-light px-3 py-2 border-bottom d-flex justify-content-between align-items-center">
                     <span class="fw-bolder text-primary fs-6">#${order.order_id}</span>
                     <span class="badge ${statusBadge} px-2 py-1 shadow-sm" style="font-size: 0.72rem; letter-spacing: 0.5px;">${order.status.toUpperCase()}</span>
                 </div>
                 
-                <!-- Body Kartu -->
                 <div class="card-body p-3">
                     <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
                         <span class="small text-muted">Pemesan:</span>
                         <strong class="text-dark small">${order.customer_name}</strong>
                     </div>
                     <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
+                        <span class="small text-muted">Jenis Service:</span>
+                        <strong class="text-primary small text-end fw-bold">${jenisServiceList}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
                         <span class="small text-muted">Tipe HP:</span>
                         <strong class="text-dark small text-end" style="max-width: 65%;">${tipeHp}</strong>
                     </div>
                     <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
-                        <span class="small text-muted">Part:</span>
+                        <span class="small text-muted">Part ID:</span>
                         <strong class="text-dark small text-end" style="max-width: 65%;">${idPartsList}</strong>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mt-3">
@@ -1608,18 +1730,262 @@ async function cariLacakPesanan() {
                     
                     ${garansiInfo}
                     
-                    <!-- Tombol Tanya Admin Spesifik Per Nota -->
-                    <a href="https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(waText)}" 
-                       target="_blank" 
-                       class="btn btn-outline-success w-100 mt-3 fw-bold d-flex align-items-center justify-content-center" 
-                       style="border-radius: 10px; font-size: 0.85rem; padding: 10px 0;">
-                       <i class="fa-brands fa-whatsapp fs-5 me-2"></i> Tanya Admin via WA
-                    </a>
+                    <div class="d-flex gap-2 mt-3">
+                        <button onclick="bukaNotaDigital('${order.order_id}')" class="btn btn-outline-primary flex-grow-1 fw-bold py-2 rounded-3" style="font-size: 0.85rem;">
+                            <i class="fa-solid fa-file-invoice me-1"></i> Nota Digital
+                        </button>
+                        <a href="https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(waText)}" 
+                           target="_blank" 
+                           class="btn btn-success flex-grow-1 fw-bold py-2 rounded-3 text-center" 
+                           style="font-size: 0.85rem; background-color:#1fa91c; border-color:#1fa91c;">
+                           <i class="fa-brands fa-whatsapp me-1"></i> Tanya Admin
+                        </a>
+                    </div>
                 </div>
             </div>`;
         });
         container.innerHTML = html;
     } catch (e) {
         container.innerHTML = '<p class="text-danger small text-center mt-3">Gagal memuat status pesanan. Coba sesaat lagi.</p>';
+    }
+}
+
+// ==========================================
+// MODAL TAMPILAN NOTA DIGITAL UNTUK DICETAK (FIX STATUS PRECISION)
+// ==========================================
+async function bukaNotaDigital(orderId) {
+    try {
+        const { data: order, error } = await dbClient
+            .from('orders')
+            .select('*')
+            .eq('order_id', orderId)
+            .single();
+
+        if (error || !order) {
+            showToast('Gagal memuat detail nota.');
+            return;
+        }
+
+        let tgl = order.created_at ? new Date(order.created_at).toLocaleString('id-ID', {
+            day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        }) : '-';
+
+        // Tentukan warna & badge status secara dinamis
+        let statusUpper = (order.status || 'PENDING').toUpperCase();
+        let statusBadgeClass = 'bg-secondary text-white';
+        if (statusUpper === 'PENDING') statusBadgeClass = 'bg-warning text-dark';
+        if (statusUpper === 'DIPROSES') statusBadgeClass = 'bg-info text-dark';
+        if (statusUpper === 'SELESAI') statusBadgeClass = 'bg-success text-white';
+
+        let itemsHtml = '';
+        if (Array.isArray(order.items)) {
+            order.items.forEach((item, idx) => {
+                let subtotal = item.price * item.qty;
+                itemsHtml += `
+                <tr style="border-bottom: 1px dashed #dee2e6;">
+                    <td style="padding: 6px 0; font-size: 0.8rem;">${idx + 1}. ${item.title}</td>
+                    <td style="padding: 6px 0; font-size: 0.8rem; text-align: center;">${item.qty}</td>
+                    <td style="padding: 6px 0; font-size: 0.8rem; text-align: right;">${formatRupiah(subtotal)}</td>
+                </tr>`;
+            });
+        }
+
+        const printableArea = document.getElementById('printableNotaArea');
+        printableArea.innerHTML = `
+            <div class="text-center mb-3">
+                <h5 class="fw-bolder mb-0 text-primary">MUSTAKIM PHONE</h5>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">Service HP & Mini ATM</small>
+                <small class="text-muted d-block" style="font-size: 0.7rem;">WA: 0857-9986-0406</small>
+            </div>
+            <hr style="border-top: 1.5px dashed #000; margin: 8px 0;">
+            <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>No. Nota: <strong>#${order.order_id}</strong></span>
+                <span>${tgl}</span>
+            </div>
+            <div class="d-flex justify-content-between small text-muted mb-2">
+                <span>Pelanggan: <strong>${order.customer_name}</strong></span>
+                <span>Tipe: <strong>${order.note || '-'}</strong></span>
+            </div>
+            <hr style="border-top: 1.5px dashed #000; margin: 8px 0;">
+            <table class="w-100 mb-2">
+                <thead>
+                    <tr style="border-bottom: 1px solid #000; font-size: 0.75rem;">
+                        <th class="py-1">Item</th>
+                        <th class="py-1 text-center">Qty</th>
+                        <th class="py-1 text-end">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${itemsHtml}
+                </tbody>
+            </table>
+            <hr style="border-top: 1.5px dashed #000; margin: 8px 0;">
+            <div class="d-flex justify-content-between fw-bold fs-6 text-dark mt-2">
+                <span>TOTAL BAYAR:</span>
+                <span class="text-primary">${formatRupiah(order.total_price)}</span>
+            </div>
+            
+            <!-- BADGE STATUS PRESISI & DYNAMICAL -->
+            <div class="d-flex justify-content-between align-items-center small text-muted mt-2">
+                <span style="font-size: 0.8rem; font-weight: 600;">Status:</span>
+                <span class="badge ${statusBadgeClass} shadow-sm" style="padding: 5px 12px; font-size: 0.72rem; font-weight: 800; border-radius: 6px; letter-spacing: 0.5px; display: inline-flex; align-items: center; justify-content: center; line-height: 1;">
+                    ${statusUpper}
+                </span>
+            </div>
+
+            <div class="text-center mt-4 pt-2 border-top">
+                <small class="text-muted d-block" style="font-size: 0.7rem;">Terima Kasih atas Kepercayaan Anda!</small>
+                <small class="text-muted d-block" style="font-size: 0.65rem;">Garansi berlaku sesuai ketentuan syarat nota.</small>
+            </div>`;
+
+        // Sambungkan tombol Kirim Gambar Nota ke Canvas jika ada
+        const btnCanvasWA = document.getElementById('btnShareNotaCanvasWA');
+        if (btnCanvasWA) {
+            btnCanvasWA.onclick = () => kirimNotaCanvasKeWA(order);
+        }
+
+        const modalNota = new bootstrap.Modal(document.getElementById('modalNotaDigital'));
+        modalNota.show();
+    } catch (e) {
+        showToast('Terjadi kesalahan membuka nota.');
+    }
+}
+
+// ==========================================
+// FUNGSI SHARE NOTA DIGITAL KE WHATSAPP
+// ==========================================
+function kirimNotaKeWA(order) {
+    if (!order) return;
+
+    let tgl = order.created_at ? new Date(order.created_at).toLocaleString('id-ID', {
+        day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    }) : '-';
+
+    let text = `*MUSTAKIM PHONE - NOTA DIGITAL*\n`;
+    text += `==============================\n`;
+    text += `*No. Nota:* #${order.order_id}\n`;
+    text += `*Tanggal:* ${tgl}\n`;
+    text += `*Pelanggan:* ${order.customer_name}\n`;
+    text += `*Tipe HP:* ${order.note || '-'}\n`;
+    text += `==============================\n`;
+    text += `*DETAIL ITEM:*\n`;
+
+    if (Array.isArray(order.items)) {
+        order.items.forEach((item, idx) => {
+            let subtotal = item.price * item.qty;
+            text += `${idx + 1}. *${item.title}*\n   ${item.qty} x ${formatRupiah(item.price)} = ${formatRupiah(subtotal)}\n`;
+        });
+    }
+
+    text += `==============================\n`;
+    text += `*TOTAL BAYAR:* *${formatRupiah(order.total_price)}*\n`;
+    text += `*STATUS:* *${order.status.toUpperCase()}*\n`;
+    text += `==============================\n`;
+    text += `_Terima kasih atas kepercayaan Anda di MUSTAKIM PHONE!_`;
+
+    // Format nomor HP pelanggan jika ada
+    let noHpPelanggan = order.customer_phone ? String(order.customer_phone).replace(/[^0-9]/g, '') : '';
+    if (noHpPelanggan.startsWith('0')) {
+        noHpPelanggan = '62' + noHpPelanggan.slice(1);
+    }
+
+    let urlWA = noHpPelanggan 
+        ? `https://wa.me/${noHpPelanggan}?text=${encodeURIComponent(text)}`
+        : `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+
+    window.open(urlWA, '_blank');
+}
+
+// ==========================================
+// MENGUBAH ELEMEN NOTA MENJADI CANVAS & KIRIM KE WA
+// ==========================================
+async function kirimNotaCanvasKeWA(order) {
+    const notaElement = document.getElementById('printableNotaArea');
+    const btnCanvasWA = document.getElementById('btnShareNotaCanvasWA');
+
+    if (!notaElement || !order) return;
+
+    // Tampilan Loading indikator pada tombol
+    const originalBtnText = btnCanvasWA ? btnCanvasWA.innerHTML : '';
+    if (btnCanvasWA) {
+        btnCanvasWA.disabled = true;
+        btnCanvasWA.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Memproses...`;
+    }
+
+    try {
+        // 1. Rendernya HTML Nota menjadi elemen Canvas menggunakan html2canvas
+        const canvas = await html2canvas(notaElement, {
+            scale: 2, // Resolusi gambar jernih
+            backgroundColor: '#ffffff',
+            logging: false
+        });
+
+        // 2. Konversi Canvas ke Blob File PNG
+        canvas.toBlob(async (blob) => {
+            if (!blob) {
+                showToast('Gagal memproses gambar nota.');
+                if (btnCanvasWA) {
+                    btnCanvasWA.disabled = false;
+                    btnCanvasWA.innerHTML = originalBtnText;
+                }
+                return;
+            }
+
+            const fileName = `Nota-${order.order_id}.png`;
+            const file = new File([blob], fileName, { type: 'image/png' });
+
+            // Format nomor HP WhatsApp tujuan
+            let noHpPelanggan = order.customer_phone ? String(order.customer_phone).replace(/[^0-9]/g, '') : '';
+            if (noHpPelanggan.startsWith('0')) {
+                noHpPelanggan = '62' + noHpPelanggan.slice(1);
+            }
+
+            let textChat = `Halo, berikut adalah Nota Digital resmi untuk pesanan #${order.order_id} di MUSTAKIM PHONE.`;
+
+            // 3. OPSI A: Jika Perangkat Mendukung Web Share API (Mobile Android / iOS)
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: `Nota ${order.order_id}`,
+                        text: textChat
+                    });
+                    showToast('Nota berhasil dibagikan!');
+                } catch (err) {
+                    console.log('User membatalkan share atau error:', err);
+                }
+            } 
+            // 4. OPSI B: Fallback untuk Laptop / PC Desktop (Download Gambar + Buka WA)
+            else {
+                // Download file gambar nota
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                link.click();
+                URL.revokeObjectURL(link.href);
+
+                // Buka chat WhatsApp
+                let urlWA = noHpPelanggan 
+                    ? `https://wa.me/${noHpPelanggan}?text=${encodeURIComponent(textChat)}`
+                    : `https://api.whatsapp.com/send?text=${encodeURIComponent(textChat)}`;
+
+                window.open(urlWA, '_blank');
+                showToast('Gambar nota diunduh! Silakan lampirkan gambar di chat WA.');
+            }
+
+            // Kembalikan tombol ke kondisi semula
+            if (btnCanvasWA) {
+                btnCanvasWA.disabled = false;
+                btnCanvasWA.innerHTML = originalBtnText;
+            }
+        }, 'image/png');
+
+    } catch (error) {
+        console.error('Error saat membuat Canvas Nota:', error);
+        showToast('Gagal membuat gambar nota.');
+        if (btnCanvasWA) {
+            btnCanvasWA.disabled = false;
+            btnCanvasWA.innerHTML = originalBtnText;
+        }
     }
 }
