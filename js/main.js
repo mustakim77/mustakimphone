@@ -26,6 +26,7 @@ let categoryImagesMap = {
 document.addEventListener('DOMContentLoaded', () => {
     loadCategoriesDinamis();
     loadData();
+    checkDeepLinkProduk();
     loadBannersDinamis();
     loadBrandsDinamis();
     startAutoSlide();
@@ -1250,21 +1251,29 @@ function updateCartBadge() {
 }
 
 // ==========================================
-// FITUR BAGIKAN PRODUK (WEB SHARE API)
+// FITUR BAGIKAN PRODUK (WEB SHARE API + DEEP LINK)
 // ==========================================
 function shareProduct() {
     if (!currentViewedProduct) return;
     
+    // 1. Buat URL Spesifik Produk dengan Parameter ID
+    const baseUrl = window.location.origin + window.location.pathname;
+    const productId = currentViewedProduct.id || ''; // Ambil Kode Barang / ID Produk
+    const productUrl = `${baseUrl}?id=${encodeURIComponent(productId)}`;
+
+    // 2. Data yang akan dibagikan
     const shareData = {
         title: currentViewedProduct.title,
         text: `Cek ${currentViewedProduct.title} di Mustakim Phone! Harga ${formatRupiah(currentViewedProduct.price)} (Sudah termasuk jasa pasang).`,
-        url: window.location.href
+        url: productUrl
     };
 
+    // 3. Eksekusi Web Share API
     if (navigator.share) {
         navigator.share(shareData).catch(() => {});
     } else {
-        navigator.clipboard.writeText(shareData.text + ' ' + shareData.url);
+        // Fallback untuk browser PC (Salin Teks & Link ke Clipboard)
+        navigator.clipboard.writeText(`${shareData.text}\n${productUrl}`);
         showToast('Link produk berhasil disalin!');
     }
 }
@@ -1987,5 +1996,22 @@ async function kirimNotaCanvasKeWA(order) {
             btnCanvasWA.disabled = false;
             btnCanvasWA.innerHTML = originalBtnText;
         }
+    }
+}
+
+// ==========================================
+// CEK URL PARAMETER SAAT HALAMAN DIMUAT
+// ==========================================
+function checkDeepLinkProduk() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id'); // Mengambil nilai dari ?id=...
+
+    if (productId) {
+        // Berikan sedikit jeda agar data produk selesai dimuat terlebih dahulu
+        setTimeout(() => {
+            if (typeof bukaDetailProduk === 'function') {
+                bukaDetailProduk(productId);
+            }
+        }, 500);
     }
 }
