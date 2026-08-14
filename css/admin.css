@@ -360,3 +360,20 @@ body {
 .bg-warning-subtle {
   background-color: #fef3c7 !important;
 }
+
+/* PERTEGAS TOMBOL CLOSE (X) MODAL */
+.custom-close-btn {
+  background-color: #f1f5f9;
+  border-radius: 50%;
+  padding: 10px !important;
+  opacity: 0.8;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.custom-close-btn:hover, .custom-close-btn:focus {
+  background-color: #fee2e2; /* Berwarna kemerahan saat ditekan/dihover */
+  opacity: 1;
+  transform: scale(1.08);
+  box-shadow: none;
+}
