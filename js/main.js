@@ -172,7 +172,7 @@ function showToast(message) {
 }
 
 // ==========================================
-// NAVIGASI APLIKASI & NAV BAR
+// NAVIGASI APLIKASI & NAV BAR (FULL FIXED)
 // ==========================================
 function switchNav(tabName, element) {
     try {
@@ -216,10 +216,21 @@ function switchNav(tabName, element) {
             const memv = document.getElementById('memberView');
             if(memv) memv.classList.remove('d-none');
             
-            const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
+            // Cek data login di localStorage atau sessionStorage
+            const userSession = JSON.parse(localStorage.getItem('mustakimUser') || sessionStorage.getItem('mustakimUser'));
+            
             if (userSession) {
                 document.getElementById('akunContainer').style.display = 'none';
                 document.getElementById('memberDashboardView').style.display = 'block';
+                
+                // --- INJEKSI NAMA & BADGE ROLE SECARA DINAMIS ---
+                const namaMember = document.getElementById('namaMemberLogin');
+                if (namaMember && userSession.username) {
+                    const capitalizedName = userSession.username.charAt(0).toUpperCase() + userSession.username.slice(1);
+                    const badgeRole = (userSession.role && userSession.role.toLowerCase() === 'admin') ? 'Admin' : 'Member';
+                    
+                    namaMember.innerHTML = `${capitalizedName} <span class="badge bg-white text-primary ms-2" style="font-size: 0.65rem; font-weight: 600; vertical-align: middle;">${badgeRole}</span>`;
+                }
             } else {
                 document.getElementById('memberDashboardView').style.display = 'none';
                 document.getElementById('akunContainer').style.display = 'block';
