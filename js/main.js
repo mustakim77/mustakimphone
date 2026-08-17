@@ -76,16 +76,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (searchInput) {
-        searchInput.addEventListener('input', (e) => {
-            const val = e.target.value;
-            if (val.length > 0) {
-                if (clearBtn) clearBtn.classList.remove('d-none');
-            } else {
-                if (clearBtn) clearBtn.classList.add('d-none');
-            }
-            filterAndDisplay(val);
-        });
-    }
+    // 1. Munculkan modal saat kolom pencarian diklik / difokuskan
+    searchInput.addEventListener('focus', () => {
+        if (!checkAuthOrShowModal()) {
+            searchInput.blur(); // Batalkan fokus pada kolom pencarian
+        }
+    });
+
+    // 2. Cegah pengetikan jika belum login
+    searchInput.addEventListener('input', (e) => {
+        if (!checkAuthOrShowModal()) {
+            searchInput.value = ''; // Kosongkan teks yang sempat terketik
+            searchInput.blur();
+            if (clearBtn) clearBtn.classList.add('d-none');
+            return;
+        }
+
+        const val = e.target.value;
+        if (val.length > 0) {
+            if (clearBtn) clearBtn.classList.remove('d-none');
+        } else {
+            if (clearBtn) clearBtn.classList.add('d-none');
+        }
+        filterAndDisplay(val);
+    });
+}
 
     if (clearBtn) clearBtn.addEventListener('click', clearAndGoHome);
 
@@ -539,6 +554,7 @@ function searchCategory(keyword) {
     const input = document.getElementById('liveSearch');
     const clearBtn = document.getElementById('clearSearch');
     const filterService = document.getElementById('filterService');
+    if (!checkAuthOrShowModal()) return;
     
     if (input) input.value = keyword;
     if (clearBtn) {
@@ -758,6 +774,7 @@ function filterAndDisplay(keyword) {
 }
 
 function showDetail(idx) {
+    if (!checkAuthOrShowModal()) return;
     let row;
     const homeView = document.getElementById('homeView');
     if (homeView && !homeView.classList.contains('d-none')) {
@@ -2106,4 +2123,31 @@ function checkDeepLinkProduk() {
     if (targetIndex !== -1) {
         showDetail(targetIndex);
     }
+}
+
+// Fungsi Pengecekan Sesi Login & Pemicu Modal
+function checkAuthOrShowModal(actionCallback) {
+    const userSession = JSON.parse(localStorage.getItem('mustakimUser') || sessionStorage.getItem('mustakimUser'));
+    
+    if (!userSession) {
+        const modalEl = document.getElementById('modalAuthRequired');
+        if (modalEl) {
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+        return false;
+    }
+    
+    if (typeof actionCallback === 'function') actionCallback();
+    return true;
+}
+
+// Navigasi Otomatis ke Menu Member/Login dari Modal
+function keHalamanLogin() {
+    const modalEl = document.getElementById('modalAuthRequired');
+    if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    }
+    switchNav('Member');
 }
