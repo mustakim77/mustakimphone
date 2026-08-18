@@ -76,31 +76,31 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (searchInput) {
-    // 1. Munculkan modal saat kolom pencarian diklik / difokuskan
-    searchInput.addEventListener('focus', () => {
-        if (!checkAuthOrShowModal()) {
-            searchInput.blur(); // Batalkan fokus pada kolom pencarian
-        }
-    });
+        // 1. Munculkan modal saat kolom pencarian diklik / difokuskan
+        searchInput.addEventListener('focus', () => {
+            if (!checkAuthOrShowModal()) {
+                searchInput.blur(); // Batalkan fokus pada kolom pencarian
+            }
+        });
 
-    // 2. Cegah pengetikan jika belum login
-    searchInput.addEventListener('input', (e) => {
-        if (!checkAuthOrShowModal()) {
-            searchInput.value = ''; // Kosongkan teks yang sempat terketik
-            searchInput.blur();
-            if (clearBtn) clearBtn.classList.add('d-none');
-            return;
-        }
+        // 2. Cegah pengetikan jika belum login
+        searchInput.addEventListener('input', (e) => {
+            if (!checkAuthOrShowModal()) {
+                searchInput.value = ''; // Kosongkan teks yang sempat terketik
+                searchInput.blur();
+                if (clearBtn) clearBtn.classList.add('d-none');
+                return;
+            }
 
-        const val = e.target.value;
-        if (val.length > 0) {
-            if (clearBtn) clearBtn.classList.remove('d-none');
-        } else {
-            if (clearBtn) clearBtn.classList.add('d-none');
-        }
-        filterAndDisplay(val);
-    });
-}
+            const val = e.target.value;
+            if (val.length > 0) {
+                if (clearBtn) clearBtn.classList.remove('d-none');
+            } else {
+                if (clearBtn) clearBtn.classList.add('d-none');
+            }
+            filterAndDisplay(val);
+        });
+    }
 
     if (clearBtn) clearBtn.addEventListener('click', clearAndGoHome);
 
@@ -191,6 +191,9 @@ function showToast(message) {
 // ==========================================
 function switchNav(tabName, element) {
     try {
+        // Bersihkan sisa bayangan modal agar tidak menghitamkan layar saat pindah menu
+        cleanupModalBackdrop();
+
         closeDetail();
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         if (element) element.classList.add('active');
@@ -262,6 +265,7 @@ function switchNav(tabName, element) {
 
 function prosesLogout() {
     localStorage.removeItem('mustakimUser');
+    sessionStorage.removeItem('mustakimUser');
     const dash = document.getElementById('memberDashboardView');
     const akun = document.getElementById('akunContainer');
     if (dash) dash.style.display = 'none';
@@ -316,7 +320,7 @@ async function loadCategoriesDinamis() {
 }
 
 // ==========================================
-// BANNER SLIDER (LUNCTURAN HALUS 0.8 DETIK, JEDA 5 DETIK)
+// BANNER SLIDER (LUNCTURAN HALUS 1.8 DETIK, JEDA 5 DETIK)
 // ==========================================
 async function loadBannersDinamis() {
     try {
@@ -426,7 +430,7 @@ function startAutoSlide() {
     autoSlideTimer = setInterval(() => {
         bannerIndex++;
         updateSliderView(true);
-    }, 5000); // Berganti otomatis setiap 5 detik agar santai & nyaman dibaca
+    }, 5000); 
 }
 
 function goToSlide(realIndex) {
@@ -584,6 +588,8 @@ function searchCategory(keyword) {
 }
 
 function clearAndGoHome() {
+    cleanupModalBackdrop();
+
     const input = document.getElementById('liveSearch');
     const clearBtn = document.getElementById('clearSearch');
     const filterService = document.getElementById('filterService');
@@ -963,7 +969,7 @@ function orderSekarangLangsung() {
         orderCatatanEl.value = merkHP ? `${merkHP} ` : '';
     }
 
-    const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
+    const userSession = JSON.parse(localStorage.getItem('mustakimUser') || sessionStorage.getItem('mustakimUser'));
     if (userSession) {
         if (userSession.username) document.getElementById('orderNama').value = userSession.username;
         if (userSession.no_hp) document.getElementById('orderNoHp').value = userSession.no_hp;
@@ -971,7 +977,7 @@ function orderSekarangLangsung() {
 
     const modalEl = document.getElementById('checkoutModal');
     if (modalEl) {
-        const checkoutModal = new bootstrap.Modal(modalEl);
+        const checkoutModal = bootstrap.Modal.getOrCreateInstance(modalEl);
         checkoutModal.show();
     }
 }
@@ -1388,7 +1394,7 @@ async function simpanPasswordBaru() {
         return;
     }
 
-    const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
+    const userSession = JSON.parse(localStorage.getItem('mustakimUser') || sessionStorage.getItem('mustakimUser'));
     if (!userSession) {
         showToast('Sesi habis, silakan login ulang.');
         return;
@@ -1504,7 +1510,7 @@ function checkoutWA() {
     const summaryPriceEl = document.getElementById('summaryTotalPrice');
     if (summaryPriceEl) summaryPriceEl.innerText = formatRupiah(totalPrice);
 
-    const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
+    const userSession = JSON.parse(localStorage.getItem('mustakimUser') || sessionStorage.getItem('mustakimUser'));
     if (userSession) {
         if (userSession.username) document.getElementById('orderNama').value = userSession.username;
         if (userSession.no_hp) document.getElementById('orderNoHp').value = userSession.no_hp;
@@ -1518,7 +1524,7 @@ function checkoutWA() {
 
     const modalEl = document.getElementById('checkoutModal');
     if (modalEl) {
-        const checkoutModal = new bootstrap.Modal(modalEl);
+        const checkoutModal = bootstrap.Modal.getOrCreateInstance(modalEl);
         checkoutModal.show();
     }
 }
@@ -1674,7 +1680,7 @@ async function loadCekPesananOtomatis() {
     
     if (!secOtomatis || !containerOtomatis) return;
 
-    const userSession = JSON.parse(localStorage.getItem('mustakimUser'));
+    const userSession = JSON.parse(localStorage.getItem('mustakimUser') || sessionStorage.getItem('mustakimUser'));
     if (!userSession) {
         secOtomatis.classList.add('d-none');
         return;
@@ -1972,7 +1978,7 @@ async function bukaNotaDigital(orderId) {
             btnCanvasWA.onclick = () => kirimNotaCanvasKeWA(order);
         }
 
-        const modalNota = new bootstrap.Modal(document.getElementById('modalNotaDigital'));
+        const modalNota = bootstrap.Modal.getOrCreateInstance(document.getElementById('modalNotaDigital'));
         modalNota.show();
     } catch (e) {
         showToast('Terjadi kesalahan membuka nota.');
@@ -2125,14 +2131,16 @@ function checkDeepLinkProduk() {
     }
 }
 
-// Fungsi Pengecekan Sesi Login & Pemicu Modal
+// ==========================================
+// FUNGSI PROTEKSI LOGIN & KELOLA MODAL (FIX BACKDROP)
+// ==========================================
 function checkAuthOrShowModal(actionCallback) {
     const userSession = JSON.parse(localStorage.getItem('mustakimUser') || sessionStorage.getItem('mustakimUser'));
     
     if (!userSession) {
         const modalEl = document.getElementById('modalAuthRequired');
         if (modalEl) {
-            const modal = new bootstrap.Modal(modalEl);
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
         }
         return false;
@@ -2149,5 +2157,14 @@ function keHalamanLogin() {
         const modal = bootstrap.Modal.getInstance(modalEl);
         if (modal) modal.hide();
     }
+    cleanupModalBackdrop();
     switchNav('Member');
+}
+
+// Pembersih sisa bayangan modal (modal-backdrop)
+function cleanupModalBackdrop() {
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    document.body.style.removeProperty('padding-right');
 }
