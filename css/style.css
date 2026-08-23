@@ -87,23 +87,23 @@ body.app-body {
 }
 
 /* =========================================
-   2. HOME BANNER & SLIDER (SMOOTH & RELAXED)
+   2. HOME BANNER & SLIDER (GAPS TANPA GARIS PUTIH)
    ========================================= */
 .banner-box {
   position: relative;
   overflow: hidden !important;
   width: 100%;
-  border-radius: var(--ios-radius-lg);
-  background-color: #f8fafc;
+  background: transparent !important; /* Hapus warna background pembungkus */
+  box-shadow: none !important;
   touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
-  contain: content;
 }
 
 .banner-slider {
   display: flex !important;
   width: 100%;
+  background: transparent !important;
   will-change: transform;
   transform: translate3d(0, 0, 0);
   transition: transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
@@ -112,30 +112,27 @@ body.app-body {
   cursor: grab;
 }
 
-.banner-slider:active {
-  cursor: grabbing;
-}
-
 .banner-slide {
   min-width: 100% !important;
   width: 100% !important;
   flex-shrink: 0 !important;
-  border-radius: var(--ios-radius-lg);
-  overflow: hidden;
-  transform: translate3d(0, 0, 0);
-  contain: layout paint;
-  
-  /* TAMBAHKAN 2 BARIS INI UNTUK MEMBERI SPASI ANTA-BANNER */
-  padding: 0 6px !important; /* Memberi jarak 6px di kiri & kanan (total spasi 12px) */
+  background: transparent !important;
+  /* Padding ini hanya menjadi celah transparan (12px total antar slide) */
+  padding: 0 6px !important; 
   box-sizing: border-box !important;
+  border-radius: 0 !important;
 }
 
+/* Lengkungan dan Bayangan Dipasang Langsung pada Gambar */
 .banner-slide img {
   width: 100% !important;
-  height: auto !important;
+  height: 100% !important;
   display: block !important;
   object-fit: cover !important;
-  border-radius: var(--ios-radius-lg);
+  border-radius: 14px !important; /* Lengkungan sudut gambar */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important; /* Bayangan halus */
+  border: none !important;
+  outline: none !important;
   pointer-events: none;
   -webkit-user-drag: none;
 }
@@ -282,16 +279,124 @@ body.app-body {
 }
 #toastMessage.show { opacity: 1; }
 
-/* =========================================
-   4. GAMBAR PRODUK RESPONSIF
-   ========================================= */
-.latest-products-container .card img,
-.product-card img {
-  width: 100% !important;
-  height: 110px !important;
-  object-fit: contain !important;
-  object-position: center;
-  background-color: #ffffff;
+/* ==========================================================
+   PART TERBARU - SPOTLIGHT CENTER SLIDER + NAVIGASI < >
+========================================================== */
+.spotlight-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+#latestProductsContainer,
+.latest-products-container {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  touch-action: pan-x !important;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  gap: 16px !important;
+  /* Kunci posisi 1 box pas di tengah dengan sisi kanan & kiri mengintip */
+  padding: 6px calc(50% - 130px) 6px calc(50% - 130px) !important;
+  margin-left: -16px !important;
+  margin-right: -16px !important;
+  width: calc(100% + 32px) !important;
+  box-sizing: border-box !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#latestProductsContainer::-webkit-scrollbar,
+.latest-products-container::-webkit-scrollbar {
+  display: none !important;
+}
+
+#latestProductsContainer.active,
+.latest-products-container:active {
+  cursor: grabbing !important;
+  scroll-behavior: auto !important;
+}
+
+/* Ukuran Kartu Pas 260px */
+#latestProductsContainer .spotlight-card-item,
+.latest-products-container .spotlight-card-item {
+  flex: 0 0 260px !important;
+  width: 260px !important;
+  max-width: 260px !important;
+  min-width: 260px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  scroll-snap-align: center !important;
+  scroll-snap-stop: always !important;
+  box-sizing: border-box !important;
+}
+
+/* Transisi Halus Meluncur Ala Banner (0.35s Cubic-Bezier) */
+#latestProductsContainer .product-card,
+.latest-products-container .product-card {
+  border-radius: 20px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.35s ease !important;
+  will-change: transform, opacity;
+}
+
+#latestProductsContainer .product-card:active {
+  transform: scale(0.95) !important;
+}
+
+/* ==========================================================
+   PENYESUAIAN POSISI TOMBOL < > TEPAT DI ANTARA BOX (CELAH/GAP)
+========================================================== */
+.spotlight-nav-btn {
+  position: absolute !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #007aff !important;
+  font-size: 0.85rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+  z-index: 25 !important;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease !important;
+}
+
+.spotlight-nav-btn:hover {
+  background-color: #ffffff !important;
+  transform: translate(-50%, -50%) scale(1.1) !important;
+  box-shadow: 0 6px 18px rgba(0, 122, 255, 0.25) !important;
+}
+
+.spotlight-nav-btn:active {
+  transform: translate(-50%, -50%) scale(0.92) !important;
+}
+
+/* Tombol < Tepat di Celah Antara Box Kiri & Box Tengah */
+.spotlight-prev-btn {
+  left: calc(50% - 148px) !important;
+}
+
+/* Tombol > Tepat di Celah Antara Box Tengah & Box Kanan */
+.spotlight-next-btn {
+  left: calc(50% + 148px) !important;
+  right: auto !important;
 }
 
 /* BANNER TEKS "RIMBERIO STYLE" */

@@ -13,14 +13,14 @@ let currentViewedProduct = null;
 
 // VARIABEL BANNER SLIDER INFINITE LOOP
 let realBannerCount = 0;
-let bannerIndex = 1; // Index 1 = Banner pertama asli
+let bannerIndex = 1;
 let autoSlideTimer = null;
 let rAFId = null; 
 
 const nomorWhatsAppAdmin = "6285799860406"; 
 const defaultImageFallback = "https://i.postimg.cc/sfk5KptM/logo-default.png";
 
-// Mapping Gambar Kategori (Postimages CDN)
+// Mapping Gambar Kategori
 let categoryImagesMap = {
     'GANTI LCD': 'https://i.postimg.cc/ncmGtdvm/logo-lcd.png',
     'GANTI BAT': 'https://i.postimg.cc/wBwhknd2/logo-bat.png',
@@ -35,9 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadBrandsDinamis();
     updateCartBadge();
 
-    // ==========================================
     // INJEKSI EFEK ANIMASI PINDAH HALAMAN
-    // ==========================================
     const styleAnimasi = document.createElement('style');
     styleAnimasi.innerHTML = `
         .animasi-smooth {
@@ -76,17 +74,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     if (searchInput) {
-        // 1. Munculkan modal saat kolom pencarian diklik / difokuskan
         searchInput.addEventListener('focus', () => {
             if (!checkAuthOrShowModal()) {
-                searchInput.blur(); // Batalkan fokus pada kolom pencarian
+                searchInput.blur();
             }
         });
 
-        // 2. Cegah pengetikan jika belum login
         searchInput.addEventListener('input', (e) => {
             if (!checkAuthOrShowModal()) {
-                searchInput.value = ''; // Kosongkan teks yang sempat terketik
+                searchInput.value = '';
                 searchInput.blur();
                 if (clearBtn) clearBtn.classList.add('d-none');
                 return;
@@ -187,11 +183,10 @@ function showToast(message) {
 }
 
 // ==========================================
-// NAVIGASI APLIKASI & NAV BAR (FULL FIXED)
+// NAVIGASI APLIKASI & NAV BAR
 // ==========================================
 function switchNav(tabName, element) {
     try {
-        // Bersihkan sisa bayangan modal agar tidak menghitamkan layar saat pindah menu
         cleanupModalBackdrop();
 
         closeDetail();
@@ -234,14 +229,12 @@ function switchNav(tabName, element) {
             const memv = document.getElementById('memberView');
             if(memv) memv.classList.remove('d-none');
             
-            // Cek data login di localStorage atau sessionStorage
             const userSession = JSON.parse(localStorage.getItem('mustakimUser') || sessionStorage.getItem('mustakimUser'));
             
             if (userSession) {
                 document.getElementById('akunContainer').style.display = 'none';
                 document.getElementById('memberDashboardView').style.display = 'block';
                 
-                // --- INJEKSI NAMA & BADGE ROLE SECARA DINAMIS ---
                 const namaMember = document.getElementById('namaMemberLogin');
                 if (namaMember && userSession.username) {
                     const capitalizedName = userSession.username.charAt(0).toUpperCase() + userSession.username.slice(1);
@@ -320,7 +313,7 @@ async function loadCategoriesDinamis() {
 }
 
 // ==========================================
-// BANNER SLIDER (LUNCTURAN HALUS 1.8 DETIK, JEDA 5 DETIK)
+// BANNER SLIDER
 // ==========================================
 async function loadBannersDinamis() {
     try {
@@ -337,7 +330,6 @@ async function loadBannersDinamis() {
 
         realBannerCount = banners.length;
 
-        // Render Dots
         dots.innerHTML = banners.map((_, i) => `
             <div class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>
         `).join('');
@@ -350,7 +342,6 @@ async function loadBannersDinamis() {
             return;
         }
 
-        // BUAT SLIDE KLON UNTUK INFINITE LOOP
         const firstClone = banners[0];
         const lastClone = banners[realBannerCount - 1];
 
@@ -395,16 +386,14 @@ function updateSliderView(animated = true) {
     if (!slider) return;
 
     if (animated) {
-        // Durasi 1.8 detik dengan kurva meluncur pelan & lembut
         slider.style.transition = 'transform 1.8s cubic-bezier(0.16, 1, 0.3, 1)';
     } else {
         slider.style.transition = 'none';
     }
 
-    // Pergeseran posisi banner menggunakan GPU 3D
+    // Kembalikan ke pergeseran persentase presisi
     slider.style.transform = `translate3d(-${bannerIndex * 100}%, 0, 0)`;
 
-    // Update Indikator Titik (Dots)
     if (dots.length > 0 && realBannerCount > 0) {
         let activeDot = (bannerIndex - 1 + realBannerCount) % realBannerCount;
 
@@ -439,7 +428,6 @@ function goToSlide(realIndex) {
     startAutoSlide();
 }
 
-// LOGIKA SWIPE SENTUHAN HP & MOUSE DRAG SMOOTH
 function initBannerSwipe() {
     const sliderBox = document.querySelector('.banner-box');
     const slider = document.getElementById('bannerSlider');
@@ -462,17 +450,17 @@ function initBannerSwipe() {
     };
 
     const onMove = (e) => {
-        if (!isDragging) return;
-        currentX = getX(e);
+    if (!isDragging) return;
+    currentX = getX(e);
 
-        if (rAFId) cancelAnimationFrame(rAFId);
-        rAFId = requestAnimationFrame(() => {
-            const diffX = currentX - startX;
-            const containerWidth = sliderBox.clientWidth;
-            const currentTranslate = -bannerIndex * containerWidth + diffX;
-            slider.style.transform = `translate3d(${currentTranslate}px, 0, 0)`;
-        });
-    };
+    if (rAFId) cancelAnimationFrame(rAFId);
+    rAFId = requestAnimationFrame(() => {
+        const diffX = currentX - startX;
+        const containerWidth = sliderBox.clientWidth;
+        const currentTranslate = -bannerIndex * containerWidth + diffX;
+        slider.style.transform = `translate3d(${currentTranslate}px, 0, 0)`;
+    });
+};
 
     const onEnd = () => {
         if (!isDragging) return;
@@ -650,6 +638,7 @@ async function loadData() {
         if (loader) loader.style.display = 'none';
         filterAndDisplay('');
         renderLatestProducts();
+        renderPopularProducts();
         checkDeepLinkProduk();
     } catch (e) {
         showError("Gagal memuat data: " + e.message);
@@ -756,20 +745,25 @@ function filterAndDisplay(keyword) {
         const badgeClass = getBadgeClass(stokStatus);
         let imageUrl = getProductImage(service);
 
-        let ketBadgeTopHtml = keterangan 
-            ? `<span class="badge border position-absolute top-0 end-0 m-2 shadow-sm fw-bold" style="background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd !important; font-size: 0.58rem; padding: 3px 7px; border-radius: 6px;">${keterangan.toUpperCase()}</span>` 
+        let ketBadgeHtml = keterangan 
+            ? `<span class="badge border fw-bold flex-fill text-center" style="background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd !important; font-size: 0.58rem; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${keterangan.toUpperCase()}</span>` 
             : '';
 
         html += `
         <div class="col-6 mb-2">
             <div class="card h-100 border-0 shadow-sm product-card" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${idx})">
-              <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0;">
-                    <span class="badge ${badgeClass} position-absolute top-0 start-0 m-2 shadow-sm" style="font-size: 0.6rem; padding: 4px 8px; border-radius: 6px;">${stokStatus.toUpperCase()}</span>
-                    ${ketBadgeTopHtml}
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 80px; max-width: 90%; object-fit: contain;">
+                <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 85px; max-width: 85%; object-fit: contain;">
                 </div>
-                <div class="card-body p-2 d-flex flex-column bg-white justify-content-between">
-                    <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.8rem; line-height: 1.3;">${merk} ${type}</h6>
+                <div class="card-body p-2 d-flex flex-column bg-white justify-content-between" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
+                            <span class="badge ${badgeClass} flex-fill text-center" style="font-size: 0.58rem; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${stokStatus.toUpperCase()}</span>
+                            ${ketBadgeHtml}
+                            <span class="badge bg-light text-primary border flex-fill text-center" style="font-size: 0.58rem; font-weight: 700; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${service}</span>
+                        </div>
+                        <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.8rem; line-height: 1.3;">${merk} ${type}</h6>
+                    </div>
                     <span class="text-primary fw-bolder mt-1" style="font-size: 0.82rem;">${harga}</span>
                 </div>
             </div>
@@ -777,6 +771,79 @@ function filterAndDisplay(keyword) {
     });
     html += '</div>';
     container.innerHTML = html;
+}
+
+// ==========================================
+// RENDER PART TERBARU (SPOTLIGHT CENTER SLIDER)
+// ==========================================
+function renderLatestProducts() {
+    const container = document.getElementById('latestProductsContainer');
+    if (!container) return;
+    
+    if (!globalData || globalData.length === 0) {
+        container.innerHTML = getSkeletonHTML(6);
+        return;
+    }
+    
+    const sortedData = [...globalData].sort((a, b) => {
+        const timeA = parseIndonesianDate(a[8]);
+        const timeB = parseIndonesianDate(b[8]);
+        return timeB - timeA;
+    });
+    
+    let latestRows = sortedData.slice(0, 6);
+    if (latestRows.length === 0) return;
+
+    const infiniteRows = [...latestRows, ...latestRows, ...latestRows];
+    let html = '';
+    
+    infiniteRows.forEach((row) => {
+        const originalIndex = globalData.findIndex(item => item[0] === row[0]);
+
+        const merk = row[1] || '';
+        const type = row[2] || '';
+        const service = row[3] ? row[3].toUpperCase() : '';
+        const harga = formatRupiah(row[4] || 0);
+        const keterangan = row[6] ? String(row[6]).trim() : ''; 
+        const stokStatus = row[7] ? String(row[7]).trim() : 'Tersedia';
+        const badgeClass = getBadgeClass(stokStatus);
+        let imageUrl = getProductImage(service);
+
+        let ketBadgeHtml = keterangan 
+            ? `<span class="badge border fw-bold flex-fill text-center" style="background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd !important; font-size: 0.6rem; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${keterangan.toUpperCase()}</span>` 
+            : '';
+
+        html += `
+        <div class="spotlight-card-item">
+            <div class="card border-0 product-card h-100" style="border-radius: 20px; cursor: pointer;" onclick="showDetail(${originalIndex})">
+                <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 130px; border-bottom: 1px solid #f2f2f7; border-top-left-radius: 20px; border-top-right-radius: 20px;">
+                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 95px; max-width: 90%; object-fit: contain;">
+                </div>
+                <div class="card-body p-3 bg-white d-flex flex-column justify-content-between" style="border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between gap-1 mb-2">
+                            <span class="badge ${badgeClass} flex-fill text-center" style="font-size: 0.6rem; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${stokStatus.toUpperCase()}</span>
+                            ${ketBadgeHtml}
+                            <span class="badge bg-light text-primary border flex-fill text-center" style="font-size: 0.6rem; font-weight: 700; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${service}</span>
+                        </div>
+                        <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.88rem; line-height: 1.3;">${merk} ${type}</h6>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="text-primary fw-bolder" style="font-size: 1rem;">${harga}</span>
+                        <button class="btn btn-primary rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 34px; height: 34px;" onclick="event.stopPropagation(); showDetail(${originalIndex});">
+                            <i class="fa-solid fa-plus fs-6"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+
+    if (typeof initInfiniteSpotlightSlider === 'function') {
+        initInfiniteSpotlightSlider(latestRows.length);
+    }
 }
 
 function showDetail(idx) {
@@ -886,27 +953,152 @@ function showDetail(idx) {
 }
 
 // ==========================================
-// RENDER 6 PART TERBARU (LATEST PRODUCTS)
+// FUNGSI TOMBOL NAVIGASI < > (SPOTLIGHT)
 // ==========================================
-function renderLatestProducts() {
+function scrollSpotlight(direction) {
     const container = document.getElementById('latestProductsContainer');
     if (!container) return;
-    
+
+    const cardWidth = 260 + 16;
+    container.style.scrollBehavior = 'smooth';
+    container.scrollLeft += direction * cardWidth;
+}
+
+// ==========================================
+// FITUR GESER MOUSE (DRAG TO SCROLL) & TOUCH
+// ==========================================
+function initDragToScroll() {
+    const slider = document.getElementById("latestProductsContainer");
+    if (!slider || slider.dataset.dragInit) return;
+    slider.dataset.dragInit = "true";
+
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    let isDragging = false;
+
+    slider.addEventListener("mousedown", (e) => {
+        isDown = true;
+        isDragging = false;
+        slider.classList.add("active");
+        slider.style.scrollBehavior = "auto";
+        startX = e.pageX - slider.offsetLeft;
+        scrollLeft = slider.scrollLeft;
+    });
+
+    slider.addEventListener("mouseleave", () => {
+        isDown = false;
+        slider.classList.remove("active");
+    });
+
+    slider.addEventListener("mouseup", () => {
+        isDown = false;
+        slider.classList.remove("active");
+    });
+
+    slider.addEventListener("mousemove", (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        if (Math.abs(walk) > 5) {
+            isDragging = true;
+        }
+        slider.scrollLeft = scrollLeft - walk;
+    });
+
+    slider.addEventListener("click", (e) => {
+        if (isDragging) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    }, true);
+}
+
+// ==========================================
+// LOGIKA SLIDER INFINITE & ANIMASI SCALE 3D
+// ==========================================
+function initInfiniteSpotlightSlider(totalRealItems) {
+    const container = document.getElementById('latestProductsContainer');
+    if (!container) return;
+
+    const cardWidth = 260 + 16;
+    const singleSetWidth = totalRealItems * cardWidth;
+
+    requestAnimationFrame(() => {
+        container.scrollLeft = singleSetWidth;
+        updateSpotlightAnimation();
+    });
+
+    let isTicking = false;
+
+    function updateSpotlightAnimation() {
+        const containerRect = container.getBoundingClientRect();
+        const containerCenter = containerRect.left + containerRect.width / 2;
+        const cards = container.querySelectorAll('.spotlight-card-item');
+
+        cards.forEach(item => {
+            const itemRect = item.getBoundingClientRect();
+            const itemCenter = itemRect.left + itemRect.width / 2;
+            const distFromCenter = Math.abs(containerCenter - itemCenter);
+            
+            const maxDistance = containerRect.width / 1.5;
+            let scale = 1 - (distFromCenter / maxDistance) * 0.18;
+            let opacity = 1 - (distFromCenter / maxDistance) * 0.4;
+            
+            scale = Math.max(0.82, Math.min(1, scale));
+            opacity = Math.max(0.6, Math.min(1, opacity));
+
+            const cardInner = item.querySelector('.product-card');
+            if (cardInner) {
+                cardInner.style.transform = `scale(${scale})`;
+                cardInner.style.opacity = opacity;
+                if (scale > 0.95) {
+                    cardInner.style.boxShadow = '0 12px 28px rgba(0, 122, 255, 0.16)';
+                } else {
+                    cardInner.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.04)';
+                }
+            }
+        });
+
+        isTicking = false;
+    }
+
+    container.onscroll = () => {
+        if (container.scrollLeft < singleSetWidth * 0.4) {
+            container.style.scrollBehavior = 'auto';
+            container.scrollLeft += singleSetWidth;
+        } else if (container.scrollLeft > singleSetWidth * 2.1) {
+            container.style.scrollBehavior = 'auto';
+            container.scrollLeft -= singleSetWidth;
+        }
+
+        if (!isTicking) {
+            requestAnimationFrame(updateSpotlightAnimation);
+            isTicking = true;
+        }
+    };
+
+    initDragToScroll();
+}
+
+// ==========================================
+// RENDER PRODUK POPULER / PALING BANYAK DICARI
+// ==========================================
+function renderPopularProducts() {
+    const container = document.getElementById('popularProductsContainer');
+    if (!container) return;
+
     if (!globalData || globalData.length === 0) {
         container.innerHTML = getSkeletonHTML(6);
         return;
     }
-    
-    const sortedData = [...globalData].sort((a, b) => {
-        const timeA = parseIndonesianDate(a[8]);
-        const timeB = parseIndonesianDate(b[8]);
-        return timeB - timeA;
-    });
-    
-    let latestRows = sortedData.slice(0, 6);
+
+    // Ambil 6-8 produk untuk ditampilkan sebagai produk populer
+    let popularRows = globalData.slice(0, 8);
+
     let html = '<div class="row g-2 px-1">';
-    
-    latestRows.forEach((row) => {
+    popularRows.forEach((row) => {
         const originalIndex = globalData.findIndex(item => item[0] === row[0]);
 
         const merk = row[1] || '';
@@ -918,20 +1110,25 @@ function renderLatestProducts() {
         const badgeClass = getBadgeClass(stokStatus);
         let imageUrl = getProductImage(service);
 
-        let ketBadgeTopHtml = keterangan 
-            ? `<span class="badge border position-absolute top-0 end-0 m-2 shadow-sm fw-bold" style="background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd !important; font-size: 0.58rem; padding: 3px 7px; border-radius: 6px;">${keterangan.toUpperCase()}</span>` 
+        let ketBadgeHtml = keterangan 
+            ? `<span class="badge border fw-bold flex-fill text-center" style="background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd !important; font-size: 0.58rem; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${keterangan.toUpperCase()}</span>` 
             : '';
 
         html += `
         <div class="col-6 mb-2">
-            <div class="card border-0 shadow-sm product-card h-100" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${originalIndex})">
-                <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0;">
-                    <span class="badge ${badgeClass} position-absolute top-0 start-0 m-2 shadow-sm" style="font-size: 0.58rem; padding: 3px 7px; border-radius: 6px;">${stokStatus.toUpperCase()}</span>
-                    ${ketBadgeTopHtml}
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 80px; max-width: 90%; object-fit: contain;">
+            <div class="card h-100 border-0 shadow-sm product-card" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${originalIndex})">
+                <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 85px; max-width: 85%; object-fit: contain;">
                 </div>
-                <div class="card-body p-2 bg-white d-flex flex-column justify-content-between">
-                    <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.78rem;">${merk} ${type}</h6>
+                <div class="card-body p-2 d-flex flex-column bg-white justify-content-between" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+                    <div>
+                        <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
+                            <span class="badge ${badgeClass} flex-fill text-center" style="font-size: 0.58rem; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${stokStatus.toUpperCase()}</span>
+                            ${ketBadgeHtml}
+                            <span class="badge bg-light text-primary border flex-fill text-center" style="font-size: 0.58rem; font-weight: 700; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${service}</span>
+                        </div>
+                        <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.8rem; line-height: 1.3;">${merk} ${type}</h6>
+                    </div>
                     <span class="text-primary fw-bolder mt-1" style="font-size: 0.82rem;">${harga}</span>
                 </div>
             </div>
@@ -942,7 +1139,7 @@ function renderLatestProducts() {
 }
 
 // ==========================================
-// ORDER LANGSUNG (TANPA MASUK KERANJANG)
+// ORDER LANGSUNG
 // ==========================================
 function orderSekarangLangsung() {
     if (!currentViewedProduct) return;
@@ -1478,7 +1675,7 @@ function shareProduct() {
 }
 
 // ==========================================
-// UPDATE LINK WA HEADER SECARA DINAMIS
+// UPDATE LINK WA HEADER
 // ==========================================
 function updateWaHeaderLink(customText) {
     const btn = document.getElementById('headerWaBtn');
@@ -1491,7 +1688,7 @@ function updateWaHeaderLink(customText) {
 }
 
 // ==========================================
-// CHECKOUT WEB APP & SIMPAN TO SUPABASE
+// CHECKOUT WEB APP
 // ==========================================
 function checkoutWA() {
     window.directOrderItem = null;
@@ -1888,7 +2085,7 @@ async function cariLacakPesanan() {
 }
 
 // ==========================================
-// MODAL TAMPILAN NOTA DIGITAL UNTUK DICETAK
+// MODAL NOTA DIGITAL
 // ==========================================
 async function bukaNotaDigital(orderId) {
     try {
@@ -2132,7 +2329,7 @@ function checkDeepLinkProduk() {
 }
 
 // ==========================================
-// FUNGSI PROTEKSI LOGIN & KELOLA MODAL (FIX BACKDROP)
+// FUNGSI PROTEKSI LOGIN & KELOLA MODAL
 // ==========================================
 function checkAuthOrShowModal(actionCallback) {
     const userSession = JSON.parse(localStorage.getItem('mustakimUser') || sessionStorage.getItem('mustakimUser'));
@@ -2150,7 +2347,6 @@ function checkAuthOrShowModal(actionCallback) {
     return true;
 }
 
-// Navigasi Otomatis ke Menu Member/Login dari Modal
 function keHalamanLogin() {
     const modalEl = document.getElementById('modalAuthRequired');
     if (modalEl) {
@@ -2161,7 +2357,6 @@ function keHalamanLogin() {
     switchNav('Member');
 }
 
-// Pembersih sisa bayangan modal (modal-backdrop)
 function cleanupModalBackdrop() {
     document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
     document.body.classList.remove('modal-open');
