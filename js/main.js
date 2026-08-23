@@ -816,8 +816,8 @@ function renderLatestProducts() {
         html += `
         <div class="spotlight-card-item">
             <div class="card border-0 product-card h-100" style="border-radius: 20px; cursor: pointer;" onclick="showDetail(${originalIndex})">
-                <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 130px; border-bottom: 1px solid #f2f2f7; border-top-left-radius: 20px; border-top-right-radius: 20px;">
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 95px; max-width: 90%; object-fit: contain;">
+                <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 100px; border-bottom: 1px solid #f2f2f7; border-top-left-radius: 20px; border-top-right-radius: 20px;">
+                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 95px; max-width: 75%; object-fit: contain;">
                 </div>
                 <div class="card-body p-3 bg-white d-flex flex-column justify-content-between" style="border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
                     <div>

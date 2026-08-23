@@ -391,12 +391,12 @@ body.app-body {
 
 /* Tombol < Tepat di Celah Antara Box Kiri & Box Tengah */
 .spotlight-prev-btn {
-  left: calc(50% - 148px) !important;
+  left: calc(50% - 150px) !important;
 }
 
 /* Tombol > Tepat di Celah Antara Box Tengah & Box Kanan */
 .spotlight-next-btn {
-  left: calc(50% + 148px) !important;
+  left: calc(50% + 150px) !important;
   right: auto !important;
 }
 
