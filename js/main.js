@@ -1078,8 +1078,6 @@ function initInfiniteSpotlightSlider(totalRealItems) {
             isTicking = true;
         }
     };
-
-    initDragToScroll();
 }
 
 // ==========================================

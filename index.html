@@ -31,13 +31,13 @@
         }
     }, true);
 
-    // FUNGSI SCROLL SPOTLIGHT UNTUK PART TERBARU
+    // FUNGSI SCROLL SPOTLIGHT UNTUK PART TERBARU (DITETAPKAN KE 276px AGAR PAS DI TENGAH)
     function scrollSpotlight(direction) {
         const container = document.getElementById('latestProductsContainer');
         if (container) {
-            const scrollAmount = 200;
+            const cardWidth = 260 + 16; // 260px lebar kartu + 16px gap
             container.scrollBy({
-                left: direction * scrollAmount,
+                left: direction * cardWidth,
                 behavior: 'smooth'
             });
         }
@@ -166,7 +166,7 @@
             </div>
         </div>
 
-        <!-- SECTION PRODUK POPULER (DIPINDAHKAN KE DALAM homeView) -->
+        <!-- SECTION PRODUK POPULER -->
         <div class="mt-1 px-2" id="popularProductsSection">
             <div class="d-flex justify-content-between align-items-center mb-2 px-1">
                 <h6 class="fw-bold text-dark mb-0" style="font-size: 0.9rem;">

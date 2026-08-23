@@ -293,14 +293,15 @@ body.app-body {
   flex-direction: row !important;
   flex-wrap: nowrap !important;
   align-items: center !important;
-  overflow-x: auto !important;
+  /* Wajib auto agar scrollJS presisi */
+  overflow-x: auto !important; 
   overflow-y: hidden !important;
-  touch-action: pan-x !important;
-  scroll-snap-type: x mandatory;
+  /* Kunci kartu selalu tepat di tengah */
+  scroll-snap-type: x mandatory !important; 
+  /* Utamakan scroll vertikal halaman saat diusap jari */
+  touch-action: pan-y !important; 
   scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
   gap: 16px !important;
-  /* Kunci posisi 1 box pas di tengah dengan sisi kanan & kiri mengintip */
   padding: 6px calc(50% - 130px) 6px calc(50% - 130px) !important;
   margin-left: -16px !important;
   margin-right: -16px !important;
@@ -308,7 +309,7 @@ body.app-body {
   box-sizing: border-box !important;
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
-  cursor: grab;
+  cursor: default !important;
   user-select: none;
   -webkit-user-select: none;
 }
