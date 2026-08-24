@@ -302,7 +302,7 @@ body.app-body {
   touch-action: pan-y !important; 
   scroll-behavior: smooth;
   gap: 16px !important;
-  padding: 6px calc(50% - 130px) 6px calc(50% - 130px) !important;
+  padding: 6px calc(50% - 120px) 6px calc(50% - 120px) !important;
   margin-left: -16px !important;
   margin-right: -16px !important;
   width: calc(100% + 32px) !important;
@@ -328,10 +328,10 @@ body.app-body {
 /* Ukuran Kartu Pas 260px */
 #latestProductsContainer .spotlight-card-item,
 .latest-products-container .spotlight-card-item {
-  flex: 0 0 260px !important;
-  width: 260px !important;
-  max-width: 260px !important;
-  min-width: 260px !important;
+  flex: 0 0 240px !important;
+  width: 240px !important;
+  max-width: 240px !important;
+  min-width: 240px !important;
   padding: 0 !important;
   margin: 0 !important;
   scroll-snap-align: center !important;

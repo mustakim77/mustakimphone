@@ -429,8 +429,8 @@ function goToSlide(realIndex) {
 }
 
 function initBannerSwipe() {
-    const sliderBox = document.querySelector('.banner-box');
     const slider = document.getElementById('bannerSlider');
+    const sliderBox = slider ? slider.parentElement : null; // Ambil parent langsung
     if (!slider || !sliderBox || sliderBox.dataset.swipeInitialized) return;
 
     sliderBox.dataset.swipeInitialized = "true";
@@ -442,6 +442,9 @@ function initBannerSwipe() {
     const getX = (e) => e.touches ? e.touches[0].clientX : e.clientX;
 
     const onStart = (e) => {
+        // Cegah drag bawaan gambar jika menggunakan mouse
+        if (!e.touches) e.preventDefault(); 
+        
         isDragging = true;
         startX = getX(e);
         currentX = startX;
@@ -450,17 +453,17 @@ function initBannerSwipe() {
     };
 
     const onMove = (e) => {
-    if (!isDragging) return;
-    currentX = getX(e);
+        if (!isDragging) return;
+        currentX = getX(e);
 
-    if (rAFId) cancelAnimationFrame(rAFId);
-    rAFId = requestAnimationFrame(() => {
-        const diffX = currentX - startX;
-        const containerWidth = sliderBox.clientWidth;
-        const currentTranslate = -bannerIndex * containerWidth + diffX;
-        slider.style.transform = `translate3d(${currentTranslate}px, 0, 0)`;
-    });
-};
+        if (rAFId) cancelAnimationFrame(rAFId);
+        rAFId = requestAnimationFrame(() => {
+            const diffX = currentX - startX;
+            const containerWidth = sliderBox.clientWidth;
+            const currentTranslate = -bannerIndex * containerWidth + diffX;
+            slider.style.transform = `translate3d(${currentTranslate}px, 0, 0)`;
+        });
+    };
 
     const onEnd = () => {
         if (!isDragging) return;
@@ -479,10 +482,12 @@ function initBannerSwipe() {
         startAutoSlide();
     };
 
+    // Sentuhan Layar (Touch Event)
     sliderBox.addEventListener('touchstart', onStart, { passive: true });
     sliderBox.addEventListener('touchmove', onMove, { passive: true });
     sliderBox.addEventListener('touchend', onEnd);
 
+    // Kursor Mouse (Desktop Event)
     sliderBox.addEventListener('mousedown', onStart);
     sliderBox.addEventListener('mousemove', onMove);
     sliderBox.addEventListener('mouseup', onEnd);
@@ -830,8 +835,8 @@ function renderLatestProducts() {
                     </div>
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <span class="text-primary fw-bolder" style="font-size: 1rem;">${harga}</span>
-                        <button class="btn btn-primary rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 34px; height: 34px;" onclick="event.stopPropagation(); showDetail(${originalIndex});">
-                            <i class="fa-solid fa-plus fs-6"></i>
+                        <button class="btn btn-primary rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 28px; height: 28px;" onclick="addToCartDirect(event, ${originalIndex})">
+                        <i class="fa-solid fa-cart-shopping fs-6"></i>
                         </button>
                     </div>
                 </div>
@@ -959,7 +964,7 @@ function scrollSpotlight(direction) {
     const container = document.getElementById('latestProductsContainer');
     if (!container) return;
 
-    const cardWidth = 260 + 16;
+    const cardWidth = 240 + 16;
     container.style.scrollBehavior = 'smooth';
     container.scrollLeft += direction * cardWidth;
 }
@@ -1274,6 +1279,40 @@ function getProductImage(serviceName) {
     if (s.includes('BAT') && categoryImagesMap['GANTI BAT']) return categoryImagesMap['GANTI BAT'];
     if (s.includes('SERVICE') && categoryImagesMap['SERVICE']) return categoryImagesMap['SERVICE'];
     return defaultImageFallback;
+}
+
+// Tambahkan fungsi ini untuk tambah keranjang langsung dari beranda
+function addToCartDirect(event, idx) {
+    if (event) event.stopPropagation(); // Hentikan klik agar tidak membuka detail produk
+    const product = globalData[idx];
+    if (!product) return;
+
+    const kodeBarang = product[0] ? String(product[0]).trim() : '-';
+    const merk = product[1] || '';
+    const type = product[2] || '';
+    const service = product[3] ? String(product[3]).toUpperCase() : 'SPAREPART';
+    const hargaNum = parseInt(String(product[4] || '0').replace(/[^0-9]/g, '')) || 0;
+
+    const item = {
+        id: kodeBarang,
+        title: `${service} ${merk} ${type}`,
+        price: hargaNum,
+        service: service,
+        merk: merk,
+        type: `${merk} ${type}`,
+        qty: 1
+    };
+
+    let cart = JSON.parse(localStorage.getItem('mustakimCart')) || [];
+    let existingItem = cart.find(i => i.id === item.id);
+    if (existingItem) {
+        existingItem.qty += 1;
+    } else {
+        cart.push(item);
+    }
+    localStorage.setItem('mustakimCart', JSON.stringify(cart));
+    updateCartBadge();
+    showToast('Produk ditambahkan ke keranjang!');
 }
 
 // ==========================================
