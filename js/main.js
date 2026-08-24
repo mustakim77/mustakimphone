@@ -566,11 +566,12 @@ function searchCategory(keyword) {
         else filterService.value = 'ALL';
     }
     
-    const kv = document.getElementById('cekservisView');
-    if(kv) kv.classList.add('d-none');
-    
-    const mv = document.getElementById('merekView');
-    if(mv) mv.classList.add('d-none');
+    // TUTUP SEMUA VIEW LAIN SEBELUM FILTER
+    closeDetail();
+    ['cekservisView', 'merekView', 'keranjangView', 'memberView'].forEach(id => {
+        const v = document.getElementById(id);
+        if (v) v.classList.add('d-none');
+    });
 
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     const firstNav = document.querySelector('.nav-item');
@@ -672,9 +673,19 @@ function filterAndDisplay(keyword) {
     const filterToolbar = document.getElementById('filterToolbar');
     const backBtn = document.getElementById('backToHomeBtn');
     const appLogo = document.getElementById('appLogo');
+    const mainWorkspace = document.getElementById('mainWorkspace');
     
     if (!container) return;
-    
+
+    // Pastikan workspace utama dan detail tertutup dengan benar
+    closeDetail();
+    if (mainWorkspace) mainWorkspace.classList.remove('d-none');
+
+    ['cekservisView', 'merekView', 'keranjangView', 'memberView'].forEach(id => {
+        const v = document.getElementById(id);
+        if (v) v.classList.add('d-none');
+    });
+
     const fs = document.getElementById('filterService');
     const filterServiceVal = fs ? fs.value : 'ALL';
     const fst = document.getElementById('filterStatus');
@@ -684,6 +695,7 @@ function filterAndDisplay(keyword) {
     
     const lowerKeyword = (keyword || '').toLowerCase().trim();
     
+    // Jika keyword dan filter kosong, kembalikan ke Beranda
     if (lowerKeyword === '' && filterServiceVal === 'ALL' && filterStatusVal === 'ALL') {
         currentFilteredData = []; 
         if(homeView) homeView.classList.remove('d-none');
@@ -701,81 +713,91 @@ function filterAndDisplay(keyword) {
         if(appLogo) appLogo.classList.add('d-none');
     }
 
+    // Tampilkan skeleton jika data belum siap
     if (!globalData || globalData.length === 0) {
         container.innerHTML = getSkeletonHTML(6);
         return;
     }
     
-    let results = globalData.filter(row => {
-        if(!row) return false;
-        const searchString = `${row[0] || ''} ${row[1] || ''} ${row[2] || ''} ${row[3] || ''} ${row[6] || ''}`.toLowerCase();
-        const service = String(row[3] || '').toUpperCase();
-        const status = String(row[7] || '').trim().toLowerCase() || 'kosong';
+    try {
+        let results = globalData.filter(row => {
+            if(!row) return false;
+            const searchString = `${row[0] || ''} ${row[1] || ''} ${row[2] || ''} ${row[3] || ''} ${row[6] || ''}`.toLowerCase();
+            const service = String(row[3] || '').toUpperCase();
+            const status = String(row[7] || '').trim().toLowerCase() || 'kosong';
 
-        const isKeywordMatch = lowerKeyword === '' || searchString.includes(lowerKeyword);
-        const isServiceMatch = filterServiceVal === 'ALL' || service.includes(filterServiceVal.toUpperCase());
-        const isStatusMatch = filterStatusVal === 'ALL' || status === filterStatusVal.toLowerCase();
-        
-        return isKeywordMatch && isServiceMatch && isStatusMatch;
-    });
-    
-    if (sortPriceVal !== 'DEFAULT') {
-        results.sort((a, b) => {
-            const hargaA = parseInt(String(a[4] || '0').replace(/[^0-9]/g, '')) || 0;
-            const hargaB = parseInt(String(b[4] || '0').replace(/[^0-9]/g, '')) || 0;
-            return sortPriceVal === 'LOW' ? (hargaA - hargaB) : (hargaB - hargaA);
+            const isKeywordMatch = lowerKeyword === '' || searchString.includes(lowerKeyword);
+            const isServiceMatch = filterServiceVal === 'ALL' || service.includes(filterServiceVal.toUpperCase());
+            const isStatusMatch = filterStatusVal === 'ALL' || status === filterStatusVal.toLowerCase();
+            
+            return isKeywordMatch && isServiceMatch && isStatusMatch;
         });
-    }
-    
-    currentFilteredData = results; 
+        
+        if (sortPriceVal !== 'DEFAULT') {
+            results.sort((a, b) => {
+                const hargaA = parseInt(String(a[4] || '0').replace(/[^0-9]/g, '')) || 0;
+                const hargaB = parseInt(String(b[4] || '0').replace(/[^0-9]/g, '')) || 0;
+                return sortPriceVal === 'LOW' ? (hargaA - hargaB) : (hargaB - hargaA);
+            });
+        }
+        
+        currentFilteredData = results; 
 
-    if (results.length === 0) {
-        container.innerHTML = `
-          <div class="text-center py-5 mt-4">
-                <i class="fa-solid fa-box-open fs-1 mb-2 text-secondary opacity-50"></i>
-                <h6 class="fw-bold text-dark">Tidak Ditemukan</h6>
-                <p class="text-secondary" style="font-size: 0.85rem;">Data belum tersedia.</p>
-          </div>`;
-        return;
-    }
-    
-    let html = '<div class="row g-2 px-1">';
-    results.forEach((row, idx) => {
-        const merk = row[1] || '';
-        const type = row[2] || '';
-        const service = row[3] ? row[3].toUpperCase() : '';
-        const harga = formatRupiah(row[4] || 0);
-        const keterangan = row[6] ? String(row[6]).trim() : ''; 
-        const stokStatus = row[7] ? String(row[7]).trim() : 'Tersedia';
-        const badgeClass = getBadgeClass(stokStatus);
-        let imageUrl = getProductImage(service);
+        if (results.length === 0) {
+            container.innerHTML = `
+              <div class="text-center py-5 mt-4">
+                    <i class="fa-solid fa-box-open fs-1 mb-2 text-secondary opacity-50"></i>
+                    <h6 class="fw-bold text-dark">Tidak Ditemukan</h6>
+                    <p class="text-secondary" style="font-size: 0.85rem;">Produk yang Anda cari belum tersedia.</p>
+              </div>`;
+            return;
+        }
+        
+        let html = '<div class="row g-2 px-1">';
+        results.forEach((row, idx) => {
+            const merk = row[1] || '';
+            const type = row[2] || '';
+            const service = row[3] ? row[3].toUpperCase() : '';
+            const harga = formatRupiah(row[4] || 0);
+            const keterangan = row[6] ? String(row[6]).trim() : ''; 
+            const stokStatus = row[7] ? String(row[7]).trim() : 'Tersedia';
+            const badgeClass = getBadgeClass(stokStatus);
+            let imageUrl = getProductImage(service);
 
-        let ketBadgeHtml = keterangan 
-            ? `<span class="badge border fw-bold flex-fill text-center" style="background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd !important; font-size: 0.58rem; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${keterangan.toUpperCase()}</span>` 
-            : '';
+            let ketBadgeHtml = keterangan 
+                ? `<span class="badge border fw-bold flex-fill text-center" style="background-color: #e0f2fe; color: #0369a1; border-color: #bae6fd !important; font-size: 0.58rem; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${keterangan.toUpperCase()}</span>` 
+                : '';
 
-        html += `
-        <div class="col-6 mb-2">
-            <div class="card h-100 border-0 shadow-sm product-card" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${idx})">
-                <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0; border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 85px; max-width: 85%; object-fit: contain;">
-                </div>
-                <div class="card-body p-2 d-flex flex-column bg-white justify-content-between" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
-                    <div>
-                        <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
-                            <span class="badge ${badgeClass} flex-fill text-center" style="font-size: 0.58rem; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${stokStatus.toUpperCase()}</span>
-                            ${ketBadgeHtml}
-                            <span class="badge bg-light text-primary border flex-fill text-center" style="font-size: 0.58rem; font-weight: 700; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${service}</span>
-                        </div>
-                        <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.8rem; line-height: 1.3;">${merk} ${type}</h6>
+            html += `
+            <div class="col-6 mb-2">
+                <div class="card h-100 border-0 shadow-sm product-card" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${idx})">
+                    <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0; border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                        <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 85px; max-width: 85%; object-fit: contain;">
                     </div>
-                    <span class="text-primary fw-bolder mt-1" style="font-size: 0.82rem;">${harga}</span>
+                    <div class="card-body p-2 d-flex flex-column bg-white justify-content-between" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+                        <div>
+                            <div class="d-flex align-items-center justify-content-between gap-1 mb-1">
+                                <span class="badge ${badgeClass} flex-fill text-center" style="font-size: 0.58rem; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${stokStatus.toUpperCase()}</span>
+                                ${ketBadgeHtml}
+                                <span class="badge bg-light text-primary border flex-fill text-center" style="font-size: 0.58rem; font-weight: 700; padding: 3px 2px; border-radius: 4px; white-space: nowrap;">${service}</span>
+                            </div>
+                            <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.8rem; line-height: 1.3;">${merk} ${type}</h6>
+                        </div>
+                        <span class="text-primary fw-bolder mt-1" style="font-size: 0.82rem;">${harga}</span>
+                    </div>
                 </div>
-            </div>
-        </div>`;
-    });
-    html += '</div>';
-    container.innerHTML = html;
+            </div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+
+    } catch (err) {
+        console.error("Error pada Tampilan Pencarian:", err);
+        container.innerHTML = `
+            <div class="text-center py-4 text-danger small">
+                Terjadi kesalahan menampilkan hasil pencarian.
+            </div>`;
+    }
 }
 
 // ==========================================
@@ -836,7 +858,7 @@ function renderLatestProducts() {
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <span class="text-primary fw-bolder" style="font-size: 1rem;">${harga}</span>
                         <button class="btn btn-primary rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 28px; height: 28px;" onclick="addToCartDirect(event, ${originalIndex})">
-                        <i class="fa-solid fa-cart-shopping fs-6"></i>
+                        <i class="fa-solid fa-cart-shopping" style="font-size: 0.75rem;"></i>
                         </button>
                     </div>
                 </div>
