@@ -962,7 +962,7 @@ async function loadCategories() {
         }
 
         container.innerHTML = data.map(c => `
-            <div class="col-4 col-md-4 text-center">
+            <div class="col-6 col-md-3 text-center">
                 <div class="p-3 border rounded-3 bg-white shadow-sm">
                     <img src="${c.image_url}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" class="img-fluid mb-2" style="max-height: 60px; object-fit: contain;">
                     <div class="fw-bold text-uppercase" style="font-size:0.8rem;">${c.name}</div>

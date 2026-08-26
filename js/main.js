@@ -24,7 +24,8 @@ const defaultImageFallback = "https://i.postimg.cc/sfk5KptM/logo-default.png";
 let categoryImagesMap = {
     'GANTI LCD': 'https://i.postimg.cc/ncmGtdvm/logo-lcd.png',
     'GANTI BAT': 'https://i.postimg.cc/wBwhknd2/logo-bat.png',
-    'SERVICE': 'https://i.postimg.cc/brtkpJ2Z/logo-konektor.png'
+    'SERVICE': 'https://i.postimg.cc/brtkpJ2Z/logo-konektor.png',
+    'SPAREPART': 'https://i.postimg.cc/Ss6chkXh/logo-part.jpg'
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -307,6 +308,9 @@ async function loadCategoriesDinamis() {
         const srvImgHome = document.querySelector(".category-item[onclick*='SERVICE'] img");
         if (srvImgHome && categoryImagesMap['SERVICE']) srvImgHome.src = categoryImagesMap['SERVICE'];
 
+        const sparepartImgHome = document.querySelector(".category-item[onclick*='SPAREPART'] img");
+        if (sparepartImgHome && categoryImagesMap['SPAREPART']) sparepartImgHome.src = categoryImagesMap['SPAREPART'];
+
     } catch (e) {
         console.log("Menggunakan gambar kategori bawaan.");
     }
@@ -563,6 +567,7 @@ function searchCategory(keyword) {
         if (keyword.includes('LCD')) filterService.value = 'LCD';
         else if (keyword.includes('BAT')) filterService.value = 'BAT';
         else if (keyword.includes('SERVICE')) filterService.value = 'SERVICE';
+        else if (keyword.includes('SPAREPART')) filterService.value = 'SPAREPART';
         else filterService.value = 'ALL';
     }
     
@@ -949,10 +954,12 @@ function showDetail(idx) {
     const lcdImg = document.getElementById('detailLcdImg');
     const batImg = document.getElementById('detailBatImg');
     const srcImg = document.getElementById('detailSrcImg');
+    const partImg = document.getElementById('detailPartImg');
     
     if (lcdImg) lcdImg.classList.add('d-none');
     if (batImg) batImg.classList.add('d-none');
     if (srcImg) srcImg.classList.add('d-none');
+    if (partImg) partImg.classList.add('d-none');
 
     if (service.includes('LCD')) {
         if (lcdImg) {
@@ -963,6 +970,11 @@ function showDetail(idx) {
         if (batImg) {
             if (categoryImagesMap['GANTI BAT']) batImg.src = categoryImagesMap['GANTI BAT'];
             batImg.classList.remove('d-none');
+        }
+    } else if (service.includes('SPAREPART')) {
+        if (partImg) {
+            if (categoryImagesMap['SPAREPART']) partImg.src = categoryImagesMap['SPAREPART'];
+            partImg.classList.remove('d-none');
         }
     } else {
         if (srcImg) {
@@ -1300,6 +1312,7 @@ function getProductImage(serviceName) {
     if (s.includes('LCD') && categoryImagesMap['GANTI LCD']) return categoryImagesMap['GANTI LCD'];
     if (s.includes('BAT') && categoryImagesMap['GANTI BAT']) return categoryImagesMap['GANTI BAT'];
     if (s.includes('SERVICE') && categoryImagesMap['SERVICE']) return categoryImagesMap['SERVICE'];
+    if (s.includes('SPAREPART') && categoryImagesMap['SPAREPART']) return categoryImagesMap['SPAREPART'];
     return defaultImageFallback;
 }
 

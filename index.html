@@ -114,7 +114,7 @@
 
         <!-- Kategori (Tombol Cepat) -->
         <div class="px-3">
-          <div class="d-flex justify-content-center gap-4">
+          <div class="d-flex justify-content-center gap-2">
             <div class="category-item text-center" onclick="searchCategory('LCD')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
                 <img src="https://i.postimg.cc/ncmGtdvm/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
@@ -132,6 +132,12 @@
                 <img src="https://i.postimg.cc/brtkpJ2Z/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">SERVICE</span>
+            </div>
+            <div class="category-item text-center" onclick="searchCategory('SPAREPART')">
+              <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
+                <img src="https://i.postimg.cc/Ss6chkXh/logo-part.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="SPAREPART" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+              </div>
+              <span class="cat-title text-dark mt-1 d-block">SPARE PART</span>
             </div>
           </div>
         </div>
@@ -190,11 +196,12 @@
             <option value="LCD">LCD</option>
             <option value="BAT">Baterai</option>
             <option value="SERVICE">Service</option>
+            <option value="SPAREPART">SparePart</option>
           </select>
           <select id="filterStatus" class="form-select select-app flex-shrink-0" style="width: auto;">
             <option value="ALL">Semua Stok</option>
             <option value="tersedia">Ready</option>
-            <option value="preorder">Pre-Order</option>
+            <option value="preorder">PreOrder</option>
           </select>
           <select id="sortPrice" class="form-select select-app flex-shrink-0" style="width: auto;">
             <option value="DEFAULT">Urutkan Relevansi</option>
@@ -500,6 +507,7 @@
   <img id="detailLcdImg" src="https://i.postimg.cc/ncmGtdvm/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
   <img id="detailBatImg" src="https://i.postimg.cc/wBwhknd2/logo-bat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="BAT" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
   <img id="detailSrcImg" src="https://i.postimg.cc/brtkpJ2Z/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
+  <img id="detailPartImg" src="https://i.postimg.cc/Ss6chkXh/logo-part.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="SPAREPART" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
 </div>
 
         <div class="p-3">
