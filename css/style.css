@@ -87,13 +87,13 @@ body.app-body {
 }
 
 /* =========================================
-   2. HOME BANNER & SLIDER (GAPS TANPA GARIS PUTIH)
+   2. HOME BANNER & SLIDER (BEBAS CLS & LCP SLOW)
    ========================================= */
 .banner-box {
   position: relative;
   overflow: hidden !important;
   width: 100%;
-  background: transparent !important; /* Hapus warna background pembungkus */
+  background: transparent !important;
   box-shadow: none !important;
   touch-action: pan-y;
   user-select: none;
@@ -117,10 +117,10 @@ body.app-body {
   width: 100% !important;
   flex-shrink: 0 !important;
   background: transparent !important;
-  /* Padding ini hanya menjadi celah transparan (12px total antar slide) */
   padding: 0 6px !important; 
   box-sizing: border-box !important;
   border-radius: 0 !important;
+  aspect-ratio: 3 / 1 !important;
 }
 
 /* Lengkungan dan Bayangan Dipasang Langsung pada Gambar */
@@ -129,8 +129,9 @@ body.app-body {
   height: 100% !important;
   display: block !important;
   object-fit: cover !important;
-  border-radius: 14px !important; /* Lengkungan sudut gambar */
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important; /* Bayangan halus */
+  aspect-ratio: 3 / 1 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
   border: none !important;
   outline: none !important;
   pointer-events: none;
@@ -143,7 +144,6 @@ body.app-body {
   height: 8px; 
   background-color: #d1d1d6; 
   border-radius: 50%; 
-  /* Perubahan lebar titik aktif dibuat mengalir pelan (0.8 detik) */
   transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1), 
               background-color 0.6s ease; 
   cursor: pointer;
@@ -280,7 +280,7 @@ body.app-body {
 #toastMessage.show { opacity: 1; }
 
 /* ==========================================================
-   PART TERBARU - SPOTLIGHT CENTER SLIDER + NAVIGASI < >
+   4. PART TERBARU - SPOTLIGHT CENTER SLIDER + NAVIGASI < >
 ========================================================== */
 .spotlight-wrapper {
   position: relative;
@@ -293,12 +293,9 @@ body.app-body {
   flex-direction: row !important;
   flex-wrap: nowrap !important;
   align-items: center !important;
-  /* Wajib auto agar scrollJS presisi */
   overflow-x: auto !important; 
   overflow-y: hidden !important;
-  /* Kunci kartu selalu tepat di tengah */
   scroll-snap-type: x mandatory !important; 
-  /* Utamakan scroll vertikal halaman saat diusap jari */
   touch-action: pan-y !important; 
   scroll-behavior: smooth;
   gap: 16px !important;
@@ -325,7 +322,6 @@ body.app-body {
   scroll-behavior: auto !important;
 }
 
-/* Ukuran Kartu Pas 260px */
 #latestProductsContainer .spotlight-card-item,
 .latest-products-container .spotlight-card-item {
   flex: 0 0 240px !important;
@@ -339,7 +335,6 @@ body.app-body {
   box-sizing: border-box !important;
 }
 
-/* Transisi Halus Meluncur Ala Banner (0.35s Cubic-Bezier) */
 #latestProductsContainer .product-card,
 .latest-products-container .product-card {
   border-radius: 20px !important;
@@ -354,9 +349,7 @@ body.app-body {
   transform: scale(0.95) !important;
 }
 
-/* ==========================================================
-   PENYESUAIAN POSISI TOMBOL < > TEPAT DI ANTARA BOX (CELAH/GAP)
-========================================================== */
+/* NAVIGASI SLIDER SPOTLIGHT */
 .spotlight-nav-btn {
   position: absolute !important;
   top: 50% !important;
@@ -389,85 +382,13 @@ body.app-body {
   transform: translate(-50%, -50%) scale(0.92) !important;
 }
 
-/* Tombol < Tepat di Celah Antara Box Kiri & Box Tengah */
 .spotlight-prev-btn {
   left: calc(50% - 150px) !important;
 }
 
-/* Tombol > Tepat di Celah Antara Box Tengah & Box Kanan */
 .spotlight-next-btn {
   left: calc(50% + 150px) !important;
   right: auto !important;
-}
-
-/* BANNER TEKS "RIMBERIO STYLE" */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,900;1,900&family=Poppins:ital,wght@0,600;1,600&display=swap');
-
-.premium-banner {
-  background: linear-gradient(135deg, #0040af 0%, #007aff 50%, #38bdf8 100%);
-  border-radius: var(--ios-radius-lg);
-  padding: 14px 16px;
-  box-shadow: 0 8px 20px rgba(0, 122, 255, 0.3);
-  text-align: center;
-  margin-top: 12px;
-  margin-bottom: 12px; 
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-  position: relative;
-  overflow: hidden; 
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.premium-banner::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 200%;
-  height: 200%;
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 15px,
-    rgba(255, 255, 255, 0.08) 15px,
-    rgba(255, 255, 255, 0.08) 30px
-  );
-  z-index: 1;
-  pointer-events: none;
-}
-
-.premium-title {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 900;
-  font-style: italic;
-  font-size: 1.6rem;
-  color: #FFFFFF;
-  text-shadow: 2px 2px 0px #002266;
-  margin-bottom: 4px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  position: relative;
-  z-index: 2; 
-  transform: skewX(-5deg);
-}
-
-.premium-subtitle {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 600;
-  font-style: italic;
-  font-size: 0.8rem;
-  color: #ffffff;
-  letter-spacing: 2px;
-  margin-bottom: 0;
-  position: relative;
-  z-index: 2;
-  background: rgba(0, 0, 0, 0.25);
-  display: inline-block;
-  padding: 3px 12px;
-  border-radius: 20px;
-  transform: skewX(-5deg);
 }
 
 /* =========================================
@@ -641,7 +562,6 @@ body.app-body {
     transition: color 0.3s ease;
 }
 
-/* EFEK BUBBLE AKTIF MENONJOL */
 .nav-item.active {
     color: #ffffff !important;
 }
@@ -666,7 +586,6 @@ body.app-body {
     color: #ffffff !important;
 }
 
-/* KOTAK CHECKOUT MELAYANG */
 #cartCheckoutBar {
     left: 50% !important;
     transform: translateX(-50%) !important;
@@ -703,7 +622,7 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 }
 
 /* ============================================================
-   MODERN DRIBBLE STYLE AUTHENTICATION CARD (COMPACT VERSION)
+   8. MODERN DRIBBLE STYLE AUTHENTICATION CARD
    ============================================================ */
 .dribbble-auth-card {
   background: #ffffff;
@@ -938,28 +857,6 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
 .badge-stok-preorder { background-color: #f59e0b !important; color: white; }
 .badge-stok-empty { background-color: #ef4444 !important; color: white; }
 
-/* SKELETON SHIMMER LOADING */
-.skeleton-card {
-  height: 160px;
-  background: #e2e8f0;
-  border-radius: 12px;
-  position: relative;
-  overflow: hidden;
-}
-
-.skeleton-card::after {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-  animation: shimmer 1.2s infinite;
-}
-
-@keyframes shimmer {
-  100% { left: 100%; }
-}
-
 /* PERTEGAS TOMBOL CLOSE (X) MODAL */
 .custom-close-btn {
   background-color: #f1f5f9;
@@ -977,7 +874,7 @@ div[onclick*="searchCategory"]:active .brand-logo-box {
   box-shadow: none;
 }
 
-/* Styling Skeleton Loading agar tidak kosong/gepeng */
+/* SKELETON SHIMMER LOADING */
 .skeleton-card {
   height: 160px !important;
   border-radius: 12px !important;

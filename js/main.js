@@ -326,14 +326,20 @@ async function loadCategoriesDinamis() {
 // ==========================================
 async function loadBannersDinamis() {
     try {
-        const { data: banners, error } = await dbClient.from('banners').select('*');
         const slider = document.getElementById('bannerSlider');
         const dots = document.getElementById('bannerDots');
         if (!slider || !dots) return;
 
+        // Inisialisasi awal slider dari HTML statis jika Supabase belum selesai memuat
+        const initialSlides = slider.querySelectorAll('.banner-slide');
+        if (initialSlides.length > 0 && realBannerCount === 0) {
+            realBannerCount = initialSlides.length;
+            initBannerSwipe();
+        }
+
+        const { data: banners, error } = await dbClient.from('banners').select('*');
         if (error || !banners || banners.length === 0) {
             startAutoSlide();
-            initBannerSwipe();
             return;
         }
 
@@ -345,8 +351,8 @@ async function loadBannersDinamis() {
 
         if (realBannerCount === 1) {
             slider.innerHTML = `
-                <div class="banner-slide">
-                    <img src="${banners[0].image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="Banner Promo Mustakim Phone">
+                <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
+                    <img src="${banners[0].image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" fetchpriority="high" alt="${banners[0].title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
                 </div>`;
             return;
         }
@@ -354,21 +360,24 @@ async function loadBannersDinamis() {
         const firstClone = banners[0];
         const lastClone = banners[realBannerCount - 1];
 
+        // Slide 0: Clone terakhir (di belakang layar)
         let slidesHtml = `
-            <div class="banner-slide">
-                <img src="${lastClone.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${lastClone.title || 'Banner Promo Mustakim Phone'}">
+            <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
+                <img src="${lastClone.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${lastClone.title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
         `;
 
-        slidesHtml += banners.map(b => `
-            <div class="banner-slide">
-                <img src="${b.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${b.title || 'Banner Promo Mustakim Phone'}">
+        // Slide Utama: Slide 1 (idx === 0) diberi fetchpriority="high" untuk LCP
+        slidesHtml += banners.map((b, idx) => `
+            <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
+                <img src="${b.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" ${idx === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} alt="${b.title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
         `).join('');
 
+        // Slide Akhir: Clone pertama (di belakang layar)
         slidesHtml += `
-            <div class="banner-slide">
-                <img src="${firstClone.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${firstClone.title || 'Banner Promo Mustakim Phone'}">
+            <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
+                <img src="${firstClone.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${firstClone.title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
         `;
 
@@ -385,7 +394,6 @@ async function loadBannersDinamis() {
     } catch (e) {
         console.log("Menggunakan slider bawaan.");
         startAutoSlide();
-        initBannerSwipe();
     }
 }
 
