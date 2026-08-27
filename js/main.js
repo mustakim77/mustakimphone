@@ -29,12 +29,24 @@ let categoryImagesMap = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Muat prioritas utama untuk mempercepat render
     loadCategoriesDinamis();
     loadData();
     checkDeepLinkProduk();
-    loadBannersDinamis();
-    loadBrandsDinamis();
     updateCartBadge();
+
+    // Penundaan pemuatan banner & brand non-kritis agar tidak memblokir main-thread (Optimasi TBT/INP)
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+            loadBannersDinamis();
+            loadBrandsDinamis();
+        });
+    } else {
+        setTimeout(() => {
+            loadBannersDinamis();
+            loadBrandsDinamis();
+        }, 800);
+    }
 
     // INJEKSI EFEK ANIMASI PINDAH HALAMAN
     const styleAnimasi = document.createElement('style');
@@ -341,7 +353,7 @@ async function loadBannersDinamis() {
         if (realBannerCount === 1) {
             slider.innerHTML = `
                 <div class="banner-slide">
-                    <img src="${banners[0].image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy">
+                    <img src="${banners[0].image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="Banner Promo Mustakim Phone">
                 </div>`;
             return;
         }
@@ -351,19 +363,19 @@ async function loadBannersDinamis() {
 
         let slidesHtml = `
             <div class="banner-slide">
-                <img src="${lastClone.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy">
+                <img src="${lastClone.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${lastClone.title || 'Banner Promo Mustakim Phone'}">
             </div>
         `;
 
         slidesHtml += banners.map(b => `
             <div class="banner-slide">
-                <img src="${b.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${b.title || 'Banner Promo'}">
+                <img src="${b.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${b.title || 'Banner Promo Mustakim Phone'}">
             </div>
         `).join('');
 
         slidesHtml += `
             <div class="banner-slide">
-                <img src="${firstClone.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy">
+                <img src="${firstClone.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${firstClone.title || 'Banner Promo Mustakim Phone'}">
             </div>
         `;
 
@@ -395,7 +407,6 @@ function updateSliderView(animated = true) {
         slider.style.transition = 'none';
     }
 
-    // Kembalikan ke pergeseran persentase presisi
     slider.style.transform = `translate3d(-${bannerIndex * 100}%, 0, 0)`;
 
     if (dots.length > 0 && realBannerCount > 0) {
@@ -434,7 +445,7 @@ function goToSlide(realIndex) {
 
 function initBannerSwipe() {
     const slider = document.getElementById('bannerSlider');
-    const sliderBox = slider ? slider.parentElement : null; // Ambil parent langsung
+    const sliderBox = slider ? slider.parentElement : null;
     if (!slider || !sliderBox || sliderBox.dataset.swipeInitialized) return;
 
     sliderBox.dataset.swipeInitialized = "true";
@@ -446,7 +457,6 @@ function initBannerSwipe() {
     const getX = (e) => e.touches ? e.touches[0].clientX : e.clientX;
 
     const onStart = (e) => {
-        // Cegah drag bawaan gambar jika menggunakan mouse
         if (!e.touches) e.preventDefault(); 
         
         isDragging = true;
@@ -486,12 +496,10 @@ function initBannerSwipe() {
         startAutoSlide();
     };
 
-    // Sentuhan Layar (Touch Event)
     sliderBox.addEventListener('touchstart', onStart, { passive: true });
     sliderBox.addEventListener('touchmove', onMove, { passive: true });
     sliderBox.addEventListener('touchend', onEnd);
 
-    // Kursor Mouse (Desktop Event)
     sliderBox.addEventListener('mousedown', onStart);
     sliderBox.addEventListener('mousemove', onMove);
     sliderBox.addEventListener('mouseup', onEnd);
@@ -515,9 +523,9 @@ function generateMerekList() {
 
     if (window.customBrandsData && window.customBrandsData.length > 0) {
         container.innerHTML = window.customBrandsData.map(m => `
-            <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m.name}')" style="cursor:pointer;">
+            <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m.name}')" style="cursor:pointer;" role="button" aria-label="Kategori Merek ${m.name}">
                 <div class="brand-logo-box mb-2 bg-white shadow-sm border p-2 d-flex align-items-center justify-content-center">
-                   <img src="${m.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${m.name}" class="img-fluid pointer-events-none">
+                   <img src="${m.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="Merek ${m.name}" class="img-fluid pointer-events-none">
                 </div>
                 <span class="fw-bold text-dark d-block" style="font-size:0.8rem;">${m.name}</span>
             </div>
@@ -540,9 +548,9 @@ function generateMerekList() {
     
     mereks.forEach(m => {
         html += `
-        <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m}')" style="cursor:pointer;">
+        <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m}')" style="cursor:pointer;" role="button" aria-label="Kategori Merek ${m}">
             <div class="brand-logo-box mb-2 bg-white shadow-sm border p-2 d-flex align-items-center justify-content-center">
-               <img src="${defaultImageFallback}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="DEFAULT" class="img-fluid pointer-events-none">
+               <img src="${defaultImageFallback}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="Merek ${m}" class="img-fluid pointer-events-none">
             </div>
             <span class="fw-bold text-dark d-block" style="font-size:0.8rem;">${m}</span>
         </div>
@@ -571,7 +579,6 @@ function searchCategory(keyword) {
         else filterService.value = 'ALL';
     }
     
-    // TUTUP SEMUA VIEW LAIN SEBELUM FILTER
     closeDetail();
     ['cekservisView', 'merekView', 'keranjangView', 'memberView'].forEach(id => {
         const v = document.getElementById(id);
@@ -682,7 +689,6 @@ function filterAndDisplay(keyword) {
     
     if (!container) return;
 
-    // Pastikan workspace utama dan detail tertutup dengan benar
     closeDetail();
     if (mainWorkspace) mainWorkspace.classList.remove('d-none');
 
@@ -700,7 +706,6 @@ function filterAndDisplay(keyword) {
     
     const lowerKeyword = (keyword || '').toLowerCase().trim();
     
-    // Jika keyword dan filter kosong, kembalikan ke Beranda
     if (lowerKeyword === '' && filterServiceVal === 'ALL' && filterStatusVal === 'ALL') {
         currentFilteredData = []; 
         if(homeView) homeView.classList.remove('d-none');
@@ -718,7 +723,6 @@ function filterAndDisplay(keyword) {
         if(appLogo) appLogo.classList.add('d-none');
     }
 
-    // Tampilkan skeleton jika data belum siap
     if (!globalData || globalData.length === 0) {
         container.innerHTML = getSkeletonHTML(6);
         return;
@@ -777,7 +781,7 @@ function filterAndDisplay(keyword) {
             <div class="col-6 mb-2">
                 <div class="card h-100 border-0 shadow-sm product-card" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${idx})">
                     <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0; border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                        <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 85px; max-width: 85%; object-fit: contain;">
+                        <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${service} ${merk} ${type}" style="max-height: 85px; max-width: 85%; object-fit: contain;">
                     </div>
                     <div class="card-body p-2 d-flex flex-column bg-white justify-content-between" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
                         <div>
@@ -849,7 +853,7 @@ function renderLatestProducts() {
         <div class="spotlight-card-item">
             <div class="card border-0 product-card h-100" style="border-radius: 20px; cursor: pointer;" onclick="showDetail(${originalIndex})">
                 <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 100px; border-bottom: 1px solid #f2f2f7; border-top-left-radius: 20px; border-top-right-radius: 20px;">
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 95px; max-width: 75%; object-fit: contain;">
+                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${service} ${merk} ${type}" style="max-height: 95px; max-width: 75%; object-fit: contain;">
                 </div>
                 <div class="card-body p-3 bg-white d-flex flex-column justify-content-between" style="border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
                     <div>
@@ -862,8 +866,8 @@ function renderLatestProducts() {
                     </div>
                     <div class="d-flex justify-content-between align-items-center mt-3">
                         <span class="text-primary fw-bolder" style="font-size: 1rem;">${harga}</span>
-                        <button class="btn btn-primary rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 28px; height: 28px;" onclick="addToCartDirect(event, ${originalIndex})">
-                        <i class="fa-solid fa-cart-shopping" style="font-size: 0.75rem;"></i>
+                        <button class="btn btn-primary rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 28px; height: 28px;" aria-label="Tambah ke keranjang" onclick="addToCartDirect(event, ${originalIndex})">
+                            <i class="fa-solid fa-cart-shopping" style="font-size: 0.75rem;"></i>
                         </button>
                     </div>
                 </div>
@@ -1131,7 +1135,6 @@ function renderPopularProducts() {
         return;
     }
 
-    // Ambil 6-8 produk untuk ditampilkan sebagai produk populer
     let popularRows = globalData.slice(0, 8);
 
     let html = '<div class="row g-2 px-1">';
@@ -1155,7 +1158,7 @@ function renderPopularProducts() {
         <div class="col-6 mb-2">
             <div class="card h-100 border-0 shadow-sm product-card" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${originalIndex})">
                 <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0; border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="max-height: 85px; max-width: 85%; object-fit: contain;">
+                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${service} ${merk} ${type}" style="max-height: 85px; max-width: 85%; object-fit: contain;">
                 </div>
                 <div class="card-body p-2 d-flex flex-column bg-white justify-content-between" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
                     <div>
@@ -1258,18 +1261,18 @@ function renderCart() {
         <div class="card border-0 shadow-sm mb-2" style="border-radius:12px;">
             <div class="card-body p-2 d-flex align-items-center">
                 <div class="bg-light rounded p-1 d-flex align-items-center justify-content-center me-2" style="width: 60px; height: 60px;">
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" style="width: 100%; height: 100%; object-fit: contain;">
+                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${item.title}" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
                 <div class="flex-grow-1">
                     <h6 class="fw-bold text-dark mb-1" style="font-size:0.75rem;">${item.title}</h6>
                     <div class="text-primary fw-bolder" style="font-size:0.85rem;">${formatRupiah(item.price)}</div>
                 </div>
                 <div class="d-flex flex-column align-items-end ms-2">
-                    <i class="fa-solid fa-trash text-muted mb-2 p-1" style="cursor:pointer;" onclick="removeFromCart(${index})"></i>
+                    <i class="fa-solid fa-trash text-muted mb-2 p-1" style="cursor:pointer;" role="button" aria-label="Hapus item" onclick="removeFromCart(${index})"></i>
                     <div class="d-flex align-items-center bg-light rounded-pill px-2 py-1 border shadow-sm">
-                        <i class="fa-solid fa-minus text-dark" style="cursor:pointer; font-size:0.7rem;" onclick="updateCartQty(${index}, -1)"></i>
+                        <i class="fa-solid fa-minus text-dark" style="cursor:pointer; font-size:0.7rem;" role="button" aria-label="Kurangi jumlah" onclick="updateCartQty(${index}, -1)"></i>
                         <span class="mx-2 fw-bold text-dark" style="font-size:0.8rem;">${item.qty}</span>
-                        <i class="fa-solid fa-plus text-dark" style="cursor:pointer; font-size:0.7rem;" onclick="updateCartQty(${index}, 1)"></i>
+                        <i class="fa-solid fa-plus text-dark" style="cursor:pointer; font-size:0.7rem;" role="button" aria-label="Tambah jumlah" onclick="updateCartQty(${index}, 1)"></i>
                     </div>
                 </div>
             </div>
@@ -1316,9 +1319,8 @@ function getProductImage(serviceName) {
     return defaultImageFallback;
 }
 
-// Tambahkan fungsi ini untuk tambah keranjang langsung dari beranda
 function addToCartDirect(event, idx) {
-    if (event) event.stopPropagation(); // Hentikan klik agar tidak membuka detail produk
+    if (event) event.stopPropagation(); 
     const product = globalData[idx];
     if (!product) return;
 

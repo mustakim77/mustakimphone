@@ -2,9 +2,16 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mustakim Phone - Sparepart</title>
   
+  <!-- Preconnect untuk Mempercepat Koneksi CDN & Gambar -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://i.postimg.cc" crossorigin>
+
   <!-- Fonts & Stylesheet -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -13,7 +20,7 @@
   <link rel="icon" type="image/png" href="https://i.postimg.cc/7LYYBwGp/logo-mp4.png">
   <link rel="stylesheet" href="css/style.css">
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 
   <!-- GLOBAL IMAGE FALLBACK UNTUK JARINGAN LEMAH -->
   <script>
@@ -31,11 +38,11 @@
         }
     }, true);
 
-    // FUNGSI SCROLL SPOTLIGHT UNTUK PART TERBARU (DITETAPKAN KE 276px AGAR PAS DI TENGAH)
+    // FUNGSI SCROLL SPOTLIGHT UNTUK PART TERBARU
     function scrollSpotlight(direction) {
         const container = document.getElementById('latestProductsContainer');
         if (container) {
-            const cardWidth = 240 + 16; // 240px lebar kartu + 16px gap
+            const cardWidth = 240 + 16;
             container.scrollBy({
                 left: direction * cardWidth,
                 behavior: 'smooth'
@@ -49,7 +56,7 @@
   <div class="app-wrapper">
     <!-- HEADER UTAMA (HOME & PENCARIAN) -->
     <header id="appHeader" class="app-header bg-white px-3 py-2 border-bottom sticky-top d-flex align-items-center gap-2">
-      <i id="backToHomeBtn" class="fa-solid fa-arrow-left text-primary fs-5 d-none me-1" onclick="clearAndGoHome()"></i>
+      <i id="backToHomeBtn" class="fa-solid fa-arrow-left text-primary fs-5 d-none me-1" onclick="clearAndGoHome()" role="button" aria-label="Kembali ke Beranda"></i>
       
       <div id="appLogo" class="d-flex align-items-center text-primary fw-bolder fs-3" style="white-space: nowrap;" onclick="clearAndGoHome()">
         <span class="ms-1 text-dark" style="letter-spacing:-1px;">Mustakim</span><span class="text-primary" style="letter-spacing:-1px;">Phone</span>
@@ -57,29 +64,32 @@
       
       <div class="flex-grow-1 position-relative">
         <i class="fa-solid fa-magnifying-glass position-absolute text-dark" style="left: 12px; top: 50%; transform: translateY(-50%);"></i>
-        <input type="text" id="liveSearch" class="form-control rounded-1 bg-light border-0" style="padding-left: 36px; padding-right: 30px; font-size: 0.9rem; height: 38px;" placeholder="Cari produk..." autocomplete="off">
-        <button id="clearSearch" class="btn position-absolute d-none" style="right: 2px; top: 50%; transform: translateY(-50%); color: #666; padding: 5px;"><i class="fa-solid fa-xmark"></i></button>
+        <input type="text" id="liveSearch" class="form-control rounded-1 bg-light border-0" style="padding-left: 36px; padding-right: 30px; font-size: 0.9rem; height: 38px;" placeholder="Cari produk..." autocomplete="off" aria-label="Cari produk">
+        <button id="clearSearch" class="btn position-absolute d-none" style="right: 2px; top: 50%; transform: translateY(-50%); color: #666; padding: 5px;" aria-label="Hapus pencarian"><i class="fa-solid fa-xmark"></i></button>
       </div>
       
       <a href="https://wa.me/6285799860406?text=Halo%20MUSTAKIM%20PHONE,%20saya%20ingin%20tanya%20tentang%20layanan%20service." 
          target="_blank"
          id="headerWaBtn" 
          class="text-success text-decoration-none me-0" 
-         title="Hubungi Admin">
+         title="Hubungi Admin"
+         aria-label="Hubungi Admin via WhatsApp">
          <i class="fa-brands fa-whatsapp fs-3"></i>
       </a>
 
       <i class="fa-solid fa-location-dot text-primary fs-3" 
          onclick="window.open('https://maps.app.goo.gl/P8JnpSchEdeHymjt8', '_blank')" 
          style="cursor: pointer;" 
-         title="Lokasi Outlet"></i>
+         title="Lokasi Outlet"
+         role="button"
+         aria-label="Lokasi Outlet"></i>
     </header>
 
     <!-- HEADER DETAIL PRODUK (HIDDEN) -->
     <header id="detailHeader" class="app-header bg-white px-3 py-3 border-bottom sticky-top d-flex align-items-center d-none">
-      <i class="fa-solid fa-arrow-left text-primary fs-5 me-3" onclick="closeDetail()" style="cursor: pointer;"></i>
+      <i class="fa-solid fa-arrow-left text-primary fs-5 me-3" onclick="closeDetail()" style="cursor: pointer;" role="button" aria-label="Tutup Detail"></i>
       <div class="flex-grow-1 text-start fw-medium fs-5 text-dark" style="letter-spacing: -0.5px;">Detail Produk</div>
-      <i id="shareBtn" class="fa-solid fa-share-nodes text-primary fs-5" style="cursor: pointer;" onclick="shareProduct()"></i>
+      <i id="shareBtn" class="fa-solid fa-share-nodes text-primary fs-5" style="cursor: pointer;" onclick="shareProduct()" role="button" aria-label="Bagikan Produk"></i>
     </header>
 
     <!-- AREA KONTEN UTAMA -->
@@ -91,16 +101,16 @@
           <div class="overflow-hidden position-relative" style="border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
             <div class="banner-slider d-flex" id="bannerSlider">
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.postimg.cc/B6snXnyJ/gantilcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.postimg.cc/B6snXnyJ/gantilcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" fetchpriority="high" alt="Banner Promo Ganti LCD" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.postimg.cc/KzF8R8Vj/gantibat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.postimg.cc/KzF8R8Vj/gantibat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo Ganti Baterai" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.postimg.cc/LXR8n87H/software.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.postimg.cc/LXR8n87H/software.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo Software" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.postimg.cc/wvHj7jPx/atmmini.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.postimg.cc/wvHj7jPx/atmmini.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo Mini ATM" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
             </div>
           </div>
@@ -117,25 +127,25 @@
           <div class="d-flex justify-content-center gap-2">
             <div class="category-item text-center" onclick="searchCategory('LCD')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.postimg.cc/ncmGtdvm/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.postimg.cc/ncmGtdvm/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Kategori Ganti LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">GANTI LCD</span>
             </div>
             <div class="category-item text-center" onclick="searchCategory('BAT')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.postimg.cc/wBwhknd2/logo-bat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="BAT" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.postimg.cc/wBwhknd2/logo-bat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Kategori Ganti Baterai" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">GANTI BAT</span>
             </div>
             <div class="category-item text-center" onclick="searchCategory('SERVICE')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.postimg.cc/brtkpJ2Z/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.postimg.cc/brtkpJ2Z/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Kategori Service" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">SERVICE</span>
             </div>
             <div class="category-item text-center" onclick="searchCategory('SPAREPART')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.postimg.cc/Ss6chkXh/logo-part.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="SPAREPART" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.postimg.cc/Ss6chkXh/logo-part.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Kategori Sparepart" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">SPARE PART</span>
             </div>
@@ -150,38 +160,39 @@
                 <img src="https://i.postimg.cc/d0bBfcjm/banner-mp.jpg" 
                      onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" 
                      loading="lazy" 
-                     alt="Banner Promo" 
+                     alt="Banner Promo Mustakim Phone" 
                      style="width: 100%; height: 100%; object-fit: cover; display: block; border: none; outline: none;">
               </div>
             </div>
           </div>
         </div>
 
-        <!-- LIST TERBARU (SPOTLIGHT SLIDER DENGAN TOMBOL NAVIGASI < >) -->
+        <!-- LIST TERBARU (SPOTLIGHT SLIDER) -->
         <div class="px-3 pt-2 pb-1">
-    <h5 class="fw-bold text-dark mb-1" style="font-size: 0.9rem;">
-    <i class="fa-solid fa-mobile-screen text-primary me-1"></i>Part Terbaru!</h5>
-            <div class="spotlight-wrapper position-relative">
-                <button class="spotlight-nav-btn spotlight-prev-btn" onclick="scrollSpotlight(-1)" aria-label="Sebelumnya">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </button>
-                <div class="latest-products-container d-flex overflow-auto gap-2 pb-2" id="latestProductsContainer"></div>
-                <button class="spotlight-nav-btn spotlight-next-btn" onclick="scrollSpotlight(1)" aria-label="Berikutnya">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
-            </div>
+          <h5 class="fw-bold text-dark mb-1" style="font-size: 0.9rem;">
+            <i class="fa-solid fa-mobile-screen text-primary me-1"></i>Part Terbaru!
+          </h5>
+          <div class="spotlight-wrapper position-relative">
+            <button class="spotlight-nav-btn spotlight-prev-btn" onclick="scrollSpotlight(-1)" aria-label="Sebelumnya">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <div class="latest-products-container d-flex overflow-auto gap-2 pb-2" id="latestProductsContainer"></div>
+            <button class="spotlight-nav-btn spotlight-next-btn" onclick="scrollSpotlight(1)" aria-label="Berikutnya">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
 
-       <!-- SECTION PRODUK POPULER -->
+        <!-- SECTION PRODUK POPULER -->
         <div class="px-3 pt-2 mt-0" id="popularProductsSection">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="fw-bold text-dark mb-1" style="font-size: 0.9rem;">
-                    <i class="fa-solid fa-fire text-danger me-1"></i> Paling Banyak Dicari
-                </h5>
-            </div>
-            <div id="popularProductsContainer">
-                <!-- Produk populer akan dimuat di sini -->
-            </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="fw-bold text-dark mb-1" style="font-size: 0.9rem;">
+              <i class="fa-solid fa-fire text-danger me-1"></i> Paling Banyak Dicari
+            </h5>
+          </div>
+          <div id="popularProductsContainer">
+            <!-- Produk populer dimuat via JS -->
+          </div>
         </div>
       </div>
 
@@ -191,19 +202,19 @@
            <span class="fw-medium text-dark text-uppercase" style="font-size: 0.7rem;">MUSTAKIM PHONE  <i class="fa-solid fa-location-dot"></i></span>
         </div>
         <div class="filter-toolbar d-flex overflow-auto px-2 py-2 bg-white border-bottom gap-2 d-none" id="filterToolbar">
-          <select id="filterService" class="form-select select-app flex-shrink-0" style="width: auto;">
+          <select id="filterService" class="form-select select-app flex-shrink-0" style="width: auto;" aria-label="Filter Layanan">
             <option value="ALL">Semua Layanan</option>
             <option value="LCD">LCD</option>
             <option value="BAT">Baterai</option>
             <option value="SERVICE">Service</option>
             <option value="SPAREPART">SparePart</option>
           </select>
-          <select id="filterStatus" class="form-select select-app flex-shrink-0" style="width: auto;">
+          <select id="filterStatus" class="form-select select-app flex-shrink-0" style="width: auto;" aria-label="Filter Stok">
             <option value="ALL">Semua Stok</option>
             <option value="tersedia">Ready</option>
             <option value="preorder">PreOrder</option>
           </select>
-          <select id="sortPrice" class="form-select select-app flex-shrink-0" style="width: auto;">
+          <select id="sortPrice" class="form-select select-app flex-shrink-0" style="width: auto;" aria-label="Urutkan Harga">
             <option value="DEFAULT">Urutkan Relevansi</option>
             <option value="LOW">Harga Terendah</option>
             <option value="HIGH">Harga Tertinggi</option>
@@ -224,7 +235,6 @@
         </div>
         
         <div class="p-3 mt-1">
-          <!-- 1. KOTAK PENCARIAN MANUAL (DIATAS) -->
           <div class="bg-white p-4 rounded-4 shadow-sm border text-center mb-4">
             <div class="mb-3">
               <img src="https://i.postimg.cc/7LYYBwGp/logo-mp4.png" alt="Logo Mustakim Phone" style="max-height: 100px; width: auto; object-fit: contain;">
@@ -232,17 +242,14 @@
             <h6 class="fw-bold text-dark mb-2">Cek Status Servis HP</h6>
             <p class="text-muted mb-3" style="font-size: 0.82rem;">Masukkan Kode Nota atau Nomor WhatsApp</p>
             
-            <!-- Input Lacak -->
             <div class="input-group mb-2 shadow-sm" style="border-radius: 12px; overflow: hidden; border: 1px solid #dee2e6;">
-              <input type="text" id="inputLacakNota" class="form-control border-0 bg-light" placeholder="No. WA / Kode Nota..." style="padding: 12px 15px; font-size: 0.9rem;" autocomplete="off">
-              <button class="btn btn-primary fw-bold px-4" onclick="cariLacakPesanan()"><i class="fa-solid fa-search"></i></button>
+              <input type="text" id="inputLacakNota" class="form-control border-0 bg-light" placeholder="No. WA / Kode Nota..." style="padding: 12px 15px; font-size: 0.9rem;" autocomplete="off" aria-label="Kode Nota atau Nomor WA">
+              <button class="btn btn-primary fw-bold px-4" onclick="cariLacakPesanan()" aria-label="Cari Pesanan"><i class="fa-solid fa-search"></i></button>
             </div>
           </div>
           
-          <!-- Container Hasil Pencarian Manual -->
           <div id="hasilLacakContainer" class="mb-4"></div>
 
-          <!-- 2. WADAH PESANAN OTOMATIS MEMBER (DIBAWAH PENCARIAN) -->
           <div id="sectionPesananOtomatis" class="mb-4 d-none">
             <div class="d-flex align-items-center justify-content-between mb-2 px-1">
               <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">
@@ -267,15 +274,12 @@
       <!-- 5. KERANJANG VIEW -->
       <div id="keranjangView" class="d-none bg-light d-flex flex-column" style="height: 100vh; position: absolute; top: 0; left: 0; right: 0; bottom: 0; overflow: hidden;">
         
-        <!-- Header Tetap di Atas -->
         <div class="p-3 border-bottom bg-white flex-shrink-0 d-flex align-items-center shadow-sm" style="z-index: 10;">
           <h6 class="mb-0 fw-bold text-dark"><i class="fa-solid fa-cart-shopping text-primary me-2"></i>Keranjang Belanja</h6>
         </div>
         
-        <!-- Area Item Keranjang -->
         <div id="cartItemsContainer" class="p-2 flex-grow-1" style="overflow-y: auto; padding-bottom: 140px;"></div>
         
-        <!-- Kotak Checkout Melayang -->
         <div id="cartCheckoutBar" class="bg-white p-3 d-none d-flex justify-content-between align-items-center shadow-lg flex-shrink-0" style="position: fixed; bottom: 80px; left: 15px; right: 15px; z-index: 1040; border-radius: 16px; border: 1px solid rgba(0,0,0,0.06);">
           <div>
             <span class="text-muted fw-bold" style="font-size:0.7rem; text-transform:uppercase;">Total Belanja</span>
@@ -290,11 +294,9 @@
       <!-- 6. MEMBER VIEW -->
       <div id="memberView" class="d-none bg-light min-vh-100 p-3 pb-5">
       
-        <!-- KOTAK FORM LOGIN & DAFTAR -->
         <div id="akunContainer" class="mx-auto" style="display: none; max-width: 420px; margin-top: 5px;">
           <div class="dribbble-auth-card">
             
-            <!-- TAB SWITCHER DENGAN SLIDING PILL -->
             <div class="auth-tab-switcher mb-3">
               <div id="tabIndicator" class="tab-pill-indicator"></div>
               <button type="button" id="tabBtnLogin" class="auth-tab-btn active" onclick="tampilkanLogin()">
@@ -305,7 +307,6 @@
               </button>
             </div>
 
-            <!-- VIEWPORT SLIDER FORM -->
             <div class="auth-forms-viewport">
               <div id="authFormsSlider" class="auth-forms-slider">
                 
@@ -324,7 +325,7 @@
                   <div class="auth-input-wrapper mb-2">
                     <i class="fa-solid fa-lock input-icon"></i>
                     <input type="password" id="password" class="auth-input-field" placeholder="Password" onkeypress="cekEnter(event)">
-                    <i class="fa-solid fa-eye toggle-password" onclick="togglePassword('password', this)"></i>
+                    <i class="fa-solid fa-eye toggle-password" onclick="togglePassword('password', this)" role="button" aria-label="Tampilkan Password"></i>
                   </div>
 
                   <div class="d-flex justify-content-between align-items-center mb-3">
@@ -368,10 +369,9 @@
                   <div class="auth-input-wrapper mb-2">
                     <i class="fa-solid fa-lock input-icon"></i>
                     <input type="password" id="regPassword" class="auth-input-field" placeholder="Buat Password (Min. 6 Karakter)" oninput="cekKekuatanSandi(this.value)">
-                    <i class="fa-solid fa-eye toggle-password" onclick="togglePassword('regPassword', this)"></i>
+                    <i class="fa-solid fa-eye toggle-password" onclick="togglePassword('regPassword', this)" role="button" aria-label="Tampilkan Password"></i>
                   </div>
 
-                  <!-- INDIKATOR KEKUATAN PASSWORD -->
                   <div class="progress mb-2" style="height: 4px; border-radius: 2px; background: #e2e8f0;">
                     <div id="pwStrengthBar" class="progress-bar" role="progressbar" style="width: 0%; transition: all 0.3s ease;"></div>
                   </div>
@@ -391,7 +391,7 @@
               </div>
             </div>
 
-            <!-- 3. FORM RESET PASSWORD (DILUAR SLIDER) -->
+            <!-- 3. FORM RESET PASSWORD -->
             <div id="formResetContainer" style="display: none;">
               <div class="auth-header text-center mb-2">
                 <h4 class="auth-title">Reset Password 🔑</h4>
@@ -420,7 +420,6 @@
               </button>
             </div>
 
-            <!-- TOMBOL QUICK WA HELP -->
             <div class="text-center mt-3 pt-2 border-top">
               <a href="https://wa.me/6285799860406?text=Halo%20Admin,%20saya%20butuh%20bantuan%20login/daftar%20member" target="_blank" class="auth-wa-help">
                 <i class="fa-brands fa-whatsapp text-success me-1"></i> Butuh Bantuan? Chat Admin
@@ -430,7 +429,7 @@
           </div>
         </div>
 
-        <!-- DASHBOARD SETELAH MEMBER LOGIN -->
+        <!-- DASHBOARD MEMBER -->
         <div id="memberDashboardView" style="display: none;" class="max-w-md mx-auto">
           <div class="ios-member-header d-flex align-items-center mb-4">
             <i class="fa-solid fa-circle-user" style="font-size: 4rem;"></i>
@@ -446,8 +445,6 @@
             <h6 class="fw-bold text-dark mb-3" style="font-size: 0.95rem;">Pengaturan Akun</h6>
             
             <div class="d-flex flex-column gap-3">
-
-              <!-- TOMBOL LACAK YANG SUDAH DIREVISI -->
               <button class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center" onclick="switchNav('Kategori', document.querySelectorAll('.nav-item')[1])">
                 <i class="fa-solid fa-magnifying-glass-location me-2"></i> Lacak Status Pesanan
               </button>
@@ -463,7 +460,7 @@
           </div>
         </div>
 
-        <!-- KOTAK FORM GANTI PASSWORD -->
+        <!-- FORM GANTI PASSWORD -->
         <div id="formGantiPassContainer" class="ios-card p-4 mx-auto" style="display: none; max-width: 420px; margin-top: 10px;">
           <div class="text-center mb-4">
             <h4 class="fw-bold text-dark mb-1">Ganti Password</h4>
@@ -504,11 +501,11 @@
         </div>
 
         <div class="d-flex align-items-center justify-content-center bg-white py-2" style="height: 210px;">
-  <img id="detailLcdImg" src="https://i.postimg.cc/ncmGtdvm/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="LCD" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
-  <img id="detailBatImg" src="https://i.postimg.cc/wBwhknd2/logo-bat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="BAT" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
-  <img id="detailSrcImg" src="https://i.postimg.cc/brtkpJ2Z/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="SERVICE" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
-  <img id="detailPartImg" src="https://i.postimg.cc/Ss6chkXh/logo-part.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="SPAREPART" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
-</div>
+          <img id="detailLcdImg" src="https://i.postimg.cc/ncmGtdvm/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Detail LCD" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
+          <img id="detailBatImg" src="https://i.postimg.cc/wBwhknd2/logo-bat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Detail Baterai" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
+          <img id="detailSrcImg" src="https://i.postimg.cc/brtkpJ2Z/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Detail Service" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
+          <img id="detailPartImg" src="https://i.postimg.cc/Ss6chkXh/logo-part.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Detail Sparepart" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
+        </div>
 
         <div class="p-3">
           <h5 id="detailTitle" class="fw-bolder text-dark mb-4 text-center text-uppercase" style="line-height: 1.4; font-size:1.1rem;"></h5>
@@ -520,7 +517,6 @@
           <div class="text-muted text-decoration-line-through mb-0 fw-medium" style="font-size: 0.85rem;" id="detailCrossPrice"></div>
           <div class="fw-bolder text-dark mb-4" style="font-size: 1.8rem; letter-spacing: -1px;" id="detailPrice"></div>
 
-          <!-- INFORMASI HARGA ALL-IN -->
           <div class="alert alert-success d-flex align-items-center py-2 px-3 mb-3 border-0 shadow-sm" style="border-radius: 10px; background-color: #ecfdf5; color: #047857;">
             <i class="fa-solid fa-screwdriver-wrench me-2 fs-5"></i>
             <div style="font-size: 0.82rem; line-height: 1.3;">
@@ -562,7 +558,6 @@
         <i class="fa-solid fa-house mb-1"></i><span>Home</span>
       </div>
       
-      <!-- NAVBAR KATEGORI UBAH TAMPILAN KE CEK SERVIS -->
       <div class="nav-item text-center d-flex flex-column align-items-center" onclick="switchNav('Kategori', this)">
         <i class="fa-solid fa-magnifying-glass-location mb-1"></i><span>Cek Servis</span>
       </div>
@@ -582,33 +577,33 @@
 
   </div>
 
-  <!-- TOMBOL MELAYANG SCROLL KE ATAS -->
-  <div id="scrollTopBtn" class="floating-btn shadow" title="Ke Atas" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" style="display: none;">
+  <!-- TOMBOL SCROLL KE ATAS -->
+  <button id="scrollTopBtn" class="floating-btn shadow" title="Ke Atas" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" style="display: none;" aria-label="Kembali ke atas">
     <i class="fa-solid fa-arrow-up"></i>
-  </div>
+  </button>
 
   <!-- NOTIFIKASI TOAST -->
   <div id="toastMessage" class="shadow-sm"></div>
 
-  <!-- MODAL FORM CHECKOUT DIGITAL -->
+  <!-- MODAL FORM CHECKOUT -->
   <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
         <div class="modal-header border-0 pb-0">
           <h6 class="modal-title fw-bold text-dark"><i class="fa-solid fa-file-invoice text-primary me-2"></i>Formulir Pemesanan</h6>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label text-muted small fw-bold mb-1">Nama Pemesan *</label>
+            <label for="orderNama" class="form-label text-muted small fw-bold mb-1">Nama Pemesan *</label>
             <input type="text" id="orderNama" class="form-control rounded-3" placeholder="Masukkan nama Anda">
           </div>
           <div class="mb-3">
-            <label class="form-label text-muted small fw-bold mb-1">Nomor WhatsApp *</label>
+            <label for="orderNoHp" class="form-label text-muted small fw-bold mb-1">Nomor WhatsApp *</label>
             <input type="tel" id="orderNoHp" class="form-control rounded-3" placeholder="Contoh: 08123456789">
           </div>
           <div class="mb-3">
-            <label class="form-label small fw-bold">Tipe HP Pelanggan *</label>
+            <label for="orderCatatan" class="form-label small fw-bold">Tipe HP Pelanggan *</label>
             <textarea class="form-control" id="orderCatatan" rows="2" placeholder="Ketik atau konfirmasi Tipe HP Anda..." required></textarea>
           </div>
           
@@ -631,11 +626,10 @@
     </div>
   </div>
 
-  <!-- Modal Masuk Diperlukan -->
+  <!-- MODAL AUTH REQUIRED -->
   <div class="modal fade" id="modalAuthRequired" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered" style="max-width: 380px;">
         <div class="modal-content border-0 rounded-4 p-4 text-center shadow-lg">
-            <!-- Icon Dokumen / Akses Ditolak -->
             <div class="my-3 position-relative d-inline-block mx-auto">
                 <img src="https://i.postimg.cc/7LYYBwGp/logo-mp4.png" alt="Logo Mustakim Phone" style="max-height: 160px; width: auto; object-fit: contain;">
             </div>
@@ -660,19 +654,17 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
         
-        <!-- Header: Tombol X Dipertegas & Diperbesar -->
         <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-center">
           <h6 class="modal-title fw-bold text-dark mb-0">
             <i class="fa-solid fa-file-invoice text-primary me-2"></i>Nota Digital
           </h6>
-          <button type="button" class="btn-close custom-close-btn" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close custom-close-btn" data-bs-dismiss="modal" aria-label="Tutup"></button>
         </div>
 
         <div class="modal-body p-4" id="printableNotaArea">
           <!-- Konten Nota -->
         </div>
 
-        <!-- Footer: Hanya 2 Tombol Aksi Utama -->
         <div class="modal-footer border-0 pt-0 d-flex flex-column flex-sm-row gap-2">
           <button type="button" class="btn btn-success fw-bold text-white px-3 w-100" id="btnShareNotaCanvasWA" style="background-color: #1fa91c; border-color: #1fa91c; padding: 10px 14px; border-radius: 10px;">
             <i class="fa-brands fa-whatsapp me-1"></i> Kirim Gambar Nota
