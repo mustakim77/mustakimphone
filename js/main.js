@@ -29,24 +29,17 @@ let categoryImagesMap = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Muat prioritas utama untuk mempercepat render
+    // Prioritas Utama: Muat komponen LCP (Banner) dan Katalog Atas langsung
     loadCategoriesDinamis();
+    loadBannersDinamis(); // Panggil langsung agar elemen LCP terdeteksi cepat oleh PageSpeed
     loadData();
     checkDeepLinkProduk();
     updateCartBadge();
 
-    // Penundaan pemuatan banner & brand non-kritis agar tidak memblokir main-thread (Optimasi TBT/INP)
-    if ('requestIdleCallback' in window) {
-        requestIdleCallback(() => {
-            loadBannersDinamis();
-            loadBrandsDinamis();
-        });
-    } else {
-        setTimeout(() => {
-            loadBannersDinamis();
-            loadBrandsDinamis();
-        }, 800);
-    }
+    // Tunda hanya pemuatan Merek (Brands) karena letaknya di bawah (below-the-fold)
+    setTimeout(() => {
+        loadBrandsDinamis();
+    }, 1200);
 
     // INJEKSI EFEK ANIMASI PINDAH HALAMAN
     const styleAnimasi = document.createElement('style');
