@@ -20,7 +20,7 @@ let rAFId = null;
 const nomorWhatsAppAdmin = "6285799860406"; 
 
 // ASET LOKAL WEBP
-const defaultImageFallback = "img/logo-mp-100kb.webp";
+const defaultImageFallback = "img/logo-mp.webp";
 
 // Mapping Gambar Kategori (Lokal WebP)
 let categoryImagesMap = {
