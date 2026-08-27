@@ -590,7 +590,6 @@ function filterFromDashboard(category) {
     else if (category === 'battery') { showBatModal(); return; }
 }
 
-// --- MODAL MERK ---
 function showMerkModal() {
     const merkCounts = {}; 
     globalData.forEach(row => {
@@ -631,7 +630,6 @@ function showMerkModal() {
     new bootstrap.Modal(document.getElementById('modalPilihMerk')).show();
 }
 
-// --- MODAL TYPE ---
 function showTypeModal() {
     const typeCounts = {};
     globalData.forEach(row => {
@@ -672,7 +670,6 @@ function showTypeModal() {
     new bootstrap.Modal(document.getElementById('modalPilihType')).show();
 }
 
-// --- MODAL LCD ---
 function showLcdModal() {
     const lcdData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('LCD'));
     const merkCounts = {};
@@ -714,7 +711,6 @@ function showLcdModal() {
     new bootstrap.Modal(document.getElementById('modalPilihLcd')).show();
 }
 
-// --- MODAL BATTERY ---
 function showBatModal() {
     const batData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('BAT'));
     const merkCounts = {};
@@ -967,7 +963,7 @@ async function loadCategories() {
         container.innerHTML = data.map(c => `
             <div class="col-6 col-md-3 text-center">
                 <div class="p-3 border rounded-3 bg-white shadow-sm">
-                    <img src="${c.image_url}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" class="img-fluid mb-2" style="max-height: 60px; object-fit: contain;">
+                    <img src="${c.image_url}" loading="lazy" class="img-fluid mb-2" style="max-height: 60px; object-fit: contain;">
                     <div class="fw-bold text-uppercase" style="font-size:0.8rem;">${c.name}</div>
                 </div>
             </div>
@@ -1003,7 +999,7 @@ async function simpanKategori(e) {
 }
 
 // ==========================================
-// BANNER MANAGEMENT (SLIDE)
+// BANNER MANAGEMENT
 // ==========================================
 async function loadBanners() {
     const container = document.getElementById('containerListBanner');
@@ -1021,7 +1017,7 @@ async function loadBanners() {
         container.innerHTML = data.map(b => `
             <div class="col-6 col-md-4">
                 <div class="card border-0 shadow-sm overflow-hidden position-relative rounded-3">
-                    <img src="${b.image_url}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" class="w-100" style="aspect-ratio: 3/1; object-fit: cover;">
+                    <img src="${b.image_url}" loading="lazy" class="w-100" style="aspect-ratio: 3/1; object-fit: cover;">
                     <button onclick="deleteBanner(${b.id})" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle" title="Hapus Banner">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -1086,7 +1082,7 @@ async function loadBannerMp() {
         container.innerHTML = data.map(b => `
             <div class="col-6 col-md-4">
                 <div class="card border-0 shadow-sm overflow-hidden position-relative rounded-3">
-                    <img src="${b.image_url}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" class="w-100" style="aspect-ratio: 3/1; object-fit: cover;">
+                    <img src="${b.image_url}" loading="lazy" class="w-100" style="aspect-ratio: 3/1; object-fit: cover;">
                     <button onclick="deleteBannerMp(${b.id})" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle" title="Hapus Banner MP">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -1109,7 +1105,7 @@ async function simpanBannerMp(e) {
     }
 
     try {
-        const { error } = await dbClient.from('banner_mp').insert([{ title: title || 'Banner MP Promo', image_url: imageUrl }]);
+        const { error } = await dbClient.from('banner_mp').insert([{ title: title || 'Banner MP', image_url: imageUrl }]);
         if (error) throw error;
 
         Swal.fire('Berhasil!', 'Banner MP berhasil disimpan.', 'success');
@@ -1151,7 +1147,7 @@ async function loadBrands() {
         container.innerHTML = data.map(m => `
             <div class="col-4 col-md-3 text-center">
                 <div class="p-3 border rounded-3 bg-white position-relative shadow-sm">
-                    <img src="${m.image_url}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" class="img-fluid mb-2" style="max-height: 50px; object-fit: contain;">
+                    <img src="${m.image_url}" loading="lazy" class="img-fluid mb-2" style="max-height: 50px; object-fit: contain;">
                     <div class="fw-bold text-uppercase" style="font-size:0.8rem;">${m.name}</div>
                     <button onclick="deleteBrand(${m.id})" class="btn btn-sm btn-outline-danger mt-2 w-100 rounded-2"><i class="fa-solid fa-trash me-1"></i>Hapus</button>
                 </div>
