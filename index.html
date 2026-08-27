@@ -13,7 +13,7 @@
 <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 
   <!-- Preload Gambar Banner Utama (LCP Speedup) -->
-  <link rel="preload" as="image" href="https://i.postimg.cc/B6snXnyJ/gantilcd.png" fetchpriority="high">
+  <link rel="preload" as="image" href="https://i.postimg.cc/fygzTrSb/banner-gantilcd.jpg" fetchpriority="high">
 
   <!-- Critical Stylesheet -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -34,13 +34,13 @@
     document.addEventListener("error", function (e) {
       if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === "img") {
         e.target.onerror = null;
-        e.target.src = "https://i.postimg.cc/sfk5KptM/logo-default.png";
+        e.target.src = "https://i.postimg.cc/tCSKw6Fx/logo-default.jpg";
       }
     }, true);
     document.addEventListener("load", function(e) {
         if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === "img") {
             if (e.target.src.includes('ibb.co') && e.target.naturalWidth > 0 && e.target.naturalWidth <= 160) {
-                e.target.src = "https://i.postimg.cc/sfk5KptM/logo-default.png";
+                e.target.src = "https://i.postimg.cc/tCSKw6Fx/logo-default.jpg";
             }
         }
     }, true);
@@ -107,16 +107,16 @@
           <div class="overflow-hidden position-relative" style="border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
             <div class="banner-slider d-flex" id="bannerSlider">
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.postimg.cc/B6snXnyJ/gantilcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" fetchpriority="high" alt="Banner Promo Ganti LCD" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.postimg.cc/fygzTrSb/banner-gantilcd.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/tCSKw6Fx/logo-default.jpg';" fetchpriority="high" alt="Banner Promo Ganti LCD" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.postimg.cc/KzF8R8Vj/gantibat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo Ganti Baterai" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.postimg.cc/cC5x4btL/banner-gantibat.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/tCSKw6Fx/logo-default.jpg';" loading="lazy" alt="Banner Promo Ganti Baterai" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.postimg.cc/LXR8n87H/software.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo Software" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.postimg.cc/0jHk2BKQ/banner-software.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/tCSKw6Fx/logo-default.jpg';" loading="lazy" alt="Banner Promo Software" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="https://i.postimg.cc/wvHj7jPx/atmmini.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Banner Promo Mini ATM" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="https://i.postimg.cc/PJFXrRvC/banner-atmmini.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/tCSKw6Fx/logo-default.jpg';" loading="lazy" alt="Banner Promo Mini ATM" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
             </div>
           </div>
@@ -133,25 +133,25 @@
           <div class="d-flex justify-content-center gap-2">
             <div class="category-item text-center" onclick="searchCategory('LCD')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.postimg.cc/ncmGtdvm/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Kategori Ganti LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.postimg.cc/tgWP8hnj/logo-lcd.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/tCSKw6Fx/logo-default.jpg';" loading="lazy" alt="Kategori Ganti LCD" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">GANTI LCD</span>
             </div>
             <div class="category-item text-center" onclick="searchCategory('BAT')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.postimg.cc/wBwhknd2/logo-bat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Kategori Ganti Baterai" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.postimg.cc/tgWP8hny/logo-bat.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/tCSKw6Fx/logo-default.jpg';" loading="lazy" alt="Kategori Ganti Baterai" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">GANTI BAT</span>
             </div>
             <div class="category-item text-center" onclick="searchCategory('SERVICE')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.postimg.cc/brtkpJ2Z/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Kategori Service" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.postimg.cc/pdz83D5v/logo-konektor.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/tCSKw6Fx/logo-default.jpg';" loading="lazy" alt="Kategori Service" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">SERVICE</span>
             </div>
             <div class="category-item text-center" onclick="searchCategory('SPAREPART')">
               <div class="cat-circle bg-white d-flex align-items-center justify-content-center shadow-sm">
-                <img src="https://i.postimg.cc/Ss6chkXh/logo-part.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Kategori Sparepart" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
+                <img src="https://i.postimg.cc/1zw6bpVs/logo-part.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/tCSKw6Fx/logo-default.jpg';" loading="lazy" alt="Kategori Sparepart" class="img-fluid pointer-events-none" style="max-height: 94%; width: auto; object-fit: contain;">
               </div>
               <span class="cat-title text-dark mt-1 d-block">SPAREPART</span>
             </div>
@@ -163,8 +163,8 @@
           <div class="overflow-hidden position-relative" style="border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); line-height: 0; background: transparent;">
             <div class="banner-slider d-flex" id="bannerPremiumSlider" style="background: transparent;">
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto; background: transparent;">
-                <img src="https://i.postimg.cc/d0bBfcjm/banner-mp.jpg" 
-                     onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" 
+                <img src="https://i.postimg.cc/4yFfNSHy/banner-mp.jpg" 
+                     onerror="this.onerror=null; this.src='https://i.postimg.cc/4yFfNSHy/banner-mp.jpg';" 
                      loading="lazy" 
                      alt="Banner Promo Mustakim Phone" 
                      style="width: 100%; height: 100%; object-fit: cover; display: block; border: none; outline: none;">
@@ -507,10 +507,10 @@
         </div>
 
         <div class="d-flex align-items-center justify-content-center bg-white py-2" style="height: 210px;">
-          <img id="detailLcdImg" src="https://i.postimg.cc/ncmGtdvm/logo-lcd.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Detail LCD" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
-          <img id="detailBatImg" src="https://i.postimg.cc/wBwhknd2/logo-bat.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Detail Baterai" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
-          <img id="detailSrcImg" src="https://i.postimg.cc/brtkpJ2Z/logo-konektor.png" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Detail Service" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
-          <img id="detailPartImg" src="https://i.postimg.cc/Ss6chkXh/logo-part.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/sfk5KptM/logo-default.png';" loading="lazy" alt="Detail Sparepart" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
+          <img id="detailLcdImg" src="https://i.postimg.cc/tgWP8hnj/logo-lcd.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/tCSKw6Fx/logo-default.jpg';" loading="lazy" alt="Detail LCD" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
+          <img id="detailBatImg" src="https://i.postimg.cc/tgWP8hny/logo-bat.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/tCSKw6Fx/logo-default.jpg';" loading="lazy" alt="Detail Baterai" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
+          <img id="detailSrcImg" src="https://i.postimg.cc/pdz83D5v/logo-konektor.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/tCSKw6Fx/logo-default.jpg';" loading="lazy" alt="Detail Service" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
+          <img id="detailPartImg" src="https://i.postimg.cc/1zw6bpVs/logo-part.jpg" onerror="this.onerror=null; this.src='https://i.postimg.cc/tCSKw6Fx/logo-default.jpg';" loading="lazy" alt="Detail Sparepart" class="img-fluid d-none" style="max-height: 100%; width: auto; object-fit: contain;">
         </div>
 
         <div class="p-3">

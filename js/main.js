@@ -18,14 +18,14 @@ let autoSlideTimer = null;
 let rAFId = null; 
 
 const nomorWhatsAppAdmin = "6285799860406"; 
-const defaultImageFallback = "https://i.postimg.cc/sfk5KptM/logo-default.png";
+const defaultImageFallback = "https://i.postimg.cc/tCSKw6Fx/logo-default.jpg";
 
 // Mapping Gambar Kategori
 let categoryImagesMap = {
-    'GANTI LCD': 'https://i.postimg.cc/ncmGtdvm/logo-lcd.png',
-    'GANTI BAT': 'https://i.postimg.cc/wBwhknd2/logo-bat.png',
-    'SERVICE': 'https://i.postimg.cc/brtkpJ2Z/logo-konektor.png',
-    'SPAREPART': 'https://i.postimg.cc/Ss6chkXh/logo-part.jpg'
+    'GANTI LCD': 'https://i.postimg.cc/tgWP8hnj/logo-lcd.jpg',
+    'GANTI BAT': 'https://i.postimg.cc/tgWP8hny/logo-bat.jpg',
+    'SERVICE': 'https://i.postimg.cc/pdz83D5v/logo-konektor.jpg',
+    'SPAREPART': 'https://i.postimg.cc/1zw6bpVs/logo-part.jpg'
 };
 
 document.addEventListener('DOMContentLoaded', () => {
