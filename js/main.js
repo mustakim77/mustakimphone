@@ -18,14 +18,14 @@ let autoSlideTimer = null;
 let rAFId = null; 
 
 const nomorWhatsAppAdmin = "6285799860406"; 
-const defaultImageFallback = "https://i.postimg.cc/tCSKw6Fx/logo-default.jpg";
+const defaultImageFallback = "https://i.postimg.cc/PJrYPyTy/logo-mp-100kb.jpg";
 
 // Mapping Gambar Kategori
 let categoryImagesMap = {
-    'GANTI LCD': 'https://i.postimg.cc/tgWP8hnj/logo-lcd.jpg',
-    'GANTI BAT': 'https://i.postimg.cc/tgWP8hny/logo-bat.jpg',
-    'SERVICE': 'https://i.postimg.cc/pdz83D5v/logo-konektor.jpg',
-    'SPAREPART': 'https://i.postimg.cc/1zw6bpVs/logo-part.jpg'
+    'GANTI LCD': 'https://i.postimg.cc/SKKQM9cQ/logo-lcd-15kb.jpg',
+    'GANTI BAT': 'https://i.postimg.cc/q77B3K2p/logo-bat-15kb.jpg',
+    'SERVICE': 'https://i.postimg.cc/Jhh7kXjz/logo-konektor-15kb.jpg',
+    'SPAREPART': 'https://i.postimg.cc/CKKMq8bY/logo-part-15kb.jpg'
 };
 
 // ==========================================
@@ -363,12 +363,22 @@ async function loadCategoriesDinamis() {
 }
 
 // ==========================================
-// BANNER SLIDER
+// BANNER SLIDER (SOLUSI STABILITAS LCP)
 // ==========================================
 function renderBannersHTML(banners) {
     const slider = document.getElementById('bannerSlider');
     const dots = document.getElementById('bannerDots');
     if (!slider || !dots || !banners || banners.length === 0) return;
+
+    // Cegah timpa DOM jika jumlah & banner pertama sudah identik (Mencegah pencabutan elemen LCP)
+    const existingImgs = slider.querySelectorAll('.banner-slide img');
+    if (existingImgs.length > 0 && realBannerCount === banners.length) {
+        const firstRealImgSrc = existingImgs[1] ? existingImgs[1].src : '';
+        if (firstRealImgSrc === banners[0].image_url) {
+            startAutoSlide();
+            return;
+        }
+    }
 
     realBannerCount = banners.length;
 
@@ -379,7 +389,7 @@ function renderBannersHTML(banners) {
     if (realBannerCount === 1) {
         slider.innerHTML = `
             <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="${banners[0].image_url}" width="698" height="231" onerror="this.onerror=null; this.src='${defaultImageFallback}';" fetchpriority="high" alt="${banners[0].title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
+                <img src="${banners[0].image_url}" width="698" height="231" onerror="this.onerror=null; this.src='${defaultImageFallback}';" fetchpriority="high" alt="${banners[0].title || 'Banner Promo'}" style="width: 100%; height: 100%; object-fit: cover;">
             </div>`;
         return;
     }
@@ -389,19 +399,19 @@ function renderBannersHTML(banners) {
 
     let slidesHtml = `
         <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-            <img src="${lastClone.image_url}" width="698" height="231" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${lastClone.title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="${lastClone.image_url}" width="698" height="231" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="Banner Clone" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
     `;
 
     slidesHtml += banners.map((b, idx) => `
         <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-            <img src="${b.image_url}" width="698" height="231" onerror="this.onerror=null; this.src='${defaultImageFallback}';" ${idx === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} alt="${b.title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="${b.image_url}" width="698" height="231" onerror="this.onerror=null; this.src='${defaultImageFallback}';" ${idx === 0 ? 'fetchpriority="high" loading="eager"' : 'loading="lazy"'} alt="${b.title || 'Banner Promo'}" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
     `).join('');
 
     slidesHtml += `
         <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-            <img src="${firstClone.image_url}" width="698" height="231" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${firstClone.title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
+            <img src="${firstClone.image_url}" width="698" height="231" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="Banner Clone" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
     `;
 
