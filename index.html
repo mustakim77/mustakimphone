@@ -6,27 +6,23 @@
   <meta name="description" content="Mustakim Phone - Layanan Service HP, Sparepart, Ganti LCD, dan Baterai Terpercaya.">
   <title>Mustakim Phone - Sparepart</title>
   
-  <!-- Preconnect Maksimal 4 Origin Utama (Mencegah Peringatan Jaringan) -->
+  <!-- Preconnect Origin Utama -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="preconnect" href="https://i.postimg.cc" crossorigin>
 
-  <!-- Preload Gambar Banner Utama (LCP Optimization) -->
+  <!-- Preload Gambar Banner LCP Utama -->
   <link rel="preload" as="image" href="https://i.postimg.cc/fygzTrSb/banner-gantilcd.jpg" fetchpriority="high">
 
-  <!-- Asynchronous Google Fonts -->
+  <!-- CSS Utama (Sinkron untuk Mencegah Pergeseran Layout / CLS) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Asynchronous Google Fonts & FontAwesome (Aman Non-Blocking) -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 
-  <!-- Non-Blocking Stylesheet (Eliminasi Pemblokir Render ~880ms) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"></noscript>
-
-  <link rel="stylesheet" href="css/style.css" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="css/style.css"></noscript>
-
-  <!-- Asynchronous FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
 
@@ -680,7 +676,7 @@
     </div>
   </div>
 
-  <!-- SCRIPT LIBRARIES (Dengan Defer untuk Mengurangi Blocking Script) -->
+  <!-- SCRIPT LIBRARIES -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="js/main.js" defer></script>

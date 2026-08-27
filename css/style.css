@@ -87,7 +87,7 @@ body.app-body {
 }
 
 /* =========================================
-   2. HOME BANNER & SLIDER (BEBAS CLS & LCP SLOW)
+   2. HOME BANNER & SLIDER (PERBAIKAN ZERO CLS)
    ========================================= */
 .banner-box {
   position: relative;
@@ -103,7 +103,9 @@ body.app-body {
 .banner-slider {
   display: flex !important;
   width: 100%;
-  background: transparent !important;
+  aspect-ratio: 3 / 1 !important;
+  min-height: 120px;
+  background: #f1f5f9 !important;
   will-change: transform;
   transform: translate3d(0, 0, 0);
   transition: transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
@@ -121,6 +123,7 @@ body.app-body {
   box-sizing: border-box !important;
   border-radius: 0 !important;
   aspect-ratio: 3 / 1 !important;
+  contain: layout intrinsic-size;
 }
 
 /* Lengkungan dan Bayangan Dipasang Langsung pada Gambar */
@@ -159,6 +162,7 @@ body.app-body {
 .category-item {
   cursor: pointer;
   width: 80px;
+  min-height: 90px;
 }
 
 .cat-circle {
@@ -175,6 +179,7 @@ body.app-body {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.03);
   border: 0.5px solid var(--ios-border);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  contain: strict;
 }
 
 .category-item:active .cat-circle {
