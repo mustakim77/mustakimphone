@@ -1,7 +1,7 @@
 // ==========================================
 // KONEKSI SUPABASE & INITIALIZATION
 // ==========================================
-console.log("File main.js berhasil dimuat dan siap digunakan!");
+console.log("File main.js berhasil dimuat dan dioptimalkan!");
 
 const SUPABASE_URL = 'https://btlxqbebbwtddcpzpaet.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0bHhxYmViYnd0ZGRjcHpwYWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyODc3NzksImV4cCI6MjEwMDg2Mzc3OX0.UTuPztP57dSbHwt5kJ2u30sSpcE3KQJ6vioPoEM7eEs';
@@ -28,18 +28,30 @@ let categoryImagesMap = {
     'SPAREPART': 'https://i.postimg.cc/1zw6bpVs/logo-part.jpg'
 };
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Prioritas Utama: Muat komponen LCP (Banner) dan Katalog Atas langsung
-    loadCategoriesDinamis();
-    loadBannersDinamis(); // Panggil langsung agar elemen LCP terdeteksi cepat oleh PageSpeed
-    loadData();
-    checkDeepLinkProduk();
-    updateCartBadge();
+// ==========================================
+// HELPER CACHING (STALE-WHILE-REVALIDATE)
+// ==========================================
+function getCachedData(key) {
+    try {
+        const cached = localStorage.getItem('cache_' + key);
+        return cached ? JSON.parse(cached) : null;
+    } catch (e) { return null; }
+}
 
-    // Tunda hanya pemuatan Merek (Brands) karena letaknya di bawah (below-the-fold)
-    setTimeout(() => {
-        loadBrandsDinamis();
-    }, 1200);
+function setCachedData(key, data) {
+    try {
+        localStorage.setItem('cache_' + key, JSON.stringify(data));
+    } catch (e) {}
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Render data awal instan dari Cache jika tersedia
+    initFastCacheRender();
+
+    // 2. Fetch paralel ke Supabase di background
+    initParallelFetch();
+
+    updateCartBadge();
 
     // INJEKSI EFEK ANIMASI PINDAH HALAMAN
     const styleAnimasi = document.createElement('style');
@@ -77,13 +89,11 @@ document.addEventListener('DOMContentLoaded', () => {
            if(window.scrollY > 200) btn.style.display = 'flex';
            else btn.style.display = 'none';
        }
-    });
+    }, { passive: true });
 
     if (searchInput) {
         searchInput.addEventListener('focus', () => {
-            if (!checkAuthOrShowModal()) {
-                searchInput.blur();
-            }
+            if (!checkAuthOrShowModal()) searchInput.blur();
         });
 
         searchInput.addEventListener('input', (e) => {
@@ -125,6 +135,36 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================
+// INISIALISASI PARALEL & CACHE
+// ==========================================
+function initFastCacheRender() {
+    const cachedCategories = getCachedData('categories');
+    if (cachedCategories) applyCategoriesData(cachedCategories);
+
+    const cachedBanners = getCachedData('banners');
+    if (cachedBanners) renderBannersHTML(cachedBanners);
+
+    const cachedKatalog = getCachedData('katalog');
+    if (cachedKatalog) {
+        processKatalogData(cachedKatalog);
+        const loader = document.getElementById('loadingState');
+        if (loader) loader.style.display = 'none';
+    }
+
+    const cachedBrands = getCachedData('brands');
+    if (cachedBrands) window.customBrandsData = cachedBrands;
+}
+
+async function initParallelFetch() {
+    await Promise.allSettled([
+        loadCategoriesDinamis(),
+        loadBannersDinamis(),
+        loadData(),
+        loadBrandsDinamis()
+    ]);
+}
+
+// ==========================================
 // TEMPLATE SKELETON SHIMMER LOADING
 // ==========================================
 function getSkeletonHTML(count = 6) {
@@ -132,7 +172,7 @@ function getSkeletonHTML(count = 6) {
     for (let i = 0; i < count; i++) {
         html += `
         <div class="col-6 mb-2">
-            <div class="card border-0 shadow-sm skeleton-card"></div>
+            <div class="card border-0 shadow-sm skeleton-card" style="height: 180px; border-radius: 12px; background: #e2e8f0;"></div>
         </div>`;
     }
     html += '</div>';
@@ -194,7 +234,6 @@ function showToast(message) {
 function switchNav(tabName, element) {
     try {
         cleanupModalBackdrop();
-
         closeDetail();
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         if (element) element.classList.add('active');
@@ -293,106 +332,101 @@ function closeDetail() {
 // ==========================================
 // RENDER KATEGORI & BRAND DINAMIS
 // ==========================================
+function applyCategoriesData(categories) {
+    if (!categories || categories.length === 0) return;
+    categories.forEach(cat => {
+        if (cat.name && cat.image_url) {
+            categoryImagesMap[cat.name.toUpperCase()] = cat.image_url;
+        }
+    });
+
+    const lcdImgHome = document.querySelector(".category-item[onclick*='LCD'] img");
+    if (lcdImgHome && categoryImagesMap['GANTI LCD']) lcdImgHome.src = categoryImagesMap['GANTI LCD'];
+
+    const batImgHome = document.querySelector(".category-item[onclick*='BAT'] img");
+    if (batImgHome && categoryImagesMap['GANTI BAT']) batImgHome.src = categoryImagesMap['GANTI BAT'];
+
+    const srvImgHome = document.querySelector(".category-item[onclick*='SERVICE'] img");
+    if (srvImgHome && categoryImagesMap['SERVICE']) srvImgHome.src = categoryImagesMap['SERVICE'];
+
+    const sparepartImgHome = document.querySelector(".category-item[onclick*='SPAREPART'] img");
+    if (sparepartImgHome && categoryImagesMap['SPAREPART']) sparepartImgHome.src = categoryImagesMap['SPAREPART'];
+}
+
 async function loadCategoriesDinamis() {
     try {
         const { data: categories, error } = await dbClient.from('categories').select('*');
-        if (error || !categories || categories.length === 0) return;
-
-        categories.forEach(cat => {
-            if (cat.name && cat.image_url) {
-                categoryImagesMap[cat.name.toUpperCase()] = cat.image_url;
-            }
-        });
-
-        const lcdImgHome = document.querySelector(".category-item[onclick*='LCD'] img");
-        if (lcdImgHome && categoryImagesMap['GANTI LCD']) lcdImgHome.src = categoryImagesMap['GANTI LCD'];
-
-        const batImgHome = document.querySelector(".category-item[onclick*='BAT'] img");
-        if (batImgHome && categoryImagesMap['GANTI BAT']) batImgHome.src = categoryImagesMap['GANTI BAT'];
-
-        const srvImgHome = document.querySelector(".category-item[onclick*='SERVICE'] img");
-        if (srvImgHome && categoryImagesMap['SERVICE']) srvImgHome.src = categoryImagesMap['SERVICE'];
-
-        const sparepartImgHome = document.querySelector(".category-item[onclick*='SPAREPART'] img");
-        if (sparepartImgHome && categoryImagesMap['SPAREPART']) sparepartImgHome.src = categoryImagesMap['SPAREPART'];
-
-    } catch (e) {
-        console.log("Menggunakan gambar kategori bawaan.");
-    }
+        if (error || !categories) return;
+        setCachedData('categories', categories);
+        applyCategoriesData(categories);
+    } catch (e) {}
 }
 
 // ==========================================
 // BANNER SLIDER
 // ==========================================
+function renderBannersHTML(banners) {
+    const slider = document.getElementById('bannerSlider');
+    const dots = document.getElementById('bannerDots');
+    if (!slider || !dots || !banners || banners.length === 0) return;
+
+    realBannerCount = banners.length;
+
+    dots.innerHTML = banners.map((_, i) => `
+        <div class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>
+    `).join('');
+
+    if (realBannerCount === 1) {
+        slider.innerHTML = `
+            <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
+                <img src="${banners[0].image_url}" width="698" height="231" onerror="this.onerror=null; this.src='${defaultImageFallback}';" fetchpriority="high" alt="${banners[0].title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>`;
+        return;
+    }
+
+    const firstClone = banners[0];
+    const lastClone = banners[realBannerCount - 1];
+
+    let slidesHtml = `
+        <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
+            <img src="${lastClone.image_url}" width="698" height="231" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${lastClone.title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+    `;
+
+    slidesHtml += banners.map((b, idx) => `
+        <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
+            <img src="${b.image_url}" width="698" height="231" onerror="this.onerror=null; this.src='${defaultImageFallback}';" ${idx === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} alt="${b.title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+    `).join('');
+
+    slidesHtml += `
+        <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
+            <img src="${firstClone.image_url}" width="698" height="231" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${firstClone.title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+    `;
+
+    slider.innerHTML = slidesHtml;
+    bannerIndex = 1;
+
+    updateSliderView(false);
+
+    slider.removeEventListener('transitionend', handleBannerTransitionEnd);
+    slider.addEventListener('transitionend', handleBannerTransitionEnd);
+
+    startAutoSlide();
+    initBannerSwipe();
+}
+
 async function loadBannersDinamis() {
     try {
-        const slider = document.getElementById('bannerSlider');
-        const dots = document.getElementById('bannerDots');
-        if (!slider || !dots) return;
-
-        // Inisialisasi awal slider dari HTML statis jika Supabase belum selesai memuat
-        const initialSlides = slider.querySelectorAll('.banner-slide');
-        if (initialSlides.length > 0 && realBannerCount === 0) {
-            realBannerCount = initialSlides.length;
-            initBannerSwipe();
-        }
-
         const { data: banners, error } = await dbClient.from('banners').select('*');
         if (error || !banners || banners.length === 0) {
             startAutoSlide();
             return;
         }
-
-        realBannerCount = banners.length;
-
-        dots.innerHTML = banners.map((_, i) => `
-            <div class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>
-        `).join('');
-
-        if (realBannerCount === 1) {
-            slider.innerHTML = `
-                <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                    <img src="${banners[0].image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" fetchpriority="high" alt="${banners[0].title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>`;
-            return;
-        }
-
-        const firstClone = banners[0];
-        const lastClone = banners[realBannerCount - 1];
-
-        // Slide 0: Clone terakhir (di belakang layar)
-        let slidesHtml = `
-            <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="${lastClone.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${lastClone.title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-        `;
-
-        // Slide Utama: Slide 1 (idx === 0) diberi fetchpriority="high" untuk LCP
-        slidesHtml += banners.map((b, idx) => `
-            <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="${b.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" ${idx === 0 ? 'fetchpriority="high"' : 'loading="lazy"'} alt="${b.title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-        `).join('');
-
-        // Slide Akhir: Clone pertama (di belakang layar)
-        slidesHtml += `
-            <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto;">
-                <img src="${firstClone.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${firstClone.title || 'Banner Promo Mustakim Phone'}" style="width: 100%; height: 100%; object-fit: cover;">
-            </div>
-        `;
-
-        slider.innerHTML = slidesHtml;
-        bannerIndex = 1;
-
-        updateSliderView(false);
-
-        slider.removeEventListener('transitionend', handleBannerTransitionEnd);
-        slider.addEventListener('transitionend', handleBannerTransitionEnd);
-
-        startAutoSlide();
-        initBannerSwipe();
+        setCachedData('banners', banners);
+        renderBannersHTML(banners);
     } catch (e) {
-        console.log("Menggunakan slider bawaan.");
         startAutoSlide();
     }
 }
@@ -511,11 +545,9 @@ async function loadBrandsDinamis() {
     try {
         const { data: brands, error } = await dbClient.from('brands').select('*');
         if (error || !brands || brands.length === 0) return;
-
+        setCachedData('brands', brands);
         window.customBrandsData = brands;
-    } catch (e) {
-        console.log("Menggunakan daftar merek bawaan.");
-    }
+    } catch (e) {}
 }
 
 function generateMerekList() {
@@ -526,7 +558,7 @@ function generateMerekList() {
         container.innerHTML = window.customBrandsData.map(m => `
             <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m.name}')" style="cursor:pointer;" role="button" aria-label="Kategori Merek ${m.name}">
                 <div class="brand-logo-box mb-2 bg-white shadow-sm border p-2 d-flex align-items-center justify-content-center">
-                   <img src="${m.image_url}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="Merek ${m.name}" class="img-fluid pointer-events-none">
+                   <img src="${m.image_url}" width="80" height="80" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="Merek ${m.name}" class="img-fluid pointer-events-none">
                 </div>
                 <span class="fw-bold text-dark d-block" style="font-size:0.8rem;">${m.name}</span>
             </div>
@@ -551,7 +583,7 @@ function generateMerekList() {
         html += `
         <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m}')" style="cursor:pointer;" role="button" aria-label="Kategori Merek ${m}">
             <div class="brand-logo-box mb-2 bg-white shadow-sm border p-2 d-flex align-items-center justify-content-center">
-               <img src="${defaultImageFallback}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="Merek ${m}" class="img-fluid pointer-events-none">
+               <img src="${defaultImageFallback}" width="80" height="80" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="Merek ${m}" class="img-fluid pointer-events-none">
             </div>
             <span class="fw-bold text-dark d-block" style="font-size:0.8rem;">${m}</span>
         </div>
@@ -631,9 +663,27 @@ function clearAndGoHome() {
 // ==========================================
 // PENGAMBILAN DATA DARI SUPABASE
 // ==========================================
+function processKatalogData(data) {
+    globalData = data.map(item => [
+        item.id,
+        item.merk_hp,
+        item.type_hp,
+        item.jenis_service,
+        item.harga,
+        item.garansi,
+        item.keterangan || item.merk_part || item.ket || '',
+        item.status,
+        item.update || item.created_at || ''
+    ]);
+
+    filterAndDisplay('');
+    renderLatestProducts();
+    renderPopularProducts();
+    checkDeepLinkProduk();
+}
+
 async function loadData() {
     const loader = document.getElementById('loadingState');
-    if (loader) loader.style.display = 'block';
 
     try {
         const { data, error } = await dbClient
@@ -642,25 +692,13 @@ async function loadData() {
 
         if (error) throw error;
 
-        globalData = data.map(item => [
-            item.id,
-            item.merk_hp,
-            item.type_hp,
-            item.jenis_service,
-            item.harga,
-            item.garansi,
-            item.keterangan || item.merk_part || item.ket || '',
-            item.status,
-            item.update || item.created_at || ''
-        ]);
-
+        setCachedData('katalog', data);
+        processKatalogData(data);
         if (loader) loader.style.display = 'none';
-        filterAndDisplay('');
-        renderLatestProducts();
-        renderPopularProducts();
-        checkDeepLinkProduk();
     } catch (e) {
-        showError("Gagal memuat data: " + e.message);
+        if (!globalData || globalData.length === 0) {
+            showError("Gagal memuat data: " + e.message);
+        }
     }
 }
 
@@ -782,7 +820,7 @@ function filterAndDisplay(keyword) {
             <div class="col-6 mb-2">
                 <div class="card h-100 border-0 shadow-sm product-card" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${idx})">
                     <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0; border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                        <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${service} ${merk} ${type}" style="max-height: 85px; max-width: 85%; object-fit: contain;">
+                        <img src="${imageUrl}" width="85" height="85" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${service} ${merk} ${type}" style="max-height: 85px; max-width: 85%; object-fit: contain;">
                     </div>
                     <div class="card-body p-2 d-flex flex-column bg-white justify-content-between" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
                         <div>
@@ -854,7 +892,7 @@ function renderLatestProducts() {
         <div class="spotlight-card-item">
             <div class="card border-0 product-card h-100" style="border-radius: 20px; cursor: pointer;" onclick="showDetail(${originalIndex})">
                 <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 100px; border-bottom: 1px solid #f2f2f7; border-top-left-radius: 20px; border-top-right-radius: 20px;">
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${service} ${merk} ${type}" style="max-height: 95px; max-width: 75%; object-fit: contain;">
+                    <img src="${imageUrl}" width="75" height="75" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${service} ${merk} ${type}" style="max-height: 95px; max-width: 75%; object-fit: contain;">
                 </div>
                 <div class="card-body p-3 bg-white d-flex flex-column justify-content-between" style="border-bottom-left-radius: 20px; border-bottom-right-radius: 20px;">
                     <div>
@@ -1108,7 +1146,7 @@ function initInfiniteSpotlightSlider(totalRealItems) {
         isTicking = false;
     }
 
-    container.onscroll = () => {
+    container.addEventListener('scroll', () => {
         if (container.scrollLeft < singleSetWidth * 0.4) {
             container.style.scrollBehavior = 'auto';
             container.scrollLeft += singleSetWidth;
@@ -1121,7 +1159,7 @@ function initInfiniteSpotlightSlider(totalRealItems) {
             requestAnimationFrame(updateSpotlightAnimation);
             isTicking = true;
         }
-    };
+    }, { passive: true });
 }
 
 // ==========================================
@@ -1159,7 +1197,7 @@ function renderPopularProducts() {
         <div class="col-6 mb-2">
             <div class="card h-100 border-0 shadow-sm product-card" style="border-radius: 12px; cursor: pointer;" onclick="showDetail(${originalIndex})">
                 <div class="bg-white position-relative d-flex justify-content-center align-items-center" style="height: 110px; border-bottom: 1px solid #f0f0f0; border-top-left-radius: 12px; border-top-right-radius: 12px;">
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${service} ${merk} ${type}" style="max-height: 85px; max-width: 85%; object-fit: contain;">
+                    <img src="${imageUrl}" width="85" height="85" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${service} ${merk} ${type}" style="max-height: 85px; max-width: 85%; object-fit: contain;">
                 </div>
                 <div class="card-body p-2 d-flex flex-column bg-white justify-content-between" style="border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
                     <div>
@@ -1262,7 +1300,7 @@ function renderCart() {
         <div class="card border-0 shadow-sm mb-2" style="border-radius:12px;">
             <div class="card-body p-2 d-flex align-items-center">
                 <div class="bg-light rounded p-1 d-flex align-items-center justify-content-center me-2" style="width: 60px; height: 60px;">
-                    <img src="${imageUrl}" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${item.title}" style="width: 100%; height: 100%; object-fit: contain;">
+                    <img src="${imageUrl}" width="60" height="60" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="${item.title}" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
                 <div class="flex-grow-1">
                     <h6 class="fw-bold text-dark mb-1" style="font-size:0.75rem;">${item.title}</h6>
