@@ -82,6 +82,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const formBanner = document.getElementById('formTambahBanner');
     if(formBanner) formBanner.addEventListener('submit', simpanBanner);
 
+    const formBannerMp = document.getElementById('formUbahBannerMp');
+    if(formBannerMp) formBannerMp.addEventListener('submit', simpanBannerMp);
+
     const formMerek = document.getElementById('formTambahMerek');
     if(formMerek) formMerek.addEventListener('submit', simpanMerek);
 
@@ -89,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadOrders();
     loadCategories();
     loadBanners();
+    loadBannerMp();
     loadBrands();
 });
 
@@ -141,6 +145,7 @@ function setupSidebar() {
         'menu-tambah': 'section-form',
         'menu-kategori': 'section-kategori',
         'menu-banner': 'section-banner',
+        'menu-bannermp': 'section-bannermp',
         'menu-merek': 'section-merek'
     };
 
@@ -175,7 +180,6 @@ function setupSidebar() {
                     loadOrders();
                 }
                 
-                // Tutup sidebar otomatis untuk tampilan HP & Tablet (< 992px)
                 if (window.innerWidth < 992) {
                     document.getElementById('wrapper').classList.remove('toggled');
                 }
@@ -420,12 +424,11 @@ async function loadFinancialReport() {
         const tahunSekarang = sekarang.getFullYear();
         const tanggalSekarangStr = sekarang.toDateString();
 
-        // Map Katalog Modal dari globalData (index 0 = ID, index 5 = Modal/HPP)
         const mapModalCatalog = {};
         if (Array.isArray(globalData)) {
             globalData.forEach(row => {
                 const idItem = String(row[0] || '').trim();
-                const hppNum = parseInt(String(row[5] || '0').replace(/[^0-9]/g, '')) || 0; // FIXED INDEX 5
+                const hppNum = parseInt(String(row[5] || '0').replace(/[^0-9]/g, '')) || 0;
                 if (idItem) {
                     mapModalCatalog[idItem] = hppNum;
                 }
@@ -502,8 +505,8 @@ async function loadData() {
         item.merk_hp,        // 1
         item.type_hp,        // 2
         item.jenis_service,  // 3
-        item.harga,          // 4 (HARGA JUAL)
-        item.modal || 0,     // 5 (MODAL / HPP)
+        item.harga,          // 4
+        item.modal || 0,     // 5
         item.garansi,        // 6
         item.keterangan,     // 7
         item.status,         // 8
@@ -1000,7 +1003,7 @@ async function simpanKategori(e) {
 }
 
 // ==========================================
-// BANNER MANAGEMENT
+// BANNER MANAGEMENT (SLIDE)
 // ==========================================
 async function loadBanners() {
     const container = document.getElementById('containerListBanner');
@@ -1058,6 +1061,71 @@ async function deleteBanner(id) {
             const { error } = await dbClient.from('banners').delete().eq('id', id);
             if (error) throw error;
             loadBanners();
+        } catch(err) {
+            alert("Gagal menghapus: " + err.message);
+        }
+    }
+}
+
+// ==========================================
+// BANNER MP MANAGEMENT
+// ==========================================
+async function loadBannerMp() {
+    const container = document.getElementById('containerListBannerMp');
+    if (!container) return;
+
+    try {
+        const { data, error } = await dbClient.from('banner_mp').select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `<div class="col-12 text-center text-muted py-3">Belum ada Banner MP tersimpan.</div>`;
+            return;
+        }
+
+        container.innerHTML = data.map(b => `
+            <div class="col-6 col-md-4">
+                <div class="card border-0 shadow-sm overflow-hidden position-relative rounded-3">
+                    <img src="${b.image_url}" onerror="this.onerror=null; this.src='https://i.ibb.co/p6xxsTqv/logo-default.png';" loading="lazy" class="w-100" style="aspect-ratio: 3/1; object-fit: cover;">
+                    <button onclick="deleteBannerMp(${b.id})" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2 rounded-circle" title="Hapus Banner MP">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch(err) {
+        if (container) container.innerHTML = `<div class="col-12 text-center text-danger py-3">Gagal memuat Banner MP.</div>`;
+    }
+}
+
+async function simpanBannerMp(e) {
+    e.preventDefault();
+    const title = document.getElementById('inputBannerMpTitle').value.trim();
+    const imageUrl = document.getElementById('inputBannerMpUrl').value.trim();
+
+    if (!imageUrl) {
+        Swal.fire('Peringatan', 'URL Gambar Banner MP wajib diisi!', 'warning');
+        return;
+    }
+
+    try {
+        const { error } = await dbClient.from('banner_mp').insert([{ title: title || 'Banner MP Promo', image_url: imageUrl }]);
+        if (error) throw error;
+
+        Swal.fire('Berhasil!', 'Banner MP berhasil disimpan.', 'success');
+        document.getElementById('formUbahBannerMp').reset();
+        loadBannerMp();
+    } catch(err) {
+        Swal.fire('Gagal', err.message, 'error');
+    }
+}
+
+async function deleteBannerMp(id) {
+    if (confirm("Hapus Banner MP ini?")) {
+        try {
+            const { error } = await dbClient.from('banner_mp').delete().eq('id', id);
+            if (error) throw error;
+            loadBannerMp();
         } catch(err) {
             alert("Gagal menghapus: " + err.message);
         }

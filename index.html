@@ -6,21 +6,25 @@
   <meta name="description" content="Mustakim Phone - Layanan Service HP, Sparepart, Ganti LCD, dan Baterai Terpercaya.">
   <title>Mustakim Phone - Sparepart</title>
   
-  <!-- Google Fonts Asinkron -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
+  <!-- Preconnect Koneksi CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://i.postimg.cc" crossorigin>
 
   <!-- Preload Gambar Banner Utama (LCP Speedup) -->
   <link rel="preload" as="image" href="https://i.postimg.cc/fygzTrSb/banner-gantilcd.jpg" fetchpriority="high">
 
-  <!-- Critical Stylesheet -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Asynchronous Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
+
+  <!-- Stylesheet -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- Asynchronous FontAwesome (Menghindari Render-Blocking CSS) -->
+  <!-- Asynchronous FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></noscript>
 
@@ -29,20 +33,13 @@
   <!-- Script Non-Blocking -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 
-  <!-- GLOBAL IMAGE FALLBACK UNTUK JARINGAN LEMAH -->
+  <!-- GLOBAL IMAGE FALLBACK -->
   <script>
     document.addEventListener("error", function (e) {
       if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === "img") {
         e.target.onerror = null;
         e.target.src = "https://i.postimg.cc/tCSKw6Fx/logo-default.jpg";
       }
-    }, true);
-    document.addEventListener("load", function(e) {
-        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === "img") {
-            if (e.target.src.includes('ibb.co') && e.target.naturalWidth > 0 && e.target.naturalWidth <= 160) {
-                e.target.src = "https://i.postimg.cc/tCSKw6Fx/logo-default.jpg";
-            }
-        }
     }, true);
 
     function scrollSpotlight(direction) {
@@ -60,7 +57,7 @@
 <body class="app-body">
   
   <div class="app-wrapper">
-    <!-- HEADER UTAMA (HOME & PENCARIAN) -->
+    <!-- HEADER UTAMA -->
     <header id="appHeader" class="app-header bg-white px-3 py-2 border-bottom sticky-top d-flex align-items-center gap-2">
       <i id="backToHomeBtn" class="fa-solid fa-arrow-left text-primary fs-5 d-none me-1" onclick="clearAndGoHome()" role="button" aria-label="Kembali ke Beranda"></i>
       
@@ -91,7 +88,7 @@
          aria-label="Lokasi Outlet"></i>
     </header>
 
-    <!-- HEADER DETAIL PRODUK (HIDDEN) -->
+    <!-- HEADER DETAIL PRODUK -->
     <header id="detailHeader" class="app-header bg-white px-3 py-3 border-bottom sticky-top d-flex align-items-center d-none">
       <i class="fa-solid fa-arrow-left text-primary fs-5 me-3" onclick="closeDetail()" style="cursor: pointer;" role="button" aria-label="Tutup Detail"></i>
       <div class="flex-grow-1 text-start fw-medium fs-5 text-dark" style="letter-spacing: -0.5px;">Detail Produk</div>
@@ -158,13 +155,13 @@
           </div>
         </div>
 
-        <!-- BANNER PREMIUM -->
-        <div class="p-2 pb-2">
+        <!-- BANNER PROMO BAWAH -->
+        <div class="p-2 pb-2 mt-2">
           <div class="overflow-hidden position-relative" style="border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); line-height: 0; background: transparent;">
             <div class="banner-slider d-flex" id="bannerPremiumSlider" style="background: transparent;">
               <div class="banner-slide flex-shrink-0 w-100" style="aspect-ratio: 3/1; height: auto; background: transparent;">
                 <img src="https://i.postimg.cc/4yFfNSHy/banner-mp.jpg" 
-                     onerror="this.onerror=null; this.src='https://i.postimg.cc/4yFfNSHy/banner-mp.jpg';" 
+                     onerror="this.onerror=null; this.src='https://i.postimg.cc/tCSKw6Fx/logo-default.jpg';" 
                      loading="lazy" 
                      alt="Banner Promo Mustakim Phone" 
                      style="width: 100%; height: 100%; object-fit: cover; display: block; border: none; outline: none;">
@@ -196,9 +193,7 @@
               <i class="fa-solid fa-fire text-danger me-1"></i> Paling Banyak Dicari
             </h5>
           </div>
-          <div id="popularProductsContainer">
-            <!-- Produk populer dimuat via JS -->
-          </div>
+          <div id="popularProductsContainer"></div>
         </div>
       </div>
 
@@ -496,7 +491,7 @@
 
     </main>
 
-    <!-- AREA DETAIL PRODUK (INDEPENDEN) -->
+    <!-- AREA DETAIL PRODUK -->
     <main id="detailWorkspace" class="d-none bg-light min-vh-100 pb-5 mb-5">
       <div class="bg-white">
         <div class="text-center py-3 border-bottom">
@@ -667,9 +662,7 @@
           <button type="button" class="btn-close custom-close-btn" data-bs-dismiss="modal" aria-label="Tutup"></button>
         </div>
 
-        <div class="modal-body p-4" id="printableNotaArea">
-          <!-- Konten Nota -->
-        </div>
+        <div class="modal-body p-4" id="printableNotaArea"></div>
 
         <div class="modal-footer border-0 pt-0 d-flex flex-column flex-sm-row gap-2">
           <button type="button" class="btn btn-success fw-bold text-white px-3 w-100" id="btnShareNotaCanvasWA" style="background-color: #1fa91c; border-color: #1fa91c; padding: 10px 14px; border-radius: 10px;">

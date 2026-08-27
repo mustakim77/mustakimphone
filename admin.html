@@ -65,6 +65,9 @@
             <a href="#" class="list-group-item" id="menu-banner">
                 <i class="fa-solid fa-images"></i> <span>Banner Slide</span>
             </a>
+            <a href="#" class="list-group-item" id="menu-bannermp">
+                <i class="fa-solid fa-rectangle-ad"></i> <span>Banner MP</span>
+            </a>
             <a href="#" class="list-group-item" id="menu-merek">
                 <i class="fa-solid fa-tags"></i> <span>Kelola Merek</span>
             </a>
@@ -169,7 +172,6 @@
                 </div>
 
                 <div class="row g-3">
-                    <!-- 1. Total Omzet -->
                     <div class="col-12 col-md-4">
                         <div class="p-3 rounded-4 border bg-light-subtle d-flex align-items-center">
                             <div class="stat-icon me-3 bg-primary-subtle text-primary mb-0" style="width: 48px; height: 48px; font-size: 1.3rem;">
@@ -182,7 +184,6 @@
                         </div>
                     </div>
 
-                    <!-- 2. Total Modal / HPP -->
                     <div class="col-12 col-md-4">
                         <div class="p-3 rounded-4 border bg-light-subtle d-flex align-items-center">
                             <div class="stat-icon me-3 bg-warning-subtle text-warning mb-0" style="width: 48px; height: 48px; font-size: 1.3rem;">
@@ -195,7 +196,6 @@
                         </div>
                     </div>
 
-                    <!-- 3. Keuntungan Bersih / Profit -->
                     <div class="col-12 col-md-4">
                         <div class="p-3 rounded-4 border bg-success-subtle border-success-subtle d-flex align-items-center">
                             <div class="stat-icon me-3 bg-success text-white mb-0" style="width: 48px; height: 48px; font-size: 1.3rem;">
@@ -491,6 +491,38 @@
             </div>
         </div>
 
+        <!-- SECTION: BANNER MP -->
+        <div id="section-bannermp" class="section-content" style="display:none;">
+            <div class="premium-card mx-auto mb-4" style="max-width: 900px;">
+                <div class="border-bottom pb-3 mb-4">
+                    <h5 class="fw-bold m-0"><i class="fa-solid fa-rectangle-ad me-2 text-primary"></i> Kelola Banner MP</h5>
+                    <p class="text-muted small mt-1 mb-0">Ubah URL gambar promo Banner MP yang tampil di bagian bawah halaman utama.</p>
+                </div>
+                <form id="formUbahBannerMp">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold">Judul Banner MP (Opsional)</label>
+                            <input type="text" id="inputBannerMpTitle" class="form-control" placeholder="Contoh: Promo Banner MP">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label small fw-bold">URL Gambar Banner MP</label>
+                            <input type="url" id="inputBannerMpUrl" class="form-control" placeholder="https://i.postimg.cc/..." required>
+                        </div>
+                        <div class="col-12 text-end">
+                            <button type="submit" class="btn text-white px-4 fw-semibold shadow-sm rounded-3" style="background: #4318ff;"><i class="fa-solid fa-save me-2"></i>Simpan Banner MP</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="premium-card mx-auto" style="max-width: 900px;">
+                <h6 class="fw-bold mb-3"><i class="fa-solid fa-list me-2 text-primary"></i> Banner MP Terpasang</h6>
+                <div id="containerListBannerMp" class="row g-2 g-md-3">
+                    <div class="col-12 text-center text-muted py-3">Memuat banner MP...</div>
+                </div>
+            </div>
+        </div>
+
         <!-- SECTION: KELOLA MEREK -->
         <div id="section-merek" class="section-content" style="display:none;">
             <div class="premium-card mx-auto mb-4" style="max-width: 900px;">
@@ -685,7 +717,6 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
         
-        <!-- Header: Tombol X Dipertegas & Diperbesar -->
         <div class="modal-header border-0 pb-0 d-flex justify-content-between align-items-center">
           <h6 class="modal-title fw-bold text-dark mb-0">
             <i class="fa-solid fa-file-invoice text-primary me-2"></i>Nota Digital
@@ -697,7 +728,6 @@
           <!-- Konten Nota -->
         </div>
 
-        <!-- Footer: Hanya 2 Tombol Aksi Utama -->
         <div class="modal-footer border-0 pt-0 d-flex flex-column flex-sm-row gap-2">
           <button type="button" class="btn btn-success fw-bold text-white px-3 w-100" id="btnShareNotaCanvasWA" style="background-color: #1fa91c; border-color: #1fa91c; padding: 10px 14px; border-radius: 10px;">
             <i class="fa-brands fa-whatsapp me-1"></i> Kirim Gambar Nota
