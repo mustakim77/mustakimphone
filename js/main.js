@@ -18,14 +18,16 @@ let autoSlideTimer = null;
 let rAFId = null; 
 
 const nomorWhatsAppAdmin = "6285799860406"; 
-const defaultImageFallback = "https://i.postimg.cc/PJrYPyTy/logo-mp-100kb.jpg";
 
-// Mapping Gambar Kategori
+// ASET LOKAL WEBP
+const defaultImageFallback = "img/logo-mp-100kb.webp";
+
+// Mapping Gambar Kategori (Lokal WebP)
 let categoryImagesMap = {
-    'GANTI LCD': 'https://i.postimg.cc/SKKQM9cQ/logo-lcd-15kb.jpg',
-    'GANTI BAT': 'https://i.postimg.cc/q77B3K2p/logo-bat-15kb.jpg',
-    'SERVICE': 'https://i.postimg.cc/Jhh7kXjz/logo-konektor-15kb.jpg',
-    'SPAREPART': 'https://i.postimg.cc/CKKMq8bY/logo-part-15kb.jpg'
+    'GANTI LCD': 'img/logo-lcd.webp',
+    'GANTI BAT': 'img/logo-bat.webp',
+    'SERVICE': 'img/logo-konektor.webp',
+    'SPAREPART': 'img/logo-part.webp'
 };
 
 // ==========================================
@@ -370,7 +372,6 @@ function renderBannersHTML(banners) {
     const dots = document.getElementById('bannerDots');
     if (!slider || !dots || !banners || banners.length === 0) return;
 
-    // Cegah timpa DOM jika jumlah & banner pertama sudah identik (Mencegah pencabutan elemen LCP)
     const existingImgs = slider.querySelectorAll('.banner-slide img');
     if (existingImgs.length > 0 && realBannerCount === banners.length) {
         const firstRealImgSrc = existingImgs[1] ? existingImgs[1].src : '';
