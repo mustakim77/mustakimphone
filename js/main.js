@@ -725,7 +725,7 @@ function showError(msg) {
 }
 
 // ==========================================
-// LOGIKA PENCARIAN & TAMPILAN PRODUK
+// LOGIKA PENCARIAN & TAMPILAN PRODUK (FIXED)
 // ==========================================
 function filterAndDisplay(keyword) {
     const container = document.getElementById('resultContainer');
@@ -813,6 +813,9 @@ function filterAndDisplay(keyword) {
         
         let html = '<div class="row g-2 px-1">';
         results.forEach((row, idx) => {
+            // MENDAPATKAN INDEX ASLI PADA GLOBAL DATA
+            const originalIndex = globalData.findIndex(item => item[0] === row[0]);
+
             const merk = row[1] || '';
             const type = row[2] || '';
             const service = row[3] ? row[3].toUpperCase() : '';
@@ -841,7 +844,12 @@ function filterAndDisplay(keyword) {
                             </div>
                             <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.8rem; line-height: 1.3;">${merk} ${type}</h6>
                         </div>
-                        <span class="text-primary fw-bolder mt-1" style="font-size: 0.82rem;">${harga}</span>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span class="text-primary fw-bolder" style="font-size: 0.82rem;">${harga}</span>
+                            <button class="btn btn-primary rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 26px; height: 26px;" aria-label="Tambah ke keranjang" onclick="addToCartDirect(event, ${originalIndex})">
+                                <i class="fa-solid fa-cart-shopping" style="font-size: 0.7rem;"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>`;
@@ -1218,7 +1226,12 @@ function renderPopularProducts() {
                         </div>
                         <h6 class="fw-bold text-dark text-truncate-2 mb-1" style="font-size: 0.8rem; line-height: 1.3;">${merk} ${type}</h6>
                     </div>
-                    <span class="text-primary fw-bolder mt-1" style="font-size: 0.82rem;">${harga}</span>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <span class="text-primary fw-bolder" style="font-size: 0.82rem;">${harga}</span>
+                        <button class="btn btn-primary rounded-circle p-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 26px; height: 26px;" aria-label="Tambah ke keranjang" onclick="addToCartDirect(event, ${originalIndex})">
+                            <i class="fa-solid fa-cart-shopping" style="font-size: 0.7rem;"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>`;
