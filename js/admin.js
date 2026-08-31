@@ -192,8 +192,10 @@ function setupSidebar() {
 // KELOLA PESANAN (ORDERS) MANAGEMENT
 // ==========================================
 async function loadOrders() {
-    const tbody = document.getElementById('ordersTableBody');
-    if(!tbody) return;
+    const grid = document.getElementById('ordersCardGrid');
+    if (!grid) return;
+
+    grid.innerHTML = `<div class="col-12 text-center text-muted py-5"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data pesanan...</div>`;
 
     try {
         const { data, error } = await dbClient
@@ -208,7 +210,7 @@ async function loadOrders() {
         loadFinancialReport();
     } catch(err) {
         console.error("Gagal memuat orders:", err);
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">Gagal memuat data pesanan: ${err.message}</td></tr>`;
+        grid.innerHTML = `<div class="col-12 text-center text-danger py-5"><i class="fa-solid fa-triangle-exclamation fa-2x mb-2"></i><p>Gagal memuat data pesanan: ${err.message}</p></div>`;
     }
 }
 
@@ -230,64 +232,129 @@ function applyOrderFilters() {
 }
 
 function renderOrdersTable() {
-    const tbody = document.getElementById('ordersTableBody');
-    if(!tbody) return;
+    const grid = document.getElementById('ordersCardGrid');
+    if (!grid) return;
+
+    // Update summary counters
+    const allOrders = globalOrders;
+    const elPending  = document.getElementById('countPending');
+    const elDiproses = document.getElementById('countDiproses');
+    const elSelesai  = document.getElementById('countSelesai');
+    if (elPending)  elPending.textContent  = allOrders.filter(o => o.status === 'Pending').length;
+    if (elDiproses) elDiproses.textContent = allOrders.filter(o => o.status === 'Diproses').length;
+    if (elSelesai)  elSelesai.textContent  = allOrders.filter(o => o.status === 'Selesai').length;
 
     if (filteredOrders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">Belum ada pesanan ditemukan.</td></tr>`;
+        grid.innerHTML = `
+        <div class="col-12 text-center text-muted py-5">
+            <i class="fa-solid fa-box-open fa-3x mb-3 opacity-25"></i>
+            <h6 class="fw-semibold">Belum ada pesanan ditemukan</h6>
+            <small>Coba ubah filter atau kata kunci pencarian.</small>
+        </div>`;
         return;
     }
 
-    tbody.innerHTML = filteredOrders.map(order => {
-        let statusBadge = 'bg-secondary';
-        if (order.status === 'Pending') statusBadge = 'bg-warning text-dark';
-        if (order.status === 'Diproses') statusBadge = 'bg-info text-dark';
-        if (order.status === 'Selesai') statusBadge = 'bg-success text-white';
+    grid.innerHTML = filteredOrders.map(order => {
+        // Status config
+        let statusColor = '#6c757d', statusBg = '#f8f9fa', statusIcon = 'fa-clock';
+        if (order.status === 'Pending')  { statusColor = '#d97706'; statusBg = '#fffbeb'; statusIcon = 'fa-hourglass-half'; }
+        if (order.status === 'Diproses') { statusColor = '#0ea5e9'; statusBg = '#e0f2fe'; statusIcon = 'fa-screwdriver-wrench'; }
+        if (order.status === 'Selesai')  { statusColor = '#16a34a'; statusBg = '#dcfce7'; statusIcon = 'fa-circle-check'; }
 
         let tgl = order.created_at ? new Date(order.created_at).toLocaleString('id-ID', {
             day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
         }) : '-';
 
         let tipeHp = order.note ? order.note.trim() : '-';
-        let idPartsList = '-';
 
+        // Build items list
+        let itemsHtml = '';
         if (Array.isArray(order.items) && order.items.length > 0) {
-            idPartsList = order.items.map(i => {
-                let partId = i.id || '-';
-                let partKet = (i.keterangan && i.keterangan !== '-') ? ` (${i.keterangan})` : '';
-                return `${partId}${partKet}`;
-            }).join(', ');
+            itemsHtml = order.items.map(item => {
+                let svcUp = String(item.service || item.title || '').toUpperCase();
+                let iconCls = svcUp.includes('LCD') ? 'fa-mobile-screen text-primary'
+                            : svcUp.includes('BAT') ? 'fa-battery-full text-success'
+                            : svcUp.includes('SERVICE') ? 'fa-screwdriver-wrench text-warning'
+                            : 'fa-wrench text-secondary';
+                let ketBadge = (item.keterangan && item.keterangan !== '-')
+                    ? `<span class="badge rounded-pill ms-1" style="background:#e0e7ff;color:#4338ca;font-size:0.6rem;">${item.keterangan}</span>` : '';
+                return `<li class="d-flex align-items-center gap-1 mb-1" style="font-size:0.78rem;">
+                    <i class="fa-solid ${iconCls} flex-shrink-0" style="width:14px;font-size:0.7rem;"></i>
+                    <span class="text-dark fw-medium">${item.title}${ketBadge}</span>
+                    <span class="ms-auto text-muted fw-semibold">${formatRupiah(item.price * item.qty)}</span>
+                </li>`;
+            }).join('');
+        } else {
+            itemsHtml = `<li class="text-muted small">Tidak ada item.</li>`;
         }
 
+        let cleanPhone = String(order.customer_phone || '').replace(/[^0-9]/g, '');
+        if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.slice(1);
+
         return `
-            <tr>
-                <td>
-                    <a href="javascript:void(0)" onclick="bukaNotaDigitalAdmin('${order.order_id}')" class="fw-bold text-primary text-decoration-none">
-                        #${order.order_id}
+        <div class="col-12 col-sm-6 col-xl-4">
+            <div class="order-card h-100" onclick="bukaNotaDigitalAdmin('${order.order_id}')" style="cursor:pointer;">
+                <!-- Header -->
+                <div class="order-card-header d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <span class="fw-bold text-primary" style="font-size:0.85rem;">#${order.order_id}</span>
+                        <div class="text-muted" style="font-size:0.68rem;">${tgl}</div>
+                    </div>
+                    <span class="badge rounded-pill fw-bold d-flex align-items-center gap-1" style="background:${statusBg}; color:${statusColor}; border:1px solid ${statusColor}; font-size:0.7rem; padding:5px 10px;">
+                        <i class="fa-solid ${statusIcon}"></i> ${order.status}
+                    </span>
+                </div>
+
+                <!-- Pelanggan -->
+                <div class="d-flex align-items-center gap-2 mb-3 p-2 rounded-3" style="background:#f8fafc; border:1px dashed #e2e8f0;">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);font-size:0.85rem;">
+                        ${(order.customer_name || 'X').charAt(0).toUpperCase()}
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="fw-bold text-dark text-truncate" style="font-size:0.82rem;">${order.customer_name || '-'}</div>
+                        <div class="text-muted" style="font-size:0.7rem;"><i class="fa-solid fa-mobile-screen me-1"></i>${tipeHp}</div>
+                    </div>
+                    <a href="https://wa.me/${cleanPhone}" target="_blank" onclick="event.stopPropagation()" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:32px;height:32px;background:#25D366;color:#fff;border:none;" title="Chat WA">
+                        <i class="fa-brands fa-whatsapp" style="font-size:0.9rem;"></i>
                     </a>
-                </td>
-                <td class="small text-muted">${tgl}</td>
-                <td class="fw-semibold text-dark">${order.customer_name || '-'}</td>
-                <td><span class="small text-muted">${order.customer_phone || '-'}</span></td>
-                <td style="max-width: 200px;"><span class="small text-dark text-truncate d-block" title="${tipeHp} (${idPartsList})">${tipeHp}</span></td>
-                <td class="fw-bold text-dark">${formatRupiah(order.total_price)}</td>
-                <td>
-                    <select class="form-select form-select-sm fw-bold border-0 ${statusBadge}" style="width: auto; cursor: pointer;" onchange="ubahStatusOrder(${order.id}, this.value)">
-                        <option value="Pending" ${order.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                        <option value="Diproses" ${order.status === 'Diproses' ? 'selected' : ''}>Diproses</option>
-                        <option value="Selesai" ${order.status === 'Selesai' ? 'selected' : ''}>Selesai</option>
+                </div>
+
+                <!-- Item List -->
+                <ul class="list-unstyled mb-2">
+                    ${itemsHtml}
+                </ul>
+
+                <!-- Total & Ubah Status -->
+                <div class="d-flex justify-content-between align-items-center pt-2 mt-auto" style="border-top:1px dashed #e2e8f0;">
+                    <div>
+                        <div class="text-muted" style="font-size:0.65rem;">TOTAL TAGIHAN</div>
+                        <div class="fw-bolder text-primary" style="font-size:0.95rem;">${formatRupiah(order.total_price)}</div>
+                    </div>
+                    <select class="form-select form-select-sm fw-bold border-0 rounded-3 shadow-sm"
+                        style="width:auto; background:${statusBg}; color:${statusColor}; font-size:0.75rem; cursor:pointer;"
+                        onclick="event.stopPropagation()"
+                        onchange="ubahStatusOrder(${order.id}, this.value)">
+                        <option value="Pending"  ${order.status === 'Pending'  ? 'selected' : ''}>⏳ Pending</option>
+                        <option value="Diproses" ${order.status === 'Diproses' ? 'selected' : ''}>🔧 Diproses</option>
+                        <option value="Selesai"  ${order.status === 'Selesai'  ? 'selected' : ''}>✅ Selesai</option>
                     </select>
-                </td>
-                <td class="text-center">
-                    <button onclick="bukaNotaDigitalAdmin('${order.order_id}')" class="btn btn-sm btn-success rounded-3 me-1 shadow-sm" title="Buka & Kirim Gambar Nota WA" style="background-color: #1fa91c; border-color: #1fa91c;">
-                        <i class="fa-brands fa-whatsapp fs-6"></i>
+                </div>
+
+                <!-- Aksi Bawah -->
+                <div class="d-flex gap-2 mt-2" onclick="event.stopPropagation()">
+                    <button onclick="bukaNotaDigitalAdmin('${order.order_id}')"
+                        class="btn btn-sm fw-semibold flex-grow-1 rounded-3"
+                        style="background:#1fa91c;color:#fff;font-size:0.75rem;padding:5px 0;">
+                        <i class="fa-brands fa-whatsapp me-1"></i>Lihat & Kirim Nota
                     </button>
-                    <button onclick="hapusOrder(${order.id})" class="btn btn-sm btn-light text-danger rounded-3 shadow-sm" title="Hapus Order">
+                    <button onclick="hapusOrder(${order.id})"
+                        class="btn btn-sm btn-light text-danger rounded-3 border shadow-sm flex-shrink-0"
+                        title="Hapus Pesanan" style="font-size:0.75rem;padding:5px 10px;">
                         <i class="fa-solid fa-trash"></i>
                     </button>
-                </td>
-            </tr>
-        `;
+                </div>
+            </div>
+        </div>`;
     }).join('');
 }
 
@@ -309,68 +376,233 @@ async function ubahStatusOrder(orderDbId, statusBaru) {
 
         if (error) throw error;
 
-        let tipeHp = order.note ? order.note.trim() : '-';
-        let idPartsList = '-';
-        let detailItemsText = '';
+        order.status = statusBaru;
 
-        if (Array.isArray(order.items) && order.items.length > 0) {
-            idPartsList = order.items.map(i => {
-                let partId = i.id || '-';
-                let partKet = (i.keterangan && i.keterangan !== '-') ? ` (${i.keterangan})` : '';
-                return `${partId}${partKet}`;
-            }).join(', ');
-
-            detailItemsText = order.items.map((i, idx) => `${idx + 1}. *${i.title}* (${i.qty} Pcs)`).join('\n');
-        }
-
-        let cleanPhone = String(order.customer_phone || '').replace(/[^0-9]/g, '');
-        if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1);
-
-        let pesanWA = `*UPDATE STATUS PESANAN - MUSTAKIM PHONE*\n`;
-        pesanWA += `==============================\n`;
-        pesanWA += `*No. Nota:* #${order.order_id || '-'}\n`;
-        pesanWA += `*Nama Pelanggan:* ${order.customer_name || '-'}\n`;
-        pesanWA += `*Tipe HP Pelanggan:* ${tipeHp}\n`;
-        pesanWA += `*ID Part:* ${idPartsList}\n`;
-        pesanWA += `==============================\n`;
-        pesanWA += `*STATUS PESANAN:* *${statusBaru.toUpperCase()}*\n\n`;
-
-        if (detailItemsText) {
-            pesanWA += `*Detail Item:*\n${detailItemsText}\n\n`;
-        }
-
-        pesanWA += `==============================\n`;
-        pesanWA += `*TOTAL TAGIHAN:* ${formatRupiah(order.total_price)}\n`;
-        pesanWA += `==============================\n`;
-
+        // JIKA STATUS SELESAI -> KIRIM NOTA CANVAS DIGITAL KE WA PELANGGAN
         if (statusBaru.toLowerCase() === 'selesai') {
-            pesanWA += `_Pesanan Anda telah selesai dikerjakan dan siap diambil. Terima kasih telah mempercayakan perbaikan HP Anda di Mustakim Phone!_`;
-        } else if (statusBaru.toLowerCase() === 'diproses') {
-            pesanWA += `_Pesanan Anda saat ini sedang dalam pengerjaan oleh teknisi kami._`;
+            Swal.fire({
+                title: 'Pesanan Selesai!',
+                text: `Status pesanan #${order.order_id} berhasil diubah ke SELESAI. Kirim Nota Canvas Digital (Gambar) ke WhatsApp pelanggan?`,
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonColor: '#25D366',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fa-brands fa-whatsapp me-1"></i> Kirim Nota Canvas ke WA',
+                cancelButtonText: 'Nanti Saja'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    await siapkanDanKirimNotaCanvas(order);
+                }
+            });
         } else {
-            pesanWA += `_Pesanan Anda telah diterima dan dalam antrean pengerjaan._`;
-        }
+            // Status lain (Diproses / Pending) -> kirim pesan teks notifikasi WA standar
+            let tipeHp = order.note ? order.note.trim() : '-';
+            let idPartsList = '-';
+            let detailItemsText = '';
 
-        let waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(pesanWA)}`;
+            if (Array.isArray(order.items) && order.items.length > 0) {
+                idPartsList = order.items.map(i => {
+                    let partId = i.id || '-';
+                    let partKet = (i.keterangan && i.keterangan !== '-') ? ` (${i.keterangan})` : '';
+                    return `${partId}${partKet}`;
+                }).join(', ');
 
-        Swal.fire({
-            title: 'Status Diperbarui!',
-            text: `Status pesanan #${order.order_id} diubah menjadi "${statusBaru}". Kirim konfirmasi ke WhatsApp pelanggan?`,
-            icon: 'success',
-            showCancelButton: true,
-            confirmButtonColor: '#25D366',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: '<i class="fa-brands fa-whatsapp me-1"></i> Kirim WA Pelanggan',
-            cancelButtonText: 'Tutup'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                window.open(waUrl, '_blank');
+                detailItemsText = order.items.map((i, idx) => `${idx + 1}. *${i.title}* (${i.qty} Pcs)`).join('\n');
             }
-        });
+
+            let cleanPhone = String(order.customer_phone || '').replace(/[^0-9]/g, '');
+            if (cleanPhone.startsWith('0')) cleanPhone = '62' + cleanPhone.substring(1);
+
+            let pesanWA = `*UPDATE STATUS PESANAN - MUSTAKIM PHONE*\n`;
+            pesanWA += `==============================\n`;
+            pesanWA += `*No. Nota:* #${order.order_id || '-'}\n`;
+            pesanWA += `*Nama Pelanggan:* ${order.customer_name || '-'}\n`;
+            pesanWA += `*Tipe HP Pelanggan:* ${tipeHp}\n`;
+            pesanWA += `*ID Part:* ${idPartsList}\n`;
+            pesanWA += `==============================\n`;
+            pesanWA += `*STATUS PESANAN:* *${statusBaru.toUpperCase()}*\n\n`;
+
+            if (detailItemsText) {
+                pesanWA += `*Detail Item:*\n${detailItemsText}\n\n`;
+            }
+
+            pesanWA += `==============================\n`;
+            pesanWA += `*TOTAL TAGIHAN:* ${formatRupiah(order.total_price)}\n`;
+            pesanWA += `==============================\n`;
+
+            if (statusBaru.toLowerCase() === 'diproses') {
+                pesanWA += `_Pesanan Anda saat ini sedang dalam pengerjaan oleh teknisi kami._`;
+            } else {
+                pesanWA += `_Pesanan Anda telah diterima dan dalam antrean pengerjaan._`;
+            }
+
+            let waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(pesanWA)}`;
+
+            Swal.fire({
+                title: 'Status Diperbarui!',
+                text: `Status pesanan #${order.order_id} diubah menjadi "${statusBaru}". Kirim konfirmasi ke WhatsApp pelanggan?`,
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonColor: '#25D366',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fa-brands fa-whatsapp me-1"></i> Kirim WA Pelanggan',
+                cancelButtonText: 'Tutup'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.open(waUrl, '_blank');
+                }
+            });
+        }
 
         loadOrders();
     } catch(e) {
         Swal.fire('Gagal!', 'Gagal mengubah status: ' + e.message, 'error');
+    }
+}
+
+async function siapkanDanKirimNotaCanvas(order) {
+    if (!order) return;
+
+    Swal.fire({
+        title: 'Menyiapkan Nota Canvas...',
+        text: 'Sedang memproses gambar nota resmi...',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+
+    try {
+        let tgl = order.created_at ? new Date(order.created_at).toLocaleString('id-ID', {
+            day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        }) : '-';
+
+        let statusUpper = (order.status || 'SELESAI').toUpperCase();
+        let statusBadgeClass = 'bg-success text-white';
+
+        let itemsHtml = '';
+        if (Array.isArray(order.items)) {
+            order.items.forEach((item, idx) => {
+                let subtotal = (Number(item.price) || 0) * (Number(item.qty) || 1);
+                let ketItem = (item.keterangan && item.keterangan !== '-') ? ` <span style="font-size:0.68rem; background:#e2e8f0; border-radius:4px; padding:1px 5px;">${item.keterangan}</span>` : '';
+                let garansiItem = (item.garansi && item.garansi !== '-') ? item.garansi : '';
+                if (!garansiItem) {
+                    let svcUp = String(item.service || item.title || '').toUpperCase();
+                    garansiItem = svcUp.includes('BAT') ? '1 Bulan' : svcUp.includes('LCD') ? '1 Minggu' : '';
+                }
+                let garansiBadge = garansiItem
+                    ? `<br><span style="font-size:0.68rem; color:#555;">🛡 Garansi: ${garansiItem}</span>`
+                    : '';
+                itemsHtml += `
+                <tr style="border-bottom: 1px dashed #dee2e6;">
+                    <td style="padding: 6px 0; font-size: 0.8rem;">${idx + 1}. ${item.title}${ketItem}${garansiBadge}</td>
+                    <td style="padding: 6px 0; font-size: 0.8rem; text-align: center;">${item.qty || 1}</td>
+                    <td style="padding: 6px 0; font-size: 0.8rem; text-align: right;">${formatRupiah(subtotal)}</td>
+                </tr>`;
+            });
+        }
+
+        const printableArea = document.getElementById('printableNotaArea');
+        if (printableArea) {
+            printableArea.innerHTML = `
+                <div class="text-center mb-3">
+                    <h5 class="fw-bolder mb-0 text-primary">MUSTAKIM PHONE</h5>
+                    <small class="text-muted d-block" style="font-size: 0.72rem;">Service HP & Mini ATM</small>
+                    <small class="text-muted d-block" style="font-size: 0.7rem;">WA: 0857-9986-0406</small>
+                </div>
+                <hr style="border-top: 1.5px dashed #000; margin: 8px 0;">
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                    <span>No. Nota: <strong>#${order.order_id}</strong></span>
+                    <span>${tgl}</span>
+                </div>
+                <div class="d-flex justify-content-between small text-muted mb-2">
+                    <span>Pelanggan: <strong>${order.customer_name}</strong></span>
+                    <span>Tipe HP: <strong>${order.note || '-'}</strong></span>
+                </div>
+                <hr style="border-top: 1.5px dashed #000; margin: 8px 0;">
+                <table class="w-100 mb-2">
+                    <thead>
+                        <tr style="border-bottom: 1px solid #000; font-size: 0.75rem;">
+                            <th class="py-1">Item Layanan / Part</th>
+                            <th class="py-1 text-center">Qty</th>
+                            <th class="py-1 text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsHtml}
+                    </tbody>
+                </table>
+                <hr style="border-top: 1.5px dashed #000; margin: 8px 0;">
+                <div class="d-flex justify-content-between fw-bold fs-6 text-dark mt-2">
+                    <span>TOTAL BAYAR:</span>
+                    <span class="text-primary">${formatRupiah(order.total_price)}</span>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center small text-muted mt-2">
+                    <span style="font-size: 0.8rem; font-weight: 600;">Status:</span>
+                    <span class="badge ${statusBadgeClass} shadow-sm" style="padding: 5px 12px; font-size: 0.72rem; font-weight: 800; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; line-height: 1;">
+                        ${statusUpper}
+                    </span>
+                </div>
+
+                <div class="text-center mt-4 pt-2 border-top">
+                    <small class="text-muted d-block" style="font-size: 0.7rem;">Terima Kasih atas Kepercayaan Anda!</small>
+                    <small class="text-muted d-block" style="font-size: 0.65rem;">Garansi berlaku sesuai ketentuan syarat nota.</small>
+                </div>`;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 150));
+
+        const canvas = await html2canvas(printableArea, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            logging: false
+        });
+
+        canvas.toBlob(async (blob) => {
+            Swal.close();
+            if (!blob) {
+                Swal.fire('Gagal', 'Gagal memproses gambar nota.', 'error');
+                return;
+            }
+
+            const fileName = `Nota-${order.order_id}.png`;
+            const file = new File([blob], fileName, { type: 'image/png' });
+
+            let noHpPelanggan = order.customer_phone ? String(order.customer_phone).replace(/[^0-9]/g, '') : '';
+            if (noHpPelanggan.startsWith('0')) {
+                noHpPelanggan = '62' + noHpPelanggan.slice(1);
+            }
+
+            let textChat = `Halo Kak ${order.customer_name}, pesanan/servis HP Anda #${order.order_id} telah SELESAI dikerjakan. Berikut kami lampirkan Nota Digital resmi dari MUSTAKIM PHONE.`;
+
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        files: [file],
+                        title: `Nota ${order.order_id}`,
+                        text: textChat
+                    });
+                } catch (err) {
+                    console.log('User cancel share:', err);
+                }
+            } else {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                link.click();
+                URL.revokeObjectURL(link.href);
+
+                let urlWA = noHpPelanggan 
+                    ? `https://wa.me/${noHpPelanggan}?text=${encodeURIComponent(textChat)}`
+                    : `https://api.whatsapp.com/send?text=${encodeURIComponent(textChat)}`;
+
+                window.open(urlWA, '_blank');
+            }
+        }, 'image/png');
+
+    } catch (err) {
+        Swal.fire('Error', 'Gagal membuat nota canvas: ' + err.message, 'error');
     }
 }
 
@@ -473,12 +705,18 @@ async function loadFinancialReport() {
     }
 }
 
-function formatRupiahAdmin(angka) {
+function formatRupiah(angka) {
+    let cleanNumber = String(angka || 0).replace(/[^0-9]/g, '');
+    if (!cleanNumber || cleanNumber === '') return 'Rp0';
     return new Intl.NumberFormat('id-ID', {
         style: 'currency',
         currency: 'IDR',
         minimumFractionDigits: 0
-    }).format(angka).replace(/\s/g, '');
+    }).format(cleanNumber).replace(/\s/g, '');
+}
+
+function formatRupiahAdmin(angka) {
+    return formatRupiah(angka);
 }
 
 // ==========================================
@@ -532,7 +770,12 @@ async function loadData() {
 
     updateDashboard();
     setupDashboardShortcuts(); 
-    renderTable();
+    renderBrandFilterBoxes();
+    if (currentDataViewMode === 'box') {
+        renderGroupedBrandBoxes();
+    } else {
+        renderTable();
+    }
     renderRecentActivity(globalData);
     renderChart(globalData);
     loadFinancialReport();
@@ -752,10 +995,82 @@ function showBatModal() {
     new bootstrap.Modal(document.getElementById('modalPilihBat')).show();
 }
 
+window.filterBySpecificMerk = function(merkName) {
+    const modalEl = document.getElementById('modalPilihMerk');
+    if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    }
+    const searchInput = document.getElementById('searchInput');
+    const filterService = document.getElementById('filterService');
+    if (searchInput) searchInput.value = merkName === 'SEMUA' ? '' : merkName;
+    if (filterService) filterService.value = '';
+
+    if (merkName === 'SEMUA') {
+        filteredData = [...globalData];
+    } else {
+        filteredData = globalData.filter(row => String(row[1] || '').toUpperCase().trim() === merkName);
+    }
+    currentPage = 1;
+    renderTable();
+    const menuData = document.getElementById('menu-data');
+    if (menuData) menuData.click();
+};
+
+window.filterBySpecificType = function(typeName) {
+    const modalEl = document.getElementById('modalPilihType');
+    if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    }
+    const searchInput = document.getElementById('searchInput');
+    const filterService = document.getElementById('filterService');
+    if (searchInput) searchInput.value = typeName === 'SEMUA' ? '' : typeName;
+    if (filterService) filterService.value = '';
+
+    if (typeName === 'SEMUA') {
+        filteredData = [...globalData];
+    } else {
+        filteredData = globalData.filter(row => String(row[2] || '').toUpperCase().trim() === typeName);
+    }
+    currentPage = 1;
+    renderTable();
+    const menuData = document.getElementById('menu-data');
+    if (menuData) menuData.click();
+};
+
+window.filterBySpecificLcdMerk = function(merkName) {
+    const modalEl = document.getElementById('modalPilihLcd');
+    if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    }
+    const searchInput = document.getElementById('searchInput');
+    const filterService = document.getElementById('filterService');
+    if (searchInput) searchInput.value = '';
+    if (filterService) filterService.value = 'GANTI LCD';
+
+    if (merkName === 'SEMUA') {
+        filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('LCD'));
+    } else {
+        filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('LCD') && String(row[1] || '').toUpperCase().trim() === merkName);
+    }
+    currentPage = 1;
+    renderTable();
+    const menuData = document.getElementById('menu-data');
+    if (menuData) menuData.click();
+};
+
 window.filterBySpecificBatMerk = function(merkName) {
-    bootstrap.Modal.getInstance(document.getElementById('modalPilihBat')).hide();
-    document.getElementById('searchInput').value = '';
-    document.getElementById('filterService').value = 'GANTI BAT';
+    const modalEl = document.getElementById('modalPilihBat');
+    if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+    }
+    const searchInput = document.getElementById('searchInput');
+    const filterService = document.getElementById('filterService');
+    if (searchInput) searchInput.value = '';
+    if (filterService) filterService.value = 'GANTI BAT';
 
     if (merkName === 'SEMUA') {
         filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('BAT'));
@@ -764,8 +1079,9 @@ window.filterBySpecificBatMerk = function(merkName) {
     }
     currentPage = 1;
     renderTable();
-    document.getElementById('menu-data').click();
-}
+    const menuData = document.getElementById('menu-data');
+    if (menuData) menuData.click();
+};
 
 // ==========================================
 // CRUD LOGIC SERVICE DATA
@@ -1193,20 +1509,358 @@ async function deleteBrand(id) {
 }
 
 // ==========================================
-// TABLE & SEARCH
+// TAMPILAN BOX PER MERK & TABEL DATA
 // ==========================================
+let currentDataViewMode = 'box';
+let activeSelectedBrand = 'SEMUA';
+
+function switchDataViewMode(mode) {
+    currentDataViewMode = mode;
+    const btnBox = document.getElementById('btnViewBox');
+    const btnTable = document.getElementById('btnViewTable');
+    const viewModeBox = document.getElementById('viewModeBox');
+    const viewModeTable = document.getElementById('viewModeTable');
+
+    if (mode === 'box') {
+        if (btnBox) {
+            btnBox.className = 'btn btn-sm btn-primary fw-semibold px-3';
+        }
+        if (btnTable) {
+            btnTable.className = 'btn btn-sm btn-outline-secondary fw-semibold px-3';
+        }
+        if (viewModeBox) viewModeBox.style.display = 'block';
+        if (viewModeTable) viewModeTable.style.display = 'none';
+        renderGroupedBrandBoxes();
+    } else {
+        if (btnBox) {
+            btnBox.className = 'btn btn-sm btn-outline-secondary fw-semibold px-3';
+        }
+        if (btnTable) {
+            btnTable.className = 'btn btn-sm btn-primary fw-semibold px-3';
+        }
+        if (viewModeBox) viewModeBox.style.display = 'none';
+        if (viewModeTable) viewModeTable.style.display = 'block';
+        renderTable();
+    }
+}
+
+function selectBrandFromBox(brandName) {
+    activeSelectedBrand = brandName;
+    applyFilters();
+}
+
+function getBrandLogoUrl(brandName) {
+    const bName = String(brandName || '').trim().toUpperCase();
+    if (window.customBrandsData && Array.isArray(window.customBrandsData)) {
+        const found = window.customBrandsData.find(b => b.name && b.name.toUpperCase() === bName);
+        if (found && found.image_url) return found.image_url;
+    }
+    return null;
+}
+
+function renderBrandFilterBoxes() {
+    const grid = document.getElementById('brandFilterGrid');
+    if (!grid) return;
+
+    const brandCounts = {};
+    globalData.forEach(row => {
+        const m = String(row[1] || '').trim().toUpperCase();
+        if (m) {
+            brandCounts[m] = (brandCounts[m] || 0) + 1;
+        }
+    });
+
+    const sortedBrands = Object.keys(brandCounts).sort();
+
+    let html = `
+        <div class="col-auto">
+            <div class="brand-filter-card ${activeSelectedBrand === 'SEMUA' ? 'active' : ''}" onclick="selectBrandFromBox('SEMUA')">
+                <div class="brand-icon-mini"><i class="fa-solid fa-layer-group"></i></div>
+                <div>
+                    <span class="brand-name-text d-block">SEMUA</span>
+                    <span class="brand-count-pill">${globalData.length} item</span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    sortedBrands.forEach(brand => {
+        const isActive = activeSelectedBrand === brand;
+        const logoUrl = getBrandLogoUrl(brand);
+        const iconHtml = logoUrl 
+            ? `<img src="${logoUrl}" width="24" height="24" alt="${brand}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`
+            : (brand.includes('IPHONE') || brand.includes('APPLE') ? '<i class="fa-brands fa-apple"></i>' : '<i class="fa-solid fa-mobile-screen"></i>');
+
+        html += `
+            <div class="col-auto">
+                <div class="brand-filter-card ${isActive ? 'active' : ''}" onclick="selectBrandFromBox('${brand}')">
+                    <div class="brand-icon-mini">${iconHtml}</div>
+                    <div>
+                        <span class="brand-name-text d-block">${brand}</span>
+                        <span class="brand-count-pill">${brandCounts[brand]} item</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    grid.innerHTML = html;
+}
+
+function renderGroupedBrandBoxes() {
+    const container = document.getElementById('groupedBrandContainer');
+    if (!container) return;
+
+    if (!filteredData || filteredData.length === 0) {
+        container.innerHTML = `
+            <div class="premium-card text-center py-5">
+                <i class="fa-solid fa-box-open text-muted fs-1 mb-2"></i>
+                <h6 class="fw-bold text-dark">Tidak Ada Data Ditemukan</h6>
+                <p class="text-muted small mb-0">Coba ubah kata kunci pencarian atau pilih merk lainnya.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const groups = {};
+    filteredData.forEach(row => {
+        const brand = String(row[1] || 'LAINNYA').trim().toUpperCase();
+        if (!groups[brand]) groups[brand] = [];
+        groups[brand].push(row);
+    });
+
+    const sortedGroupKeys = Object.keys(groups).sort();
+    let html = '';
+
+    sortedGroupKeys.forEach((brand, groupIndex) => {
+        const items = groups[brand];
+        const logoUrl = getBrandLogoUrl(brand);
+        const iconHtml = logoUrl 
+            ? `<img src="${logoUrl}" width="32" height="32" alt="${brand}" style="max-width: 100%; max-height: 100%; object-fit: contain;">`
+            : (brand.includes('IPHONE') || brand.includes('APPLE') ? '<i class="fa-brands fa-apple text-dark"></i>' : '<i class="fa-solid fa-mobile-screen text-primary"></i>');
+
+        let countLcd = 0;
+        let countBat = 0;
+        let countOther = 0;
+        let totalModalBrand = 0;
+        let totalJualBrand = 0;
+
+        items.forEach(item => {
+            const srv = String(item[3] || '').toUpperCase();
+            if (srv.includes('LCD')) countLcd++;
+            else if (srv.includes('BAT')) countBat++;
+            else countOther++;
+
+            const modalVal = Number(item[5]) || 0;
+            const jualVal = Number(item[4]) || 0;
+            totalModalBrand += modalVal;
+            totalJualBrand += jualVal;
+        });
+
+        const totalProfitBrand = totalJualBrand - totalModalBrand;
+        const collapseId = `collapseBrand_${groupIndex}`;
+
+        html += `
+        <div class="brand-group-box mb-4 shadow-sm">
+            <div class="brand-group-header" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="true" aria-controls="${collapseId}">
+                <div class="brand-group-title">
+                    <div class="brand-group-logo shadow-sm">${iconHtml}</div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h5 class="fw-extrabold text-dark m-0" style="letter-spacing: -0.3px;">${brand}</h5>
+                            <span class="badge bg-primary text-white rounded-pill px-2 py-1" style="font-size: 0.7rem; font-weight: 700;">${items.length} Box Data</span>
+                        </div>
+                        <div class="d-flex flex-wrap align-items-center gap-2 mt-1" style="font-size: 0.75rem;">
+                            ${countLcd > 0 ? `<span class="text-primary fw-bold"><i class="fa-solid fa-mobile-screen-button me-1"></i>${countLcd} LCD</span>` : ''}
+                            ${countBat > 0 ? `<span class="text-warning fw-bold"><i class="fa-solid fa-battery-full me-1"></i>${countBat} BAT</span>` : ''}
+                            ${countOther > 0 ? `<span class="text-secondary fw-bold"><i class="fa-solid fa-screwdriver-wrench me-1"></i>${countOther} Service/Part</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-end d-none d-md-block">
+                        <small class="text-muted d-block" style="font-size: 0.68rem; text-transform: uppercase;">Estimasi Untung</small>
+                        <span class="fw-bold text-success" style="font-size: 0.88rem;">${formatRupiah(totalProfitBrand)}</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-muted fs-6 transition-transform"></i>
+                </div>
+            </div>
+            
+            <div class="collapse show" id="${collapseId}">
+                <div class="p-3 bg-light-subtle">
+                    <div class="row g-3">
+        `;
+
+        // Grouping items within this brand by Phone Model (Tipe HP)
+        const modelGroups = {};
+        items.forEach(row => {
+            const tipeKey = String(row[2] || 'TIPE UMUM').trim();
+            if (!modelGroups[tipeKey]) modelGroups[tipeKey] = [];
+            modelGroups[tipeKey].push(row);
+        });
+
+        const sortedModelKeys = Object.keys(modelGroups).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+
+        sortedModelKeys.forEach(tipeHP => {
+            const modelItems = modelGroups[tipeHP];
+            const safeTipe = encodeURIComponent(tipeHP);
+            const safeBrand = encodeURIComponent(brand);
+
+            let tipeTampil = tipeHP;
+            if (tipeHP.includes(',') || tipeHP.includes('/')) {
+                let daftarTipe = tipeHP.split(/[,\/]+/);
+                tipeTampil = `<span class="fw-extrabold text-dark">${daftarTipe[0].trim()}</span> <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 ms-1 rounded-pill" style="font-size: 0.65rem;">+${daftarTipe.length - 1} Seri</span>`;
+            } else {
+                tipeTampil = `<span class="fw-extrabold text-dark">${tipeHP}</span>`;
+            }
+
+            html += `
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="model-card-box shadow-sm">
+                    <!-- Header Box Tipe HP -->
+                    <div class="model-card-header">
+                        <div class="d-flex align-items-center gap-2 text-truncate pe-2">
+                            <div class="model-icon-wrap shadow-2xs">
+                                <i class="fa-solid fa-mobile-screen text-primary"></i>
+                            </div>
+                            <div class="text-truncate">
+                                <h6 class="m-0 text-truncate" style="font-size: 0.92rem;" title="${tipeHP}">${tipeTampil}</h6>
+                                <small class="text-muted" style="font-size: 0.7rem;"><span class="badge bg-light text-dark border px-1 py-0 me-1">${brand}</span>${modelItems.length} Layanan Service</small>
+                            </div>
+                        </div>
+                        <button onclick="openTambahUntukTipe('${safeBrand}', '${safeTipe}')" class="btn btn-sm btn-light text-primary border rounded-pill px-2 py-1 fw-bold flex-shrink-0 shadow-2xs" style="font-size: 0.7rem;" title="Tambah Layanan Baru untuk ${tipeHP}">
+                            <i class="fa-solid fa-plus me-1"></i> Tambah
+                        </button>
+                    </div>
+
+                    <!-- Body Box: Daftar Layanan & Harga untuk Tipe HP Ini -->
+                    <div class="model-card-body">
+            `;
+
+            modelItems.forEach(row => {
+                const modalVal = Number(row[5]) || 0;
+                const jualVal = Number(row[4]) || 0;
+                const labaVal = jualVal - modalVal;
+
+                const statusText = row[8] ? String(row[8]).trim() : 'Kosong';
+                const badgeClass = statusText === 'Tersedia' ? 'status-ready' : (statusText === 'Preorder' ? 'status-preorder' : 'status-kosong');
+
+                const serviceName = String(row[3] || 'SPAREPART').toUpperCase();
+                let serviceBadgeClass = 'badge-service-sparepart';
+                let serviceIcon = 'fa-solid fa-wrench';
+                if (serviceName.includes('LCD')) {
+                    serviceBadgeClass = 'badge-service-lcd';
+                    serviceIcon = 'fa-solid fa-mobile-screen';
+                } else if (serviceName.includes('BAT')) {
+                    serviceBadgeClass = 'badge-service-bat';
+                    serviceIcon = 'fa-solid fa-battery-full';
+                } else if (serviceName.includes('SERVICE')) {
+                    serviceBadgeClass = 'badge-service-service';
+                    serviceIcon = 'fa-solid fa-screwdriver-wrench';
+                }
+
+                const ketVal = row[7] ? String(row[7]).trim() : '';
+                const ketBadge = ketVal 
+                    ? `<span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 rounded-2 fw-bold" style="font-size: 0.68rem; letter-spacing: 0.5px;">${ketVal.toUpperCase()}</span>` 
+                    : '';
+
+                const garansiVal = row[6] ? String(row[6]).trim() : 'Garansi Test';
+
+                html += `
+                <div class="model-service-item shadow-2xs" onclick="openEditModal('${row[0]}')" style="cursor: pointer;">
+                    <!-- Baris Atas: Service, Part, Status & Tombol Aksi -->
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div class="d-flex align-items-center gap-1 flex-wrap">
+                            <span class="badge ${serviceBadgeClass} px-2 py-1 rounded-2">
+                                <i class="${serviceIcon} me-1"></i>${serviceName}
+                            </span>
+                            ${ketBadge}
+                            <span class="status-badge ${badgeClass}" style="font-size: 0.65rem;">${statusText}</span>
+                        </div>
+                        <div class="d-flex gap-1" onclick="event.stopPropagation()">
+                            <button onclick="openEditModal('${row[0]}')" class="btn btn-sm btn-light text-primary p-1 rounded-2 border shadow-2xs" title="Edit ${serviceName}">
+                                <i class="fa-solid fa-pen" style="font-size: 0.72rem;"></i>
+                            </button>
+                            <button onclick="deleteRecord('${row[0]}')" class="btn btn-sm btn-light text-danger p-1 rounded-2 border shadow-2xs btn-delete" title="Hapus">
+                                <i class="fa-solid fa-trash" style="font-size: 0.72rem;"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Baris Harga: Modal, Untung & Harga Jual -->
+                    <div class="d-flex justify-content-between align-items-center p-2 rounded-2 mb-1" style="background: #f8fafc; border: 1px dashed #e2e8f0; font-size: 0.75rem;">
+                        <div>
+                            <span class="text-muted d-block" style="font-size: 0.65rem;">Modal (HPP)</span>
+                            <span class="text-secondary fw-semibold">${formatRupiah(modalVal)}</span>
+                        </div>
+                        <div class="text-center">
+                            <span class="text-success d-block fw-semibold" style="font-size: 0.65rem;">Estimasi Untung</span>
+                            <span class="fw-bold text-success">+${formatRupiah(labaVal)}</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="text-muted d-block" style="font-size: 0.65rem;">Harga Jual</span>
+                            <span class="fw-extrabold text-primary" style="font-size: 0.88rem;">${formatRupiah(jualVal)}</span>
+                        </div>
+                    </div>
+
+                    <!-- Baris Bawah: Kode Barang & Garansi -->
+                    <div class="d-flex justify-content-between align-items-center text-muted" style="font-size: 0.68rem;">
+                        <span><i class="fa-solid fa-barcode text-muted me-1"></i>Kode: <strong class="text-dark">${row[0] || '-'}</strong></span>
+                        <span><i class="fa-solid fa-shield-halved text-warning me-1"></i>${garansiVal}</span>
+                    </div>
+                </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+            </div>
+            `;
+        });
+
+        html += `
+                    </div>
+                </div>
+            </div>
+        </div>
+        `;
+    });
+
+    container.innerHTML = html;
+}
+
+window.openTambahUntukTipe = function(brandEnc, tipeEnc) {
+    const brand = decodeURIComponent(brandEnc);
+    const tipe = decodeURIComponent(tipeEnc);
+    const menuTambah = document.getElementById('menu-tambah');
+    if (menuTambah) menuTambah.click();
+    setTimeout(() => {
+        const merkInput = document.getElementById('inputMerk');
+        const typeInput = document.getElementById('inputType');
+        if (merkInput) merkInput.value = brand;
+        if (typeInput) typeInput.value = tipe;
+    }, 150);
+};
+
 function applyFilters() {
-    let searchVal = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
+    let searchVal = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase().trim() : '';
     let serviceVal = document.getElementById('filterService') ? document.getElementById('filterService').value.toUpperCase() : '';
     
     filteredData = globalData.filter(row => {
-        let matchSearch = row.join(' ').toLowerCase().includes(searchVal);
+        let matchSearch = searchVal === '' || row.join(' ').toLowerCase().includes(searchVal);
         let matchService = serviceVal === '' || String(row[3] || '').toUpperCase().includes(serviceVal);
-        return matchSearch && matchService;
+        let matchBrand = activeSelectedBrand === 'SEMUA' || String(row[1] || '').toUpperCase().trim() === activeSelectedBrand;
+        return matchSearch && matchService && matchBrand;
     });
     
     currentPage = 1;
-    renderTable();
+    renderBrandFilterBoxes();
+    if (currentDataViewMode === 'box') {
+        renderGroupedBrandBoxes();
+    } else {
+        renderTable();
+    }
 }
 
 const searchInputEl = document.getElementById('searchInput');
@@ -1242,6 +1896,8 @@ function renderTable() {
             ? `<span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 rounded-2 fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">${ketVal.toUpperCase()}</span>` 
             : `<span class="text-muted small">-</span>`;
 
+        let garansiVal = row[6] ? String(row[6]).trim() : '-';
+
         const tr = document.createElement('tr');
         tr.style.cursor = 'pointer';
         
@@ -1260,6 +1916,7 @@ function renderTable() {
           <td class="fw-semibold text-dark">${formatRupiah(jualVal)}</td>
           <td class="fw-semibold text-success">${formatRupiah(labaVal)}</td>
           <td>${ketBadge}</td>
+          <td><span class="badge bg-light text-secondary border px-2 py-1 small">${garansiVal}</span></td>
           <td><span class="status-badge ${badgeClass}">${statusText}</span></td>
           <td class="text-center">
             <button onclick="event.stopPropagation(); openEditModal('${row[0]}')" class="btn btn-sm btn-light text-primary border-0 me-1 rounded-3 shadow-sm" title="Edit"><i class="fa-solid fa-pen"></i></button>
@@ -1380,9 +2037,15 @@ async function bukaNotaDigitalAdmin(orderId) {
         if (Array.isArray(order.items)) {
             order.items.forEach((item, idx) => {
                 let subtotal = item.price * item.qty;
+                let serviceUp = String(item.service || item.title || '').toUpperCase();
+                let garansiDefault = serviceUp.includes('BAT') ? '1 Bulan' : serviceUp.includes('LCD') ? '1 Minggu' : '';
+                let garansiItem = (item.garansi && item.garansi !== '-') ? item.garansi : garansiDefault;
+                let garansiBadge = garansiItem
+                    ? `<br><span style="font-size:0.68rem; color:#555;"><i class="fa-solid fa-shield-halved" style="color:#f59e0b;"></i> Garansi: ${garansiItem}</span>`
+                    : '';
                 itemsHtml += `
                 <tr style="border-bottom: 1px dashed #dee2e6;">
-                    <td style="padding: 6px 0; font-size: 0.8rem;">${idx + 1}. ${item.title}</td>
+                    <td style="padding: 6px 0; font-size: 0.8rem;">${idx + 1}. ${item.title}${garansiBadge}</td>
                     <td style="padding: 6px 0; font-size: 0.8rem; text-align: center;">${item.qty}</td>
                     <td style="padding: 6px 0; font-size: 0.8rem; text-align: right;">${formatRupiahAdmin(subtotal)}</td>
                 </tr>`;

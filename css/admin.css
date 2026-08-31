@@ -377,3 +377,281 @@ body {
   transform: scale(1.08);
   box-shadow: none;
 }
+
+/* ====================================
+   BRAND GROUP BOX & ITEM CARDS
+==================================== */
+.brand-filter-card {
+  background: #ffffff;
+  border: 1.5px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+  min-width: 120px;
+}
+
+.brand-filter-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(67, 24, 255, 0.08);
+}
+
+.brand-filter-card.active {
+  background: #4318ff;
+  border-color: #4318ff;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(67, 24, 255, 0.25);
+}
+
+.brand-filter-card.active .brand-icon-mini {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+.brand-filter-card.active .brand-name-text {
+  color: #ffffff !important;
+}
+
+.brand-filter-card.active .brand-count-pill {
+  background: #ffffff !important;
+  color: #4318ff !important;
+}
+
+.brand-icon-mini {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: #f4f7fe;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.brand-name-text {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.brand-count-pill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 2px 6px;
+  background: #f1f5f9;
+  color: var(--text-muted);
+}
+
+/* BOX PER MERK GROUP */
+.brand-group-box {
+  background: var(--bg-surface);
+  border-radius: 18px;
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  transition: var(--transition-smooth);
+}
+
+.brand-group-header {
+  padding: 14px 20px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+}
+
+.brand-group-header:hover {
+  background: #f8fafc;
+}
+
+.brand-group-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-group-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #f4f7fe;
+  border: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  color: var(--primary);
+}
+
+.brand-group-logo img {
+  max-width: 80%;
+  max-height: 80%;
+  object-fit: contain;
+}
+
+.transition-transform {
+  transition: transform 0.25s ease;
+}
+
+.brand-group-header[aria-expanded="false"] .fa-chevron-down {
+  transform: rotate(-90deg);
+}
+
+/* ADMIN ITEM BOX CARD (DETAIL DATA TIAP MERK) */
+.admin-item-box {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: all 0.2s ease-in-out;
+  position: relative;
+}
+
+.admin-item-box:hover {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(67, 24, 255, 0.08) !important;
+}
+
+.admin-price-box {
+  background: #f8fafc;
+  border: 1px dashed #e2e8f0;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.badge-service-lcd {
+  background-color: #dbeafe !important;
+  color: #1e40af !important;
+  border: 1px solid #bfdbfe;
+  font-weight: 700;
+  font-size: 0.68rem;
+}
+
+.badge-service-bat {
+  background-color: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a;
+  font-weight: 700;
+  font-size: 0.68rem;
+}
+
+.badge-service-service {
+  background-color: #e0e7ff !important;
+  color: #3730a3 !important;
+  border: 1px solid #c7d2fe;
+  font-weight: 700;
+  font-size: 0.68rem;
+}
+
+.badge-service-sparepart {
+  background-color: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #e2e8f0;
+  font-weight: 700;
+  font-size: 0.68rem;
+}
+
+/* ====================================
+   BOX PER TIPE HP (MODEL CARD BOX)
+==================================== */
+.model-card-box {
+  background: #ffffff;
+  border-radius: 16px;
+  border: 1.5px solid var(--border-soft);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: all 0.2s ease-in-out;
+  overflow: hidden;
+}
+
+.model-card-box:hover {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(67, 24, 255, 0.1) !important;
+}
+
+.model-card-header {
+  padding: 12px 14px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.model-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #e0e7ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.model-card-body {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-grow: 1;
+}
+
+.model-service-item {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: all 0.15s ease;
+}
+
+.model-service-item:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+/* ====================================
+   ORDER CARD BOX STYLES
+==================================== */
+.order-card {
+  background: #ffffff;
+  border: 1px solid #e8edf5;
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 12px rgba(112, 144, 176, 0.08);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.order-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(112, 144, 176, 0.18);
+  border-color: #c7d2fe;
+}
+
+.order-card-header {
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 10px;
+}

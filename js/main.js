@@ -370,7 +370,6 @@ function renderBannersHTML(banners) {
     const dots = document.getElementById('bannerDots');
     if (!slider || !dots || !banners || banners.length === 0) return;
 
-    // Cegah timpa DOM jika jumlah & banner pertama sudah identik (Mencegah pencabutan elemen LCP)
     const existingImgs = slider.querySelectorAll('.banner-slide img');
     if (existingImgs.length > 0 && realBannerCount === banners.length) {
         const firstRealImgSrc = existingImgs[1] ? existingImgs[1].src : '';
@@ -714,18 +713,30 @@ async function loadData() {
 
 function showError(msg) {
     const loader = document.getElementById('loadingState');
+    const errHtml = `
+    <div class="alert alert-danger mx-auto mt-3 border-0 shadow-sm text-center" style="max-width: 90%; border-radius:8px;">
+        <strong><i class="fa-solid fa-triangle-exclamation"></i> Gagal Memuat Data</strong><br>
+        <span style="font-size: 0.85rem;">${msg}</span>
+        <div class="mt-2"><button class="btn btn-sm btn-outline-danger" onclick="loadData()">Coba Lagi</button></div>
+    </div>`;
+
     if (loader) {
         loader.style.display = 'block';
-        loader.innerHTML = `
-        <div class="alert alert-danger mx-auto mt-3 border-0 shadow-sm" style="max-width: 90%; border-radius:8px;">
-            <strong><i class="fa-solid fa-triangle-exclamation"></i> Kesalahan</strong><br>
-            <span style="font-size: 0.85rem;">${msg}</span>
-        </div>`;
+        loader.innerHTML = errHtml;
+    }
+
+    const latestContainer = document.getElementById('latestProductsContainer');
+    if (latestContainer && (!globalData || globalData.length === 0)) {
+        latestContainer.innerHTML = `<div class="col-12 p-3 text-center text-muted small"><i class="fa-solid fa-cloud-bolt text-danger me-1"></i> Data katalog belum dapat dimuat. <a href="javascript:void(0)" onclick="loadData()">Muat ulang</a></div>`;
+    }
+    const popContainer = document.getElementById('popularProductsContainer');
+    if (popContainer && (!globalData || globalData.length === 0)) {
+        popContainer.innerHTML = `<div class="p-3 text-center text-muted small"><i class="fa-solid fa-circle-exclamation text-warning me-1"></i> Gagal menghubungkan ke server data.</div>`;
     }
 }
 
 // ==========================================
-// LOGIKA PENCARIAN & TAMPILAN PRODUK (FIXED)
+// LOGIKA PENCARIAN & TAMPILAN PRODUK
 // ==========================================
 function filterAndDisplay(keyword) {
     const container = document.getElementById('resultContainer');
@@ -813,7 +824,6 @@ function filterAndDisplay(keyword) {
         
         let html = '<div class="row g-2 px-1">';
         results.forEach((row, idx) => {
-            // MENDAPATKAN INDEX ASLI PADA GLOBAL DATA
             const originalIndex = globalData.findIndex(item => item[0] === row[0]);
 
             const merk = row[1] || '';
@@ -939,15 +949,24 @@ function renderLatestProducts() {
     }
 }
 
-function showDetail(idx) {
+function showDetail(target) {
     if (!checkAuthOrShowModal()) return;
-    let row;
-    const homeView = document.getElementById('homeView');
-    if (homeView && !homeView.classList.contains('d-none')) {
-        row = globalData[idx];
-    } else {
-        row = currentFilteredData[idx] || globalData[idx];
+    let row = null;
+
+    if (typeof target === 'string') {
+        const targetClean = target.trim().toLowerCase();
+        row = globalData.find(item => item && String(item[0] || '').trim().toLowerCase() === targetClean);
+    } else if (typeof target === 'number') {
+        const homeView = document.getElementById('homeView');
+        if (homeView && !homeView.classList.contains('d-none')) {
+            row = globalData[target];
+        } else {
+            row = currentFilteredData[target] || globalData[target];
+        }
+    } else if (target && Array.isArray(target)) {
+        row = target;
     }
+
     if (!row) return;
     
     const kodeBarang = row[0] ? String(row[0]).trim() : '-';
@@ -968,7 +987,8 @@ function showDetail(idx) {
         service: service,
         merk: merk,
         type: `${merk} ${type}`,
-        keterangan: keterangan || '-'
+        keterangan: keterangan || '-',
+        garansi: garansi || '-'
     };
 
     const elTitle = document.getElementById('detailTitle');
@@ -1181,7 +1201,7 @@ function initInfiniteSpotlightSlider(totalRealItems) {
 }
 
 // ==========================================
-// RENDER PRODUK POPULER / PALING BANYAK DICARI
+// RENDER PRODUK POPULER
 // ==========================================
 function renderPopularProducts() {
     const container = document.getElementById('popularProductsContainer');
@@ -1399,6 +1419,8 @@ function addToCartDirect(event, idx) {
         service: service,
         merk: merk,
         type: `${merk} ${type}`,
+        keterangan: (product[6] ? String(product[6]).trim() : '') || '-',
+        garansi: (product[5] ? String(product[5]).trim() : '') || '-',
         qty: 1
     };
 
@@ -1591,9 +1613,9 @@ async function prosesDaftar() {
     const regPassword = document.getElementById('regPassword').value.trim();
     const pesanDaftar = document.getElementById('pesanDaftar');
 
-    if (!regUsername || !regPassword) {
+    if (!regNoHp || !regUsername || !regPassword) {
         pesanDaftar.style.color = 'red';
-        pesanDaftar.innerText = 'Username dan Password wajib diisi!';
+        pesanDaftar.innerText = 'Nomor WhatsApp, Username, dan Password wajib diisi!';
         return;
     }
 
@@ -1881,10 +1903,12 @@ async function prosesCheckoutForm() {
     let total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
 
     try {
+        const initialOrderId = 'MP-' + Date.now().toString().slice(-6);
+
         const { data, error } = await dbClient
             .from('orders')
             .insert([{
-                order_id: 'TEMP',
+                order_id: initialOrderId,
                 customer_name: nama,
                 customer_phone: noHp,
                 note: catatan,
@@ -1897,8 +1921,7 @@ async function prosesCheckoutForm() {
 
         if (error) throw error;
 
-        const orderId = 'MP-' + String(data.id).padStart(5, '0');
-        await dbClient.from('orders').update({ order_id: orderId }).eq('id', data.id);
+        const orderId = (data && data.order_id) ? data.order_id : initialOrderId;
 
         let idPartsList = cart.map(item => {
             let partId = item.id || '-';
@@ -2250,9 +2273,15 @@ async function bukaNotaDigital(orderId) {
         if (Array.isArray(order.items)) {
             order.items.forEach((item, idx) => {
                 let subtotal = item.price * item.qty;
+                let serviceUp = String(item.service || item.title || '').toUpperCase();
+                let garansiDefault = serviceUp.includes('BAT') ? '1 Bulan' : serviceUp.includes('LCD') ? '1 Minggu' : '';
+                let garansiItem = (item.garansi && item.garansi !== '-') ? item.garansi : garansiDefault;
+                let garansiBadge = garansiItem
+                    ? `<br><span style="font-size:0.68rem; color:#555;"><i class="fa-solid fa-shield-halved" style="color:#f59e0b;"></i> Garansi: ${garansiItem}</span>`
+                    : '';
                 itemsHtml += `
                 <tr style="border-bottom: 1px dashed #dee2e6;">
-                    <td style="padding: 6px 0; font-size: 0.8rem;">${idx + 1}. ${item.title}</td>
+                    <td style="padding: 6px 0; font-size: 0.8rem;">${idx + 1}. ${item.title}${garansiBadge}</td>
                     <td style="padding: 6px 0; font-size: 0.8rem; text-align: center;">${item.qty}</td>
                     <td style="padding: 6px 0; font-size: 0.8rem; text-align: right;">${formatRupiah(subtotal)}</td>
                 </tr>`;
@@ -2473,7 +2502,10 @@ function checkAuthOrShowModal(actionCallback) {
     if (!userSession) {
         const modalEl = document.getElementById('modalAuthRequired');
         if (modalEl) {
-            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            let modal = bootstrap.Modal.getInstance(modalEl);
+            if (!modal) {
+                modal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
+            }
             modal.show();
         }
         return false;

@@ -242,65 +242,115 @@
 
         <!-- SECTION: KELOLA PESANAN (ORDERS) -->
         <div id="section-orders" class="section-content" style="display:none;">
-            <div class="premium-card">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-                    <h5 class="fw-bold m-0"><i class="fa-solid fa-receipt me-2 text-primary"></i> Kelola Pesanan & Status Nota</h5>
-                    <div class="d-flex flex-column flex-sm-row gap-2 gap-sm-3 w-100" style="max-width: 550px;">
-                        <select class="form-select fw-medium" id="filterOrderStatus">
+            <div class="premium-card mb-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div>
+                        <h5 class="fw-bold m-0"><i class="fa-solid fa-receipt me-2 text-primary"></i> Kelola Pesanan & Status Nota</h5>
+                        <p class="text-muted small mt-1 mb-0">Klik kartu untuk buka nota digital.</p>
+                    </div>
+                    <div class="d-flex flex-column flex-sm-row gap-2 w-100" style="max-width: 520px;">
+                        <select class="form-select form-select-sm fw-medium" id="filterOrderStatus" onchange="applyOrderFilters()">
                             <option value="">Semua Status</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Diproses">Diproses</option>
-                            <option value="Selesai">Selesai</option>
+                            <option value="Pending">⏳ Pending</option>
+                            <option value="Diproses">🔧 Diproses</option>
+                            <option value="Selesai">✅ Selesai</option>
                         </select>
-                        <div class="input-group">
-                            <span class="input-group-text border-0 rounded-start-3" style="background: #f4f7fe;"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="text" class="form-control border-0 ps-0 rounded-end-3" id="searchOrderInput" placeholder="Cari Kode Nota, Nama, No. HP...">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text border-0 rounded-start-3" style="background:#f4f7fe;"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                            <input type="text" class="form-control border-0 ps-0 rounded-end-3" id="searchOrderInput" placeholder="Cari nota, nama, no. HP..." oninput="applyOrderFilters()">
                         </div>
                     </div>
                 </div>
 
-                <div class="table-responsive">
-                    <table class="table align-middle border-bottom">
-                        <thead>
-                            <tr>
-                                <th>No. Nota</th>
-                                <th>Tanggal</th>
-                                <th>Pemesan</th>
-                                <th>No. WA</th>
-                                <th>Service</th>
-                                <th>Total</th>
-                                <th>Status</th>
-                                <th class="text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ordersTableBody">
-                            <tr><td colspan="8" class="text-center text-muted py-4">Memuat data pesanan...</td></tr>
-                        </tbody>
-                    </table>
+                <!-- Ringkasan Status -->
+                <div class="row g-2 mt-3" id="orderSummaryBadges">
+                    <div class="col-4">
+                        <div class="text-center rounded-3 py-2 px-1" style="background:#fff8e1; border:1px solid #fdd835;">
+                            <div class="fw-bold text-warning fs-5" id="countPending">0</div>
+                            <div class="small text-muted" style="font-size:0.7rem;">Pending</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-center rounded-3 py-2 px-1" style="background:#e3f2fd; border:1px solid #42a5f5;">
+                            <div class="fw-bold text-info fs-5" id="countDiproses">0</div>
+                            <div class="small text-muted" style="font-size:0.7rem;">Diproses</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-center rounded-3 py-2 px-1" style="background:#e8f5e9; border:1px solid #66bb6a;">
+                            <div class="fw-bold text-success fs-5" id="countSelesai">0</div>
+                            <div class="small text-muted" style="font-size:0.7rem;">Selesai</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRID BOX PESANAN -->
+            <div id="ordersCardGrid" class="row g-3">
+                <div class="col-12 text-center text-muted py-5">
+                    <i class="fa-solid fa-receipt fa-2x mb-2 text-muted opacity-50"></i>
+                    <p>Memuat data pesanan...</p>
                 </div>
             </div>
         </div>
 
+
         <!-- SECTION: DATA HARGA -->
         <div id="section-table" class="section-content" style="display:none;">
-            <div class="premium-card">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-                    <h5 class="fw-bold m-0"><i class="fa-solid fa-list-check me-2 text-primary"></i> Manajemen Data Harga</h5>
-                    <div class="d-flex flex-column flex-sm-row gap-2 gap-sm-3 w-100" style="max-width: 550px;">
-                        <select class="form-select fw-medium" id="filterService">
+            <div class="premium-card mb-3">
+                <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3 gap-3">
+                    <div>
+                        <h5 class="fw-bold m-0"><i class="fa-solid fa-list-check me-2 text-primary"></i> Manajemen Data Harga</h5>
+                        <p class="text-muted small mt-1 mb-0">Kelola daftar harga perbaikan, modal, dan status stok sparepart.</p>
+                    </div>
+                    <div class="d-flex flex-column flex-sm-row align-items-stretch gap-2 gap-sm-3 w-100" style="max-width: 600px;">
+                        <div class="btn-group shadow-sm rounded-3 overflow-hidden flex-shrink-0" role="group" aria-label="Tampilan Mode">
+                            <button type="button" class="btn btn-sm btn-primary fw-semibold px-3" id="btnViewBox" onclick="switchDataViewMode('box')">
+                                <i class="fa-solid fa-grip me-1"></i> Box Merk
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold px-3" id="btnViewTable" onclick="switchDataViewMode('table')">
+                                <i class="fa-solid fa-table-list me-1"></i> Tabel List
+                            </button>
+                        </div>
+                        <select class="form-select form-select-sm fw-medium" id="filterService" style="min-width: 130px;">
                             <option value="">Semua Service</option>
                             <option value="GANTI LCD">GANTI LCD</option>
                             <option value="GANTI BAT">GANTI BAT</option>
                             <option value="SERVICE">SERVICE</option>
                             <option value="SPAREPART">SPAREPART</option>
                         </select>
-                        <div class="input-group">
+                        <div class="input-group input-group-sm">
                             <span class="input-group-text border-0 rounded-start-3" style="background: #f4f7fe;"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
-                            <input type="text" class="form-control border-0 ps-0 rounded-end-3" id="searchInput" placeholder="Cari merk atau tipe...">
+                            <input type="text" class="form-control border-0 ps-0 rounded-end-3" id="searchInput" placeholder="Cari merk, tipe, part...">
                         </div>
                     </div>
                 </div>
-                
+
+                <!-- PILIH MERK CEPAT (GRID CHIPS / BOX) -->
+                <div class="mb-2">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <small class="fw-bold text-muted text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.5px;">
+                            <i class="fa-solid fa-tags text-primary me-1"></i> Filter Cepat Berdasarkan Merk HP:
+                        </small>
+                        <button class="btn btn-link btn-sm text-decoration-none p-0 fw-semibold text-primary" onclick="selectBrandFromBox('SEMUA')" style="font-size: 0.75rem;">
+                            Tampilkan Semua Merk
+                        </button>
+                    </div>
+                    <div class="row g-2 overflow-auto flex-nowrap flex-sm-wrap pb-2" id="brandFilterGrid" style="max-height: 190px; scrollbar-width: thin;">
+                        <!-- Injeksi Box Merk -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAMPILAN 1: BOX GROUPED PER MERK -->
+            <div id="viewModeBox">
+                <div id="groupedBrandContainer" class="d-flex flex-column gap-3">
+                    <!-- Injeksi Box Grouped per Merk -->
+                </div>
+            </div>
+
+            <!-- TAMPILAN 2: TABEL LENGKAP -->
+            <div id="viewModeTable" class="premium-card" style="display: none;">
                 <div class="table-responsive">
                     <table class="table align-middle border-bottom">
                         <thead>
@@ -312,6 +362,7 @@
                                 <th>Modal</th>
                                 <th>Harga Jual</th>
                                 <th>Untung</th>
+                                <th>Merk Part / Ket</th>
                                 <th>Garansi</th>
                                 <th>Status</th>
                                 <th class="text-center">Aksi</th>
