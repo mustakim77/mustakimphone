@@ -563,42 +563,46 @@ function generateMerekList() {
     const container = document.getElementById('merekContainer');
     if (!container) return;
 
-    if (window.customBrandsData && window.customBrandsData.length > 0) {
-        container.innerHTML = window.customBrandsData.map(m => `
-            <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m.name}')" style="cursor:pointer;" role="button" aria-label="Kategori Merek ${m.name}">
-                <div class="brand-logo-box mb-2 bg-white shadow-sm border p-2 d-flex align-items-center justify-content-center">
-                   <img src="${m.image_url}" width="80" height="80" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="Merek ${m.name}" class="img-fluid pointer-events-none">
-                </div>
-                <span class="fw-bold text-dark d-block" style="font-size:0.8rem;">${m.name}</span>
-            </div>
-        `).join('');
-        return;
+    const brandMap = new Map();
+
+    // 1. Ambil semua merek dari katalog data_service
+    if (Array.isArray(globalData)) {
+        globalData.forEach(row => {
+            let m = String(row[1] || '').trim().toUpperCase();
+            if (m && !brandMap.has(m)) {
+                brandMap.set(m, { name: m, image_url: null });
+            }
+        });
     }
-    
-    if (!globalData || globalData.length === 0) {
-        container.innerHTML = '<div class="col-12 p-5 text-center text-muted">Data belum tersedia</div>';
+
+    // 2. Terapkan logo kustom jika ada di tabel brands
+    if (window.customBrandsData && Array.isArray(window.customBrandsData)) {
+        window.customBrandsData.forEach(b => {
+            let bName = String(b.name || '').trim().toUpperCase();
+            if (bName) {
+                brandMap.set(bName, { name: bName, image_url: b.image_url });
+            }
+        });
+    }
+
+    if (brandMap.size === 0) {
+        container.innerHTML = '<div class="col-12 p-5 text-center text-muted">Data merek belum tersedia</div>';
         return;
     }
 
-    const merekSet = new Set();
-    globalData.forEach(row => {
-        if (row[1]) merekSet.add(String(row[1]).trim().toUpperCase());
-    });
-    
-    const mereks = Array.from(merekSet).sort();
-    let html = '';
-    
-    mereks.forEach(m => {
-        html += `
-        <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m}')" style="cursor:pointer;" role="button" aria-label="Kategori Merek ${m}">
+    const sortedBrands = Array.from(brandMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+
+    container.innerHTML = sortedBrands.map(m => {
+        const imgSrc = m.image_url || defaultImageFallback;
+        return `
+        <div class="col-4 p-3 border-end border-bottom text-center d-flex flex-column align-items-center justify-content-center" onclick="searchCategory('${m.name}')" style="cursor:pointer;" role="button" aria-label="Kategori Merek ${m.name}">
             <div class="brand-logo-box mb-2 bg-white shadow-sm border p-2 d-flex align-items-center justify-content-center">
-               <img src="${defaultImageFallback}" width="80" height="80" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="Merek ${m}" class="img-fluid pointer-events-none">
+               <img src="${imgSrc}" width="80" height="80" onerror="this.onerror=null; this.src='${defaultImageFallback}';" loading="lazy" alt="Merek ${m.name}" class="img-fluid pointer-events-none">
             </div>
-            <span class="fw-bold text-dark d-block" style="font-size:0.8rem;">${m}</span>
+            <span class="fw-bold text-dark d-block" style="font-size:0.8rem;">${m.name}</span>
         </div>
         `;
-    });
-    container.innerHTML = html;
+    }).join('');
 }
 
 function searchCategory(keyword) {
@@ -1985,18 +1989,29 @@ function renderBadgeGaransi(order) {
     
     let tglSelesai = new Date(tglMulaiStr);
 
-    let isBaterai = false;
-    let isLcd = false;
-    
+    let lamaHari = 7;
     if (order.items && Array.isArray(order.items)) {
-        let textGabungan = order.items.map(i => `${i.title} ${i.service} ${i.id}`).join(" ").toUpperCase();
-        if (textGabungan.includes("BAT") || textGabungan.includes("BATERAI")) isBaterai = true;
-        if (textGabungan.includes("LCD")) isLcd = true;
-    }
-
-    let lamaHari = 7; 
-    if (isBaterai) lamaHari = 30; 
-    else if (isLcd) lamaHari = 7;  
+        let maxDays = 0;
+        order.items.forEach(item => {
+            let garansiStr = String(item.garansi || '').toLowerCase();
+            let days = 0;
+            if (garansiStr.includes('bulan')) {
+                let m = parseInt(garansiStr) || 1;
+                days = m * 30;
+            } else if (garansiStr.includes('minggu')) {
+                let w = parseInt(garansiStr) || 1;
+                days = w * 7;
+            } else if (garansiStr.includes('hari')) {
+                days = parseInt(garansiStr) || 7;
+            } else {
+                let s = String(item.service || item.title || '').toUpperCase();
+                if (s.includes('BAT') || s.includes('BATERAI')) days = 30;
+                else if (s.includes('LCD')) days = 7;
+            }
+            if (days > maxDays) maxDays = days;
+        });
+        if (maxDays > 0) lamaHari = maxDays;
+    }  
 
     let tglKedaluwarsa = new Date(tglSelesai);
     tglKedaluwarsa.setDate(tglSelesai.getDate() + lamaHari);
@@ -2155,10 +2170,18 @@ async function cariLacakPesanan() {
     container.innerHTML = '<div class="text-center mt-4"><div class="spinner-border spinner-border-sm text-primary"></div><span class="ms-2 text-muted small">Mencari data servis...</span></div>';
 
     try {
+        let cleanDigits = query.replace(/[^0-9]/g, '');
+        let orFilters = [`order_id.ilike.%${query}%`];
+        if (cleanDigits.length >= 4) {
+            orFilters.push(`customer_phone.ilike.%${cleanDigits}%`);
+        } else {
+            orFilters.push(`customer_phone.eq.${query}`);
+        }
+
         const { data, error } = await dbClient
             .from('orders')
             .select('*')
-            .or(`order_id.ilike.%${query}%,customer_phone.eq.${query}`)
+            .or(orFilters.join(','))
             .order('created_at', { ascending: false });
 
         if (error || !data || data.length === 0) {
@@ -2369,7 +2392,11 @@ function kirimNotaKeWA(order) {
     if (Array.isArray(order.items)) {
         order.items.forEach((item, idx) => {
             let subtotal = item.price * item.qty;
-            text += `${idx + 1}. *${item.title}*\n   ${item.qty} x ${formatRupiah(item.price)} = ${formatRupiah(subtotal)}\n`;
+            let serviceUp = String(item.service || item.title || '').toUpperCase();
+            let garansiDefault = serviceUp.includes('BAT') ? '1 Bulan' : serviceUp.includes('LCD') ? '1 Minggu' : '';
+            let garansiItem = (item.garansi && item.garansi !== '-') ? item.garansi : garansiDefault;
+            let garansiTxt = garansiItem ? ` [Garansi: ${garansiItem}]` : '';
+            text += `${idx + 1}. *${item.title}*${garansiTxt}\n   ${item.qty} x ${formatRupiah(item.price)} = ${formatRupiah(subtotal)}\n`;
         });
     }
 

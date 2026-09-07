@@ -243,7 +243,7 @@
             <p class="text-muted mb-3" style="font-size: 0.82rem;">Masukkan Kode Nota atau Nomor WhatsApp</p>
             
             <div class="input-group mb-2 shadow-sm" style="border-radius: 12px; overflow: hidden; border: 1px solid #dee2e6;">
-              <input type="text" id="inputLacakNota" class="form-control border-0 bg-light" placeholder="No. WA / Kode Nota..." style="padding: 12px 15px; font-size: 0.9rem;" autocomplete="off" aria-label="Kode Nota atau Nomor WA">
+              <input type="text" id="inputLacakNota" class="form-control border-0 bg-light" placeholder="No. WA / Kode Nota..." style="padding: 12px 15px; font-size: 0.9rem;" autocomplete="off" aria-label="Kode Nota atau Nomor WA" onkeypress="if(event.key==='Enter') cariLacakPesanan()">
               <button type="button" class="btn btn-primary fw-bold px-4" onclick="cariLacakPesanan()" aria-label="Cari Pesanan"><i class="fa-solid fa-search"></i></button>
             </div>
           </div>

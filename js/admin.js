@@ -407,7 +407,13 @@ async function ubahStatusOrder(orderDbId, statusBaru) {
                     return `${partId}${partKet}`;
                 }).join(', ');
 
-                detailItemsText = order.items.map((i, idx) => `${idx + 1}. *${i.title}* (${i.qty} Pcs)`).join('\n');
+                detailItemsText = order.items.map((i, idx) => {
+                    let serviceUp = String(i.service || i.title || '').toUpperCase();
+                    let garansiDefault = serviceUp.includes('BAT') ? '1 Bulan' : serviceUp.includes('LCD') ? '1 Minggu' : '';
+                    let garansiItem = (i.garansi && i.garansi !== '-') ? i.garansi : garansiDefault;
+                    let garansiTxt = garansiItem ? ` [Garansi: ${garansiItem}]` : '';
+                    return `${idx + 1}. *${i.title}*${garansiTxt} (${i.qty} Pcs)`;
+                }).join('\n');
             }
 
             let cleanPhone = String(order.customer_phone || '').replace(/[^0-9]/g, '');
@@ -1003,16 +1009,22 @@ window.filterBySpecificMerk = function(merkName) {
     }
     const searchInput = document.getElementById('searchInput');
     const filterService = document.getElementById('filterService');
-    if (searchInput) searchInput.value = merkName === 'SEMUA' ? '' : merkName;
+    if (searchInput) searchInput.value = '';
     if (filterService) filterService.value = '';
 
+    activeSelectedBrand = merkName.toUpperCase();
     if (merkName === 'SEMUA') {
         filteredData = [...globalData];
     } else {
-        filteredData = globalData.filter(row => String(row[1] || '').toUpperCase().trim() === merkName);
+        filteredData = globalData.filter(row => String(row[1] || '').toUpperCase().trim() === activeSelectedBrand);
     }
     currentPage = 1;
-    renderTable();
+    renderBrandFilterBoxes();
+    if (currentDataViewMode === 'box') {
+        renderGroupedBrandBoxes();
+    } else {
+        renderTable();
+    }
     const menuData = document.getElementById('menu-data');
     if (menuData) menuData.click();
 };
@@ -1028,13 +1040,19 @@ window.filterBySpecificType = function(typeName) {
     if (searchInput) searchInput.value = typeName === 'SEMUA' ? '' : typeName;
     if (filterService) filterService.value = '';
 
+    activeSelectedBrand = 'SEMUA';
     if (typeName === 'SEMUA') {
         filteredData = [...globalData];
     } else {
         filteredData = globalData.filter(row => String(row[2] || '').toUpperCase().trim() === typeName);
     }
     currentPage = 1;
-    renderTable();
+    renderBrandFilterBoxes();
+    if (currentDataViewMode === 'box') {
+        renderGroupedBrandBoxes();
+    } else {
+        renderTable();
+    }
     const menuData = document.getElementById('menu-data');
     if (menuData) menuData.click();
 };
@@ -1050,13 +1068,19 @@ window.filterBySpecificLcdMerk = function(merkName) {
     if (searchInput) searchInput.value = '';
     if (filterService) filterService.value = 'GANTI LCD';
 
+    activeSelectedBrand = merkName.toUpperCase();
     if (merkName === 'SEMUA') {
         filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('LCD'));
     } else {
-        filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('LCD') && String(row[1] || '').toUpperCase().trim() === merkName);
+        filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('LCD') && String(row[1] || '').toUpperCase().trim() === activeSelectedBrand);
     }
     currentPage = 1;
-    renderTable();
+    renderBrandFilterBoxes();
+    if (currentDataViewMode === 'box') {
+        renderGroupedBrandBoxes();
+    } else {
+        renderTable();
+    }
     const menuData = document.getElementById('menu-data');
     if (menuData) menuData.click();
 };
@@ -1072,13 +1096,19 @@ window.filterBySpecificBatMerk = function(merkName) {
     if (searchInput) searchInput.value = '';
     if (filterService) filterService.value = 'GANTI BAT';
 
+    activeSelectedBrand = merkName.toUpperCase();
     if (merkName === 'SEMUA') {
         filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('BAT'));
     } else {
-        filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('BAT') && String(row[1] || '').toUpperCase().trim() === merkName);
+        filteredData = globalData.filter(row => String(row[3] || '').toUpperCase().includes('BAT') && String(row[1] || '').toUpperCase().trim() === activeSelectedBrand);
     }
     currentPage = 1;
-    renderTable();
+    renderBrandFilterBoxes();
+    if (currentDataViewMode === 'box') {
+        renderGroupedBrandBoxes();
+    } else {
+        renderTable();
+    }
     const menuData = document.getElementById('menu-data');
     if (menuData) menuData.click();
 };
@@ -1159,7 +1189,32 @@ window.openEditModal = function(id) {
   const row = globalData.find(r => r[0] == id);
   if (!row) return;
   document.getElementById('editDataId').value = row[0];
-  document.getElementById('editMerkHP').value = row[1];
+
+  const editMerkSelect = document.getElementById('editMerkHP');
+  const editMerkLainnya = document.getElementById('editMerkLainnya');
+  let merkVal = String(row[1] || '').toUpperCase().trim();
+  let foundMerk = false;
+  if (editMerkSelect) {
+    for (let i = 0; i < editMerkSelect.options.length; i++) {
+      if (editMerkSelect.options[i].value.toUpperCase() === merkVal) {
+        editMerkSelect.selectedIndex = i;
+        foundMerk = true;
+        if (editMerkLainnya) {
+          editMerkLainnya.style.display = 'none';
+          editMerkLainnya.value = '';
+        }
+        break;
+      }
+    }
+    if (!foundMerk && merkVal) {
+      editMerkSelect.value = 'LAINNYA';
+      if (editMerkLainnya) {
+        editMerkLainnya.style.display = 'block';
+        editMerkLainnya.value = merkVal;
+      }
+    }
+  }
+
   document.getElementById('editTypeHP').value = row[2];
   document.getElementById('editJenisService').value = row[3];
   
@@ -1454,6 +1509,16 @@ async function loadBrands() {
     try {
         const { data, error } = await dbClient.from('brands').select('*').order('created_at', { ascending: false });
         if (error) throw error;
+
+        window.customBrandsData = data || [];
+
+        // Refresh logo brand pada box & filter chip jika data sudah dimuat
+        if (typeof globalData !== 'undefined' && globalData.length > 0) {
+            renderBrandFilterBoxes();
+            if (currentDataViewMode === 'box') {
+                renderGroupedBrandBoxes();
+            }
+        }
 
         if (!data || data.length === 0) {
             container.innerHTML = `<div class="col-12 text-center text-muted py-3">Belum ada merek tersimpan.</div>`;
@@ -1836,10 +1901,35 @@ window.openTambahUntukTipe = function(brandEnc, tipeEnc) {
     const menuTambah = document.getElementById('menu-tambah');
     if (menuTambah) menuTambah.click();
     setTimeout(() => {
-        const merkInput = document.getElementById('inputMerk');
-        const typeInput = document.getElementById('inputType');
-        if (merkInput) merkInput.value = brand;
-        if (typeInput) typeInput.value = tipe;
+        const merkSelect = document.getElementById('inputMerkHP');
+        const merkLainnya = document.getElementById('inputMerkLainnya');
+        const typeInput = document.getElementById('inputTypeHP');
+
+        if (merkSelect) {
+            let found = false;
+            for (let i = 0; i < merkSelect.options.length; i++) {
+                if (merkSelect.options[i].value.toUpperCase() === brand.toUpperCase()) {
+                    merkSelect.selectedIndex = i;
+                    found = true;
+                    if (merkLainnya) {
+                        merkLainnya.style.display = 'none';
+                        merkLainnya.value = '';
+                    }
+                    break;
+                }
+            }
+            if (!found && brand) {
+                merkSelect.value = 'LAINNYA';
+                if (merkLainnya) {
+                    merkLainnya.style.display = 'block';
+                    merkLainnya.value = brand;
+                }
+            }
+        }
+        if (typeInput) {
+            typeInput.value = tipe;
+            typeInput.focus();
+        }
     }, 150);
 };
 
@@ -2004,8 +2094,6 @@ function renderTopSearchesChart(data) {
         }
     });
 }
-
-function formatRupiah(angka) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(String(angka).replace(/[^0-9]/g, '') || 0); }
 
 // ==========================================
 // BUKA MODAL NOTA DIGITAL SISI ADMIN
