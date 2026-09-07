@@ -24,7 +24,7 @@ const defaultImageFallback = "https://i.postimg.cc/PJrYPyTy/logo-mp-100kb.jpg";
 let categoryImagesMap = {
     'GANTI LCD': 'https://i.postimg.cc/SKKQM9cQ/logo-lcd-15kb.jpg',
     'GANTI BAT': 'https://i.postimg.cc/q77B3K2p/logo-bat-15kb.jpg',
-    'SERVICE': 'https://i.postimg.cc/Jhh7kXjz/logo-konektor-15kb.jpg',
+    'SERVICE': 'https://i.postimg.cc/rpQpnLQV/logo-service-15kb.png',
     'SPAREPART': 'https://i.postimg.cc/CKKMq8bY/logo-part-15kb.jpg'
 };
 
