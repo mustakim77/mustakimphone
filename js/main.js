@@ -10,6 +10,7 @@ const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let globalData = [];
 let currentFilteredData = [];
 let currentViewedProduct = null;
+let previousView = 'home'; // track view sebelumnya untuk navigasi tombol kembali
 
 // VARIABEL BANNER SLIDER INFINITE LOOP
 let realBannerCount = 0;
@@ -610,6 +611,14 @@ function searchCategory(keyword) {
     const clearBtn = document.getElementById('clearSearch');
     const filterService = document.getElementById('filterService');
     if (!checkAuthOrShowModal()) return;
+
+    // Simpan view asal sebelum pindah ke searchView
+    const viewIds = ['merekView', 'cekservisView', 'keranjangView', 'memberView'];
+    const currentlyVisible = viewIds.find(id => {
+        const el = document.getElementById(id);
+        return el && !el.classList.contains('d-none');
+    });
+    previousView = currentlyVisible || 'home';
     
     if (input) input.value = keyword;
     if (clearBtn) {
@@ -637,6 +646,39 @@ function searchCategory(keyword) {
     
     filterAndDisplay(keyword);
     window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+
+
+function goBack() {
+    if (previousView === 'merekView') {
+        // Bersihkan pencarian lalu kembali ke Daftar Merek
+        const input = document.getElementById('liveSearch');
+        const clearBtn = document.getElementById('clearSearch');
+        const filterService = document.getElementById('filterService');
+        const filterStatus = document.getElementById('filterStatus');
+        const sortPrice = document.getElementById('sortPrice');
+        if (input) input.value = '';
+        if (clearBtn) clearBtn.classList.add('d-none');
+        if (filterService) filterService.value = 'ALL';
+        if (filterStatus) filterStatus.value = 'ALL';
+        if (sortPrice) sortPrice.value = 'DEFAULT';
+        closeDetail();
+        currentFilteredData = [];
+        // Tampilkan merekView, aktifkan nav Merek
+        const mv = document.getElementById('merekView');
+        if (mv) mv.classList.remove('d-none');
+        ['homeView','searchView','cekservisView','keranjangView','memberView'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('d-none');
+        });
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        const navItems = document.querySelectorAll('.nav-item');
+        if (navItems[2]) navItems[2].classList.add('active'); // Merek = index 2
+        previousView = 'home'; // reset
+    } else {
+        clearAndGoHome();
+    }
 }
 
 function clearAndGoHome() {
