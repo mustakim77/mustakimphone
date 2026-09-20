@@ -93,18 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
 
     if (searchInput) {
-        searchInput.addEventListener('focus', () => {
-            if (!checkAuthOrShowModal()) searchInput.blur();
-        });
-
         searchInput.addEventListener('input', (e) => {
-            if (!checkAuthOrShowModal()) {
-                searchInput.value = '';
-                searchInput.blur();
-                if (clearBtn) clearBtn.classList.add('d-none');
-                return;
-            }
-
             const val = e.target.value;
             if (val.length > 0) {
                 if (clearBtn) clearBtn.classList.remove('d-none');
@@ -610,7 +599,6 @@ function searchCategory(keyword) {
     const input = document.getElementById('liveSearch');
     const clearBtn = document.getElementById('clearSearch');
     const filterService = document.getElementById('filterService');
-    if (!checkAuthOrShowModal()) return;
 
     // Simpan view asal sebelum pindah ke searchView
     const viewIds = ['merekView', 'cekservisView', 'keranjangView', 'memberView'];
@@ -859,11 +847,16 @@ function filterAndDisplay(keyword) {
         currentFilteredData = results; 
 
         if (results.length === 0) {
+            const waQueryText = keyword ? `Halo Admin Mustakim Phone, apakah tersedia servis/part untuk tipe: ${keyword}?` : 'Halo Admin Mustakim Phone, saya mau tanya ketersediaan sparepart/servis HP.';
+            const waLink = `https://wa.me/${nomorWhatsAppAdmin}?text=${encodeURIComponent(waQueryText)}`;
             container.innerHTML = `
-              <div class="text-center py-5 mt-4">
+              <div class="text-center py-5 mt-4 px-3">
                     <i class="fa-solid fa-box-open fs-1 mb-2 text-secondary opacity-50"></i>
-                    <h6 class="fw-bold text-dark">Tidak Ditemukan</h6>
-                    <p class="text-secondary" style="font-size: 0.85rem;">Produk yang Anda cari belum tersedia.</p>
+                    <h6 class="fw-bold text-dark mb-1">Produk Tidak Ditemukan</h6>
+                    <p class="text-secondary small mb-3">Tipe HP atau sparepart yang Anda cari belum terdaftar di katalog kami.</p>
+                    <a href="${waLink}" target="_blank" class="btn btn-success btn-sm rounded-pill px-3 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-2">
+                        <i class="fa-brands fa-whatsapp fs-6"></i> Tanya Teknisi via WhatsApp
+                    </a>
               </div>`;
             return;
         }
@@ -996,7 +989,6 @@ function renderLatestProducts() {
 }
 
 function showDetail(target) {
-    if (!checkAuthOrShowModal()) return;
     let row = null;
 
     if (typeof target === 'string') {
@@ -2545,11 +2537,26 @@ async function kirimNotaCanvasKeWA(order) {
 }
 
 // ==========================================
-// CEK URL PARAMETER SAAT HALAMAN DIMUAT (DEEP LINK)
+// CEK URL PARAMETER SAAT HALAMAN DIMUAT (DEEP LINK & PWA SHORTCUTS)
 // ==========================================
 function checkDeepLinkProduk() {
     const urlParams = new URLSearchParams(window.location.search);
+    const pageParam = urlParams.get('page');
     const productId = urlParams.get('id');
+
+    if (pageParam) {
+        const p = pageParam.toLowerCase();
+        const navItems = document.querySelectorAll('.nav-item');
+        if (p === 'lacak' || p === 'cekservis') {
+            switchNav('CekServis', navItems[1]);
+        } else if (p === 'merek' || p === 'katalog') {
+            switchNav('Merek', navItems[2]);
+        } else if (p === 'keranjang' || p === 'cart') {
+            switchNav('Keranjang', navItems[3]);
+        } else if (p === 'member' || p === 'akun') {
+            switchNav('Member', navItems[4]);
+        }
+    }
 
     if (!productId || !globalData || globalData.length === 0) return;
 
@@ -2561,6 +2568,11 @@ function checkDeepLinkProduk() {
         showDetail(targetIndex);
     }
 }
+
+// Jalankan deep link langsung saat DOM selesai dimuat
+document.addEventListener('DOMContentLoaded', () => {
+    checkDeepLinkProduk();
+});
 
 // ==========================================
 // FUNGSI PROTEKSI LOGIN & KELOLA MODAL
@@ -2599,4 +2611,64 @@ function cleanupModalBackdrop() {
     document.body.classList.remove('modal-open');
     document.body.style.removeProperty('overflow');
     document.body.style.removeProperty('padding-right');
+}
+
+// ==========================================
+// PWA (PROGRESSIVE WEB APP) & SERVICE WORKER
+// ==========================================
+let deferredInstallPrompt = null;
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('[PWA] ServiceWorker aktif:', reg.scope))
+            .catch(err => console.warn('[PWA] ServiceWorker gagal daftar:', err));
+    });
+}
+
+// Tangkap event sebelum dialog install default muncul
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+
+    const banner = document.getElementById('pwaInstallBanner');
+    const isDismissed = sessionStorage.getItem('pwa_banner_dismissed');
+    if (banner && !isDismissed) {
+        banner.classList.remove('d-none');
+    }
+
+    const memberBtn = document.getElementById('btnInstallPwaMember');
+    if (memberBtn) memberBtn.classList.remove('d-none');
+});
+
+// Deteksi jika aplikasi telah berhasil dipasang
+window.addEventListener('appinstalled', () => {
+    console.log('[PWA] Aplikasi Mustakim Phone berhasil dipasang!');
+    deferredInstallPrompt = null;
+    const banner = document.getElementById('pwaInstallBanner');
+    if (banner) banner.classList.add('d-none');
+    showToast('Aplikasi Mustakim Phone berhasil dipasang di layar utama!');
+});
+
+function triggerPwaInstall() {
+    if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        deferredInstallPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('[PWA] Pengguna menyetujui pemasangan aplikasi.');
+            }
+            deferredInstallPrompt = null;
+            const banner = document.getElementById('pwaInstallBanner');
+            if (banner) banner.classList.add('d-none');
+        });
+    } else {
+        // Panduan jika browser belum/tidak trigger prompt otomatis
+        showToast('Untuk memasang, buka menu browser Anda (titik 3) lalu pilih "Tambahkan ke Layar Utama" / "Install Aplikasi".');
+    }
+}
+
+function dismissPwaBanner() {
+    const banner = document.getElementById('pwaInstallBanner');
+    if (banner) banner.classList.add('d-none');
+    sessionStorage.setItem('pwa_banner_dismissed', 'true');
 }

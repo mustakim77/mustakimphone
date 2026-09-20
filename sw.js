@@ -1,26 +1,28 @@
-﻿// ==========================================
+// ==========================================
 // SERVICE WORKER - MUSTAKIM PHONE PWA
 // ==========================================
-const CACHE_NAME = 'mustakimphone-v1';
+const CACHE_NAME = 'mustakimphone-v2';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/css/style.css',
-  '/js/main.js',
-  '/manifest.json'
+  './',
+  './index.html',
+  './css/style.css',
+  './js/main.js',
+  './manifest.json'
 ];
 
-// Install: cache semua aset statis
+// Install: cache semua aset statis dengan penanganan error per item
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
+    caches.open(CACHE_NAME).then(async cache => {
       console.log('[SW] Caching static assets');
-      return cache.addAll(STATIC_ASSETS);
+      await Promise.allSettled(
+        STATIC_ASSETS.map(asset => cache.add(asset).catch(err => console.warn('[SW] Gagal cache asset:', asset, err)))
+      );
     }).then(() => self.skipWaiting())
   );
 });
 
-// Activate: hapus cache lama
+// Activate: hapus cache versi lama
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -31,34 +33,38 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: Network First untuk API, Cache First untuk aset statis
+// Fetch: Network First untuk data dinamis, Cache First / Stale-While-Revalidate untuk aset statis
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Skip non-GET dan request ke Supabase (selalu fresh dari network)
+  // Skip non-GET dan request ke Supabase API (selalu fresh dari network)
   if (event.request.method !== 'GET') return;
   if (url.hostname.includes('supabase.co')) return;
-  if (url.hostname.includes('postimg.cc')) return;
 
-  // Strategi: Network First dengan fallback ke cache
+  // Strategi: Network First dengan fallback ke Cache
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        // Simpan response ke cache jika sukses
-        if (response && response.status === 200 && response.type === 'basic') {
+        // Simpan response ke cache jika sukses (status 200)
+        if (response && response.status === 200 && (response.type === 'basic' || response.type === 'cors')) {
           const cloned = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, cloned));
         }
         return response;
       })
       .catch(() => {
-        // Offline: ambil dari cache
+        // Mode offline: ambil dari cache
         return caches.match(event.request).then(cached => {
           if (cached) return cached;
-          // Fallback halaman offline untuk navigasi
-          if (event.request.destination === 'document') {
-            return caches.match('/index.html');
+          // Fallback halaman utama untuk permintaan dokumen/halaman navigasi
+          if (event.request.destination === 'document' || event.request.mode === 'navigate') {
+            return caches.match('./index.html') || caches.match('/index.html');
           }
+          return new Response('Offline: Konten tidak tersedia tanpa internet.', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: new Headers({ 'Content-Type': 'text/plain' })
+          });
         });
       })
   );

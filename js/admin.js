@@ -94,6 +94,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadBanners();
     loadBannerMp();
     loadBrands();
+    updateAudioBadge();
+
+    // Auto-refresh pesanan di background setiap 25 detik
+    setInterval(() => {
+        loadOrders(true);
+    }, 25000);
 });
 
 // ==========================================
@@ -189,13 +195,141 @@ function setupSidebar() {
 }
 
 // ==========================================
-// KELOLA PESANAN (ORDERS) MANAGEMENT
 // ==========================================
-async function loadOrders() {
+// KELOLA PESANAN (ORDERS) MANAGEMENT & NOTIFIKASI
+// ==========================================
+let isOrderSoundEnabled = localStorage.getItem('mustakim_order_sound') !== 'false';
+let knownPendingOrderIds = null;
+
+function playOrderAlertChime() {
+    if (!isOrderSoundEnabled) return;
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        
+        // Nada 1: E5 (659.25Hz)
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(659.25, ctx.currentTime);
+        gain1.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(ctx.currentTime);
+        osc1.stop(ctx.currentTime + 0.22);
+
+        // Nada 2: A5 (880Hz)
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(880, ctx.currentTime + 0.14);
+        gain2.gain.setValueAtTime(0.25, ctx.currentTime + 0.14);
+        gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.45);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(ctx.currentTime + 0.14);
+        osc2.stop(ctx.currentTime + 0.45);
+    } catch(e) {
+        console.warn('Audio play error:', e);
+    }
+}
+
+function toggleOrderSound() {
+    isOrderSoundEnabled = !isOrderSoundEnabled;
+    localStorage.setItem('mustakim_order_sound', isOrderSoundEnabled);
+    updateAudioBadge();
+    if (isOrderSoundEnabled) {
+        playOrderAlertChime();
+        Swal.fire({
+            icon: 'success',
+            title: 'Suara Notifikasi Aktif',
+            text: 'Admin akan berbunyi saat ada pesanan baru masuk.',
+            timer: 1500,
+            showConfirmButton: false
+        });
+    } else {
+        Swal.fire({
+            icon: 'info',
+            title: 'Suara Dinonaktifkan',
+            text: 'Notifikasi suara pesanan telah dibisukan.',
+            timer: 1500,
+            showConfirmButton: false
+        });
+    }
+}
+
+function updateAudioBadge() {
+    const badge = document.getElementById('audioAlertBadge');
+    if (!badge) return;
+    if (isOrderSoundEnabled) {
+        badge.className = 'badge bg-light text-primary border shadow-2xs';
+        badge.innerHTML = '<i class="fa-solid fa-bell text-success me-1"></i> Suara Aktif';
+    } else {
+        badge.className = 'badge bg-light text-secondary border shadow-2xs';
+        badge.innerHTML = '<i class="fa-solid fa-bell-slash text-muted me-1"></i> Suara Hening';
+    }
+}
+
+function exportOrdersToExcel() {
+    const listToExport = (filteredOrders && filteredOrders.length > 0) ? filteredOrders : globalOrders;
+    if (!listToExport || listToExport.length === 0) {
+        Swal.fire('Info', 'Tidak ada data pesanan untuk di-export.', 'info');
+        return;
+    }
+
+    const headers = ['No Nota', 'Tanggal', 'Nama Pelanggan', 'No WhatsApp', 'Tipe HP', 'Item Layanan / Part', 'Total Harga (Rp)', 'Status'];
+    
+    const rows = listToExport.map(o => {
+        const noNota = `"${(o.order_id || '-').replace(/"/g, '""')}"`;
+        const tgl = o.created_at ? `"${new Date(o.created_at).toLocaleString('id-ID').replace(/"/g, '""')}"` : `"-"`;
+        const nama = `"${(o.customer_name || '-').replace(/"/g, '""')}"`;
+        const hp = `"${(o.customer_phone || '-').replace(/"/g, '""')}"`;
+        const tipeHp = `"${(o.note || '-').replace(/"/g, '""')}"`;
+        
+        let itemsStr = '-';
+        if (Array.isArray(o.items)) {
+            itemsStr = o.items.map(i => `${i.title || i.service || 'Item'} (${i.qty || 1}x)`).join('; ');
+        }
+        const itemEscaped = `"${itemsStr.replace(/"/g, '""')}"`;
+        const total = Number(o.total_price) || 0;
+        const status = `"${(o.status || 'Pending').replace(/"/g, '""')}"`;
+
+        return [noNota, tgl, nama, hp, tipeHp, itemEscaped, total, status].join(';');
+    });
+
+    const csvContent = '\uFEFF' + headers.join(';') + '\n' + rows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const fileName = `Rekap_Pesanan_MustakimPhone_${dateStr}.csv`;
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    Swal.fire({
+        icon: 'success',
+        title: 'Export Berhasil!',
+        text: `${listToExport.length} data pesanan berhasil diunduh ke format Excel/CSV.`,
+        timer: 2000,
+        showConfirmButton: false
+    });
+}
+
+async function loadOrders(isBackground = false) {
     const grid = document.getElementById('ordersCardGrid');
     if (!grid) return;
 
-    grid.innerHTML = `<div class="col-12 text-center text-muted py-5"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data pesanan...</div>`;
+    if (!isBackground) {
+        grid.innerHTML = `<div class="col-12 text-center text-muted py-5"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data pesanan...</div>`;
+    }
 
     try {
         const { data, error } = await dbClient
@@ -205,12 +339,44 @@ async function loadOrders() {
 
         if (error) throw error;
 
-        globalOrders = data || [];
+        const newOrders = data || [];
+
+        // Deteksi pesanan baru dengan status Pending
+        const currentPendingIds = new Set(
+            newOrders.filter(o => String(o.status || '').toLowerCase() === 'pending').map(o => o.id)
+        );
+
+        if (knownPendingOrderIds !== null) {
+            let newlyArrived = [];
+            for (let id of currentPendingIds) {
+                if (!knownPendingOrderIds.has(id)) {
+                    newlyArrived.push(newOrders.find(o => o.id === id));
+                }
+            }
+
+            if (newlyArrived.length > 0) {
+                playOrderAlertChime();
+                const latestNew = newlyArrived[0];
+                Swal.fire({
+                    icon: 'info',
+                    title: '🔔 Pesanan Baru Masuk!',
+                    text: `Pesanan #${latestNew.order_id || ''} dari ${latestNew.customer_name || 'Pelanggan'} (${formatRupiah(latestNew.total_price || 0)})`,
+                    confirmButtonColor: '#0d6efd',
+                    confirmButtonText: 'Buka Pesanan',
+                    timer: 8000
+                });
+            }
+        }
+
+        knownPendingOrderIds = currentPendingIds;
+        globalOrders = newOrders;
         applyOrderFilters();
         loadFinancialReport();
     } catch(err) {
         console.error("Gagal memuat orders:", err);
-        grid.innerHTML = `<div class="col-12 text-center text-danger py-5"><i class="fa-solid fa-triangle-exclamation fa-2x mb-2"></i><p>Gagal memuat data pesanan: ${err.message}</p></div>`;
+        if (!isBackground) {
+            grid.innerHTML = `<div class="col-12 text-center text-danger py-5"><i class="fa-solid fa-triangle-exclamation fa-2x mb-2"></i><p>Gagal memuat data pesanan: ${err.message}</p></div>`;
+        }
     }
 }
 

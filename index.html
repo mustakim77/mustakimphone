@@ -3,17 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Mustakim Phone - Layanan Service HP, Sparepart, Ganti LCD, dan Baterai Terpercaya.">
-  <title>Mustakim Phone - Sparepart</title>
+  <meta name="description" content="Mustakim Phone - Layanan Service HP, Sparepart, Ganti LCD, dan Baterai Terpercaya. Cek harga servis dan lacak pesanan online.">
+  <meta name="theme-color" content="#0d6efd">
+  <title>Mustakim Phone - Sparepart & Service HP</title>
   
+  <!-- PWA & Apple Mobile Web App -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="MustakimPhone">
+  <link rel="apple-touch-icon" href="https://i.postimg.cc/PJrYPyTy/logo-mp-100kb.jpg">
+
+  <!-- Open Graph / WhatsApp Preview Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Mustakim Phone - Sparepart & Service HP Terpercaya">
+  <meta property="og:description" content="Layanan Service HP, Sparepart, Ganti LCD, dan Baterai Terpercaya. Cek harga servis dan lacak pesanan online.">
+  <meta property="og:image" content="https://i.postimg.cc/PJrYPyTy/logo-mp-100kb.jpg">
+  <meta property="og:url" content="https://mustakimphone.web.id/">
+  <meta name="twitter:card" content="summary">
+
   <!-- Preconnect Origin Utama -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="preconnect" href="https://i.postimg.cc" crossorigin>
 
-  <!-- Preload Gambar Banner LCP Utama -->
-  <link rel="preload" as="image" href="https://i.postimg.cc/28mDWvDD/banner-gantilcd-40kb.jpg" fetchpriority="high">
+  <!-- Preload Logo Utama -->
+  <link rel="preload" as="image" href="https://i.postimg.cc/PJrYPyTy/logo-mp-100kb.jpg" fetchpriority="high">
 
   <!-- CSS Utama -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
@@ -98,6 +114,23 @@
       
       <!-- 1. DASHBOARD VIEW -->
       <div id="homeView">
+        <!-- BANNER INSTALL PWA (OTOMATIS MUNCUL JIKA DIDUKUNG BROWSER) -->
+        <div id="pwaInstallBanner" class="px-2 pt-2 d-none">
+          <div class="alert alert-primary border-0 shadow-sm d-flex align-items-center justify-content-between py-2 px-3 mb-1 rounded-3" style="background: linear-gradient(135deg, #e7f1ff 0%, #f0f7ff 100%); border-left: 4px solid #0d6efd !important;">
+            <div class="d-flex align-items-center gap-2">
+              <img src="https://i.postimg.cc/PJrYPyTy/logo-mp-100kb.jpg" width="34" height="34" class="rounded-2 shadow-xs" alt="Mustakim Phone">
+              <div>
+                <div class="fw-bold text-dark" style="font-size: 0.8rem; line-height: 1.1;">Pasang Aplikasi Mustakim Phone</div>
+                <small class="text-muted" style="font-size: 0.68rem;">Akses instan di layar utama HP</small>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-1">
+              <button type="button" class="btn btn-primary btn-sm rounded-pill fw-semibold px-3 py-1" style="font-size: 0.72rem;" onclick="triggerPwaInstall()">Install</button>
+              <button type="button" class="btn btn-link text-muted p-1" onclick="dismissPwaBanner()" aria-label="Tutup"><i class="fa-solid fa-xmark" style="font-size: 0.8rem;"></i></button>
+            </div>
+          </div>
+        </div>
+
         <div class="p-2 pb-2">
           <div class="overflow-hidden position-relative" style="border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
             <div class="banner-slider d-flex" id="bannerSlider">
@@ -447,6 +480,10 @@
             <div class="d-flex flex-column gap-3">
               <button type="button" class="btn btn-outline-primary w-100 d-flex align-items-center justify-content-center" onclick="switchNav('Kategori', document.querySelectorAll('.nav-item')[1])">
                 <i class="fa-solid fa-magnifying-glass-location me-2"></i> Lacak Status Pesanan
+              </button>
+
+              <button type="button" id="btnInstallPwaMember" class="btn btn-outline-success w-100 d-flex align-items-center justify-content-center" onclick="triggerPwaInstall()">
+                <i class="fa-solid fa-mobile-screen-button me-2"></i> Pasang Aplikasi di HP (PWA)
               </button>
 
               <button type="button" class="btn btn-ios-secondary w-100 d-flex align-items-center justify-content-center" onclick="bukaFormGantiPassword()">

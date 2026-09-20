@@ -2,8 +2,8 @@
   "name": "Mustakim Phone",
   "short_name": "MustakimPhone",
   "description": "Layanan Service HP, Sparepart, Ganti LCD, dan Baterai Terpercaya.",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#ffffff",
@@ -29,14 +29,14 @@
       "name": "Lacak Pesanan",
       "short_name": "Lacak",
       "description": "Cek status pesanan servis HP",
-      "url": "/?page=lacak",
+      "url": "./?page=lacak",
       "icons": [{ "src": "https://i.postimg.cc/PJrYPyTy/logo-mp-100kb.jpg", "sizes": "96x96" }]
     },
     {
       "name": "Katalog Servis",
       "short_name": "Katalog",
       "description": "Lihat harga servis dan sparepart",
-      "url": "/?page=katalog",
+      "url": "./?page=katalog",
       "icons": [{ "src": "https://i.postimg.cc/PJrYPyTy/logo-mp-100kb.jpg", "sizes": "96x96" }]
     }
   ]
