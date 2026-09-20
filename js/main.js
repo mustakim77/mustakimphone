@@ -2672,3 +2672,183 @@ function dismissPwaBanner() {
     if (banner) banner.classList.add('d-none');
     sessionStorage.setItem('pwa_banner_dismissed', 'true');
 }
+
+// ==========================================
+// PELACAK PERANGKAT & IP PENGUNJUNG
+// ==========================================
+function parseDeviceInfo() {
+    const ua = navigator.userAgent || '';
+    let brand = 'Lainnya';
+    let model = 'Perangkat Tidak Dikenal';
+    let os = 'OS Lainnya';
+    let browser = 'Browser Lainnya';
+
+    // Deteksi Sistem Operasi (OS)
+    if (/android/i.test(ua)) {
+        const match = ua.match(/Android\s([0-9\.]+)/i);
+        os = match ? `Android ${match[1]}` : 'Android';
+    } else if (/iphone|ipad|ipod/i.test(ua)) {
+        const match = ua.match(/OS\s([0-9\_]+)/i);
+        os = match ? `iOS ${match[1].replace(/_/g, '.')}` : 'iOS';
+    } else if (/windows/i.test(ua)) {
+        if (/windows nt 10/i.test(ua)) os = 'Windows 10/11';
+        else os = 'Windows PC';
+    } else if (/macintosh|mac os x/i.test(ua)) {
+        os = 'macOS';
+    } else if (/linux/i.test(ua)) {
+        os = 'Linux';
+    }
+
+    // Deteksi Browser
+    if (/edg/i.test(ua)) browser = 'Edge';
+    else if (/samsungbrowser/i.test(ua)) browser = 'Samsung Internet';
+    else if (/chrome|crios/i.test(ua)) browser = 'Chrome';
+    else if (/firefox|fxios/i.test(ua)) browser = 'Firefox';
+    else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browser = 'Safari';
+    else if (/opera|opr/i.test(ua)) browser = 'Opera';
+
+    // Deteksi Brand & Model HP
+    if (/iphone/i.test(ua)) {
+        brand = 'Apple';
+        model = 'iPhone';
+    } else if (/ipad/i.test(ua)) {
+        brand = 'Apple';
+        model = 'iPad';
+    } else if (/windows/i.test(ua)) {
+        brand = 'Desktop';
+        model = 'Windows PC';
+    } else if (/macintosh/i.test(ua)) {
+        brand = 'Apple';
+        model = 'Mac / MacBook';
+    } else {
+        // Android Device Parsing
+        if (/samsung|sm-[a-z0-9]+/i.test(ua)) {
+            brand = 'Samsung';
+            const m = ua.match(/SM-[A-Z0-9]+/i);
+            model = m ? m[0] : 'Samsung Galaxy';
+        } else if (/redmi|poco|xiaomi|mi\s[0-9]/i.test(ua)) {
+            brand = 'Xiaomi';
+            if (/poco/i.test(ua)) {
+                const m = ua.match(/POCO\s?[A-Z0-9]+/i);
+                model = m ? m[0] : 'Xiaomi POCO';
+            } else if (/redmi/i.test(ua)) {
+                const m = ua.match(/Redmi\s?[A-Z0-9\s]+/i);
+                model = m ? m[0].trim() : 'Xiaomi Redmi';
+            } else {
+                model = 'Xiaomi';
+            }
+        } else if (/cph[0-9]+|oppo/i.test(ua)) {
+            brand = 'Oppo';
+            const m = ua.match(/CPH[0-9]+/i);
+            model = m ? `Oppo (${m[0]})` : 'Oppo';
+        } else if (/v[0-9]{4}[a-z]?|vivo/i.test(ua)) {
+            brand = 'Vivo';
+            const m = ua.match(/V[0-9]{4}[A-Z]?/i);
+            model = m ? `Vivo (${m[0]})` : 'Vivo';
+        } else if (/rmx[0-9]+|realme/i.test(ua)) {
+            brand = 'Realme';
+            const m = ua.match(/RMX[0-9]+/i);
+            model = m ? `Realme (${m[0]})` : 'Realme';
+        } else if (/infinix|x[0-9]{3,4}/i.test(ua)) {
+            brand = 'Infinix';
+            const m = ua.match(/Infinix\s?[A-Z0-9\s]+/i);
+            model = m ? m[0].trim() : 'Infinix';
+        } else if (/tecno/i.test(ua)) {
+            brand = 'Tecno';
+            model = 'Tecno Mobile';
+        } else if (/pixel/i.test(ua)) {
+            brand = 'Google';
+            model = 'Google Pixel';
+        } else {
+            const m = ua.match(/;\s([^;]+)\sBuild\//i);
+            if (m && m[1]) {
+                model = m[1].trim();
+                brand = 'Android';
+            } else {
+                brand = 'Mobile';
+                model = 'Smartphone';
+            }
+        }
+    }
+
+    const screenRes = `${window.screen ? window.screen.width : 0}x${window.screen ? window.screen.height : 0}`;
+    return { brand, model, os, browser, screenRes };
+}
+
+async function catatKunjunganPengunjung() {
+    try {
+        // Cek apakah baru saja dicatat dalam sesi ini (30 menit)
+        const lastLog = sessionStorage.getItem('mp_visit_logged_at');
+        const now = Date.now();
+        if (lastLog && (now - parseInt(lastLog, 10)) < 30 * 60 * 1000) {
+            return; // Hindari spam log dari user yang sama
+        }
+
+        const device = parseDeviceInfo();
+
+        // Ambil IP & Lokasi dari API gratis cepat dengan timeout 3.5 detik
+        let ipData = { ip: '-', city: '-', region: '-', country: 'Indonesia', isp: '-' };
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+            const res = await fetch('https://ipwho.is/', { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.success !== false) {
+                    ipData = {
+                        ip: data.ip || '-',
+                        city: data.city || '-',
+                        region: data.region || '-',
+                        country: data.country || 'Indonesia',
+                        isp: (data.connection && data.connection.isp) ? data.connection.isp : '-'
+                    };
+                }
+            }
+        } catch(e) {
+            // Fallback sederhana jika ipwho.is lambat/error
+            try {
+                const resFallback = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
+                if (resFallback.ok) {
+                    const d = await resFallback.json();
+                    if (d && d.ip) ipData.ip = d.ip;
+                }
+            } catch(e2) {}
+        }
+
+        // Tentukan konteks halaman
+        let currentPage = 'Beranda';
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('id')) currentPage = `Detail Produk #${urlParams.get('id')}`;
+        else if (urlParams.get('page')) currentPage = `Halaman ${urlParams.get('page')}`;
+
+        const payload = {
+            ip_address: ipData.ip,
+            city: ipData.city,
+            region: ipData.region,
+            country: ipData.country,
+            isp: ipData.isp,
+            device_brand: device.brand,
+            device_model: device.model,
+            os_name: device.os,
+            browser_name: device.browser,
+            screen_res: device.screenRes,
+            page_url: currentPage
+        };
+
+        if (typeof dbClient !== 'undefined' && dbClient) {
+            await dbClient.from('visitor_logs').insert([payload]);
+            sessionStorage.setItem('mp_visit_logged_at', String(now));
+        }
+    } catch(err) {
+        // Jangan mengganggu jalannya aplikasi jika pencatatan gagal
+        console.log('[Visitor Logger]:', err.message);
+    }
+}
+
+// Jalankan pencatatan kunjungan 1 detik setelah halaman siap
+window.addEventListener('load', () => {
+    setTimeout(catatKunjunganPengunjung, 1000);
+});

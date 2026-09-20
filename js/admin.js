@@ -147,6 +147,7 @@ function setupSidebar() {
     const menuMapping = {
         'menu-dashboard': 'section-dashboard',
         'menu-orders': 'section-orders',
+        'menu-visitors': 'section-visitors',
         'menu-data': 'section-table',
         'menu-tambah': 'section-form',
         'menu-kategori': 'section-kategori',
@@ -184,6 +185,8 @@ function setupSidebar() {
 
                 if (targetId === 'section-orders') {
                     loadOrders();
+                } else if (targetId === 'section-visitors') {
+                    loadVisitorLogs();
                 }
                 
                 if (window.innerWidth < 992) {
@@ -2446,6 +2449,214 @@ async function kirimNotaCanvasKeWAAdmin(order) {
             btnCanvasWA.innerHTML = originalBtnText;
         }
     }
+}
+
+// ==========================================
+// LOG PENGUNJUNG & ANALITIK PERANGKAT
+// ==========================================
+let globalVisitorLogs = [];
+let filteredVisitorLogs = [];
+
+async function loadVisitorLogs() {
+    const tbody = document.getElementById('visitorLogsTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-5"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data log pengunjung...</td></tr>`;
+
+    try {
+        const { data, error } = await dbClient
+            .from('visitor_logs')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(100);
+
+        if (error) {
+            // Jika tabel belum dibuat di Supabase, tampilkan panduan SQL
+            if (error.code === '42P01' || String(error.message || '').includes('does not exist')) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-4">
+                    <div class="alert alert-warning d-inline-block text-start mb-0 p-3 shadow-sm rounded-3" style="max-width: 650px;">
+                        <h6 class="fw-bold mb-1 text-dark"><i class="fa-solid fa-database text-warning me-2"></i>Tabel visitor_logs Belum Dibuat di Supabase</h6>
+                        <p class="small text-muted mb-2">Buka Supabase Dashboard Anda > <strong>SQL Editor</strong>, lalu jalankan perintah ini:</p>
+                        <pre class="bg-dark text-white p-2 rounded small mb-0 font-monospace" style="font-size:0.72rem;">CREATE TABLE IF NOT EXISTS visitor_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  ip_address TEXT, city TEXT, region TEXT, country TEXT, isp TEXT,
+  device_brand TEXT, device_model TEXT, os_name TEXT, browser_name TEXT, screen_res TEXT, page_url TEXT
+);
+ALTER TABLE visitor_logs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public insert visitor_logs" ON visitor_logs FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public select visitor_logs" ON visitor_logs FOR SELECT USING (true);</pre>
+                    </div>
+                </td></tr>`;
+                return;
+            }
+            throw error;
+        }
+
+        globalVisitorLogs = data || [];
+        updateVisitorStats(globalVisitorLogs);
+        applyVisitorFilters();
+    } catch(err) {
+        console.error("Gagal memuat visitor logs:", err);
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4"><i class="fa-solid fa-triangle-exclamation me-1"></i> Gagal memuat data log: ${err.message}</td></tr>`;
+    }
+}
+
+function updateVisitorStats(logs) {
+    const elTotal = document.getElementById('statTotalVisits');
+    const elToday = document.getElementById('statTodayVisits');
+    const elMobile = document.getElementById('statMobileRatio');
+    const elTopBrand = document.getElementById('statTopBrand');
+    const visitorEl = document.getElementById('stat-visitors');
+
+    if (!logs) return;
+
+    if (elTotal) elTotal.textContent = logs.length;
+    if (visitorEl) visitorEl.textContent = logs.length;
+
+    // Hitung pengunjung hari ini
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayLogs = logs.filter(l => l.created_at && l.created_at.startsWith(todayStr));
+    if (elToday) elToday.textContent = todayLogs.length;
+
+    // Hitung persentase smartphone / mobile vs desktop
+    const mobileCount = logs.filter(l => {
+        const b = String(l.device_brand || '').toLowerCase();
+        return b !== 'desktop' && !b.includes('pc');
+    }).length;
+    const ratio = logs.length > 0 ? Math.round((mobileCount / logs.length) * 100) : 0;
+    if (elMobile) elMobile.textContent = `${ratio}%`;
+
+    // Hitung top brand HP
+    const brandCounts = {};
+    logs.forEach(l => {
+        const b = l.device_brand || 'Lainnya';
+        if (b !== 'Desktop' && b !== 'Lainnya' && b !== 'Mobile') {
+            brandCounts[b] = (brandCounts[b] || 0) + 1;
+        }
+    });
+
+    let topBrand = '-';
+    let topCount = 0;
+    for (let b in brandCounts) {
+        if (brandCounts[b] > topCount) {
+            topCount = brandCounts[b];
+            topBrand = b;
+        }
+    }
+    if (elTopBrand) elTopBrand.textContent = topBrand;
+}
+
+function applyVisitorFilters() {
+    const brandVal = document.getElementById('filterVisitorBrand') ? document.getElementById('filterVisitorBrand').value : '';
+    const searchVal = document.getElementById('searchVisitorInput') ? document.getElementById('searchVisitorInput').value.toLowerCase().trim() : '';
+
+    filteredVisitorLogs = globalVisitorLogs.filter(log => {
+        const matchBrand = brandVal === '' || (log.device_brand && log.device_brand.toLowerCase() === brandVal.toLowerCase());
+        
+        const searchTarget = `${log.ip_address || ''} ${log.device_brand || ''} ${log.device_model || ''} ${log.os_name || ''} ${log.city || ''} ${log.region || ''} ${log.isp || ''} ${log.page_url || ''}`.toLowerCase();
+        const matchSearch = searchVal === '' || searchTarget.includes(searchVal);
+
+        return matchBrand && matchSearch;
+    });
+
+    renderVisitorLogsTable();
+}
+
+function renderVisitorLogsTable() {
+    const tbody = document.getElementById('visitorLogsTableBody');
+    if (!tbody) return;
+
+    if (!filteredVisitorLogs || filteredVisitorLogs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-5"><i class="fa-solid fa-users-slash fs-2 mb-2 d-block opacity-50"></i>Belum ada data riwayat kunjungan yang sesuai.</td></tr>`;
+        return;
+    }
+
+    let html = '';
+    filteredVisitorLogs.forEach(item => {
+        // Format Waktu
+        let waktuFormatted = '-';
+        if (item.created_at) {
+            const d = new Date(item.created_at);
+            waktuFormatted = d.toLocaleString('id-ID', {
+                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        // Tentukan icon brand & styling
+        let brandIcon = '<i class="fa-solid fa-mobile-screen text-primary me-2 fs-5"></i>';
+        let brandBadgeClass = 'bg-primary-subtle text-primary border border-primary-subtle';
+        const bLower = String(item.device_brand || '').toLowerCase();
+        
+        if (bLower.includes('apple')) {
+            brandIcon = '<i class="fa-brands fa-apple text-dark me-2 fs-4"></i>';
+            brandBadgeClass = 'bg-dark text-white';
+        } else if (bLower.includes('samsung')) {
+            brandIcon = '<i class="fa-solid fa-mobile-screen text-primary me-2 fs-5"></i>';
+            brandBadgeClass = 'bg-primary-subtle text-primary border border-primary-subtle';
+        } else if (bLower.includes('xiaomi') || bLower.includes('poco')) {
+            brandIcon = '<i class="fa-solid fa-mobile-screen text-warning me-2 fs-5"></i>';
+            brandBadgeClass = 'bg-warning-subtle text-warning-emphasis border border-warning-subtle';
+        } else if (bLower.includes('oppo') || bLower.includes('vivo') || bLower.includes('realme') || bLower.includes('infinix')) {
+            brandIcon = '<i class="fa-solid fa-mobile-screen text-success me-2 fs-5"></i>';
+            brandBadgeClass = 'bg-success-subtle text-success border border-success-subtle';
+        } else if (bLower.includes('desktop') || bLower.includes('windows') || bLower.includes('mac') || bLower.includes('pc')) {
+            brandIcon = '<i class="fa-solid fa-laptop text-secondary me-2 fs-5"></i>';
+            brandBadgeClass = 'bg-secondary-subtle text-secondary border border-secondary-subtle';
+        }
+
+        const modelStr = item.device_model || 'Smartphone';
+        const osStr = item.os_name ? `<span class="text-muted small">(${item.os_name})</span>` : '';
+        const browserStr = item.browser_name || '-';
+        const resStr = item.screen_res ? `<span class="badge bg-light text-muted border ms-1" style="font-size:0.65rem;">${item.screen_res}</span>` : '';
+
+        // Lokasi & ISP
+        const lokasi = (item.city && item.city !== '-') ? `${item.city}, ${item.region || ''}` : (item.region || 'Indonesia');
+        const ispStr = (item.isp && item.isp !== '-') ? `<small class="text-muted d-block" style="font-size:0.72rem;"><i class="fa-solid fa-wifi me-1 text-primary"></i>${item.isp}</small>` : '';
+
+        // IP Badge
+        const ipStr = item.ip_address || '-';
+
+        // Page URL
+        const pageStr = item.page_url || 'Beranda';
+
+        html += `
+        <tr>
+            <td class="ps-3 text-nowrap">
+                <span class="fw-semibold text-dark">${waktuFormatted}</span>
+            </td>
+            <td>
+                <div class="d-flex align-items-center">
+                    ${brandIcon}
+                    <div>
+                        <div class="fw-bold text-dark">
+                            ${modelStr} ${resStr}
+                        </div>
+                        <small class="text-muted" style="font-size: 0.72rem;">
+                            <span class="badge ${brandBadgeClass} py-0 px-1 me-1" style="font-size: 0.65rem;">${item.device_brand || 'Mobile'}</span>
+                            ${osStr} • ${browserStr}
+                        </small>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span class="fw-medium text-dark"><i class="fa-solid fa-location-dot text-danger me-1"></i>${lokasi}</span>
+                ${ispStr}
+            </td>
+            <td class="text-nowrap">
+                <span class="badge bg-light text-dark font-monospace border px-2 py-1" style="font-size:0.75rem; letter-spacing:0.3px;">
+                    ${ipStr}
+                </span>
+            </td>
+            <td class="text-center text-nowrap">
+                <span class="badge bg-secondary-subtle text-dark border px-2 py-1" style="font-size:0.7rem;">
+                    ${pageStr}
+                </span>
+            </td>
+        </tr>`;
+    });
+
+    tbody.innerHTML = html;
 }
 
 // ==========================================

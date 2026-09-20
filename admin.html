@@ -49,6 +49,9 @@
             <a href="#" class="list-group-item" id="menu-orders">
                 <i class="fa-solid fa-receipt"></i> <span>Kelola Pesanan</span>
             </a>
+            <a href="#" class="list-group-item" id="menu-visitors">
+                <i class="fa-solid fa-users-viewfinder"></i> <span>Log Pengunjung</span>
+            </a>
             <a href="#" class="list-group-item" id="menu-data">
                 <i class="fa-solid fa-table-list"></i> <span>Data Harga</span>
             </a>
@@ -606,6 +609,95 @@
                 <h6 class="fw-bold mb-3"><i class="fa-solid fa-list me-2 text-primary"></i> Daftar Merek Terdaftar</h6>
                 <div id="containerListMerek" class="row g-2 g-md-3">
                     <div class="col-12 text-center text-muted py-3">Memuat data merek...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION: LOG PENGUNJUNG (VISITOR LOGS) -->
+        <div id="section-visitors" class="section-content" style="display:none;">
+            <div class="premium-card mb-3">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h5 class="fw-bold m-0"><i class="fa-solid fa-users-viewfinder me-2 text-primary"></i> Log Riwayat Pengunjung Web</h5>
+                            <span id="badgeVisitorOnline" class="badge bg-success-subtle text-success border border-success-subtle shadow-2xs" style="font-size: 0.68rem; border-radius: 6px;">
+                                <i class="fa-solid fa-circle text-success me-1" style="font-size: 0.5rem;"></i> Monitoring Aktif
+                            </span>
+                        </div>
+                        <p class="text-muted small mt-1 mb-0">Riwayat perangkat HP, sistem operasi, IP, dan kota pengunjung website.</p>
+                    </div>
+                    <div class="d-flex flex-column flex-sm-row gap-2 w-100" style="max-width: 580px;">
+                        <select class="form-select form-select-sm fw-medium" id="filterVisitorBrand" onchange="applyVisitorFilters()">
+                            <option value="">Semua Brand</option>
+                            <option value="Samsung">Samsung</option>
+                            <option value="Xiaomi">Xiaomi / Poco</option>
+                            <option value="Oppo">Oppo</option>
+                            <option value="Vivo">Vivo</option>
+                            <option value="Apple">Apple / iPhone</option>
+                            <option value="Realme">Realme</option>
+                            <option value="Infinix">Infinix</option>
+                            <option value="Desktop">Desktop / PC</option>
+                        </select>
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text border-0 rounded-start-3" style="background:#f4f7fe;"><i class="fa-solid fa-magnifying-glass text-muted"></i></span>
+                            <input type="text" class="form-control border-0 ps-0 rounded-end-3" id="searchVisitorInput" placeholder="Cari IP, model HP, kota, ISP..." oninput="applyVisitorFilters()">
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm fw-semibold d-flex align-items-center justify-content-center gap-1 text-nowrap rounded-3 px-3 shadow-2xs" onclick="loadVisitorLogs()" title="Segarkan Data Pengunjung">
+                            <i class="fa-solid fa-rotate"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Ringkasan Statistik Pengunjung -->
+                <div class="row g-2 mt-3" id="visitorStatsRow">
+                    <div class="col-6 col-md-3">
+                        <div class="text-center rounded-3 py-2 px-1" style="background:#eef2ff; border:1px solid #c7d2fe;">
+                            <div class="fw-bold text-primary fs-5" id="statTotalVisits">0</div>
+                            <div class="small text-muted" style="font-size:0.72rem;">Total Kunjungan</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="text-center rounded-3 py-2 px-1" style="background:#ecfdf5; border:1px solid #a7f3d0;">
+                            <div class="fw-bold text-success fs-5" id="statTodayVisits">0</div>
+                            <div class="small text-muted" style="font-size:0.72rem;">Hari Ini</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="text-center rounded-3 py-2 px-1" style="background:#fffbeb; border:1px solid #fde68a;">
+                            <div class="fw-bold text-warning fs-5" id="statMobileRatio">0%</div>
+                            <div class="small text-muted" style="font-size:0.72rem;">Akses Smartphone</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="text-center rounded-3 py-2 px-1" style="background:#faf5ff; border:1px solid #e9d5ff;">
+                            <div class="fw-bold fs-5" id="statTopBrand" style="color: #9333ea;">-</div>
+                            <div class="small text-muted" style="font-size:0.72rem;">Top Brand HP</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABEL DAFTAR PENGUNJUNG -->
+            <div class="premium-card">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="tableVisitorLogs">
+                        <thead class="table-light" style="font-size: 0.78rem;">
+                            <tr>
+                                <th class="ps-3 py-2">WAKTU</th>
+                                <th class="py-2">PERANGKAT & TIPE HP</th>
+                                <th class="py-2">LOKASI & ISP</th>
+                                <th class="py-2">ALAMAT IP</th>
+                                <th class="py-2 text-center">HALAMAN</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visitorLogsTableBody" style="font-size: 0.82rem;">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-5">
+                                    <div class="spinner-border spinner-border-sm me-2"></div>Memuat data log pengunjung...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
