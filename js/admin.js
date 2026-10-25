@@ -12,6 +12,21 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// ==========================================
+// KEAMANAN: SANITASI XSS (admin.js)
+// ==========================================
+function escHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
+
+
+
 // URL Web App Apps Script untuk sinkronisasi otomatis ke Google Sheets
 const APPS_SCRIPT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyHOz_ro10lI_R_rUoedDA3K2PoN3uGL06stSFHsF6W0SD6rhdPlWjsKNldEJbnBpI-/exec';
 
@@ -31,6 +46,19 @@ let searchChart = null;
 // INISIALISASI
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
+    // === SECURITY: Cek session expiry admin (8 jam = 28800000ms) ===
+    try {
+        var _rs = localStorage.getItem('mustakimUser') || sessionStorage.getItem('mustakimUser');
+        var _us = _rs ? JSON.parse(_rs) : null;
+        if (_us && _us.loginTime && (Date.now() - _us.loginTime) > 28800000) {
+            localStorage.removeItem('mustakimUser');
+            sessionStorage.removeItem('mustakimUser');
+            alert('Sesi admin telah berakhir (8 jam). Silakan login kembali.');
+            window.location.href = './';
+            return;
+        }
+    } catch(e) { localStorage.clear(); sessionStorage.clear(); window.location.href = './'; }
+    // === END SECURITY ===
     setupSidebar();
     
     document.querySelectorAll('.section-content').forEach(s => s.style.display = 'none');
@@ -446,10 +474,10 @@ function renderOrdersTable() {
                             : svcUp.includes('SERVICE') ? 'fa-screwdriver-wrench text-warning'
                             : 'fa-wrench text-secondary';
                 let ketBadge = (item.keterangan && item.keterangan !== '-')
-                    ? `<span class="badge rounded-pill ms-1" style="background:#e0e7ff;color:#4338ca;font-size:0.6rem;">${item.keterangan}</span>` : '';
+                    ? `<span class="badge rounded-pill ms-1" style="background:#e0e7ff;color:#4338ca;font-size:0.6rem;">${escHtml(item.keterangan)}</span>` : '';
                 return `<li class="d-flex align-items-center gap-1 mb-1" style="font-size:0.78rem;">
                     <i class="fa-solid ${iconCls} flex-shrink-0" style="width:14px;font-size:0.7rem;"></i>
-                    <span class="text-dark fw-medium">${item.title}${ketBadge}</span>
+                    <span class="text-dark fw-medium">${escHtml(item.title)}${ketBadge}</span>
                     <span class="ms-auto text-muted fw-semibold">${formatRupiah(item.price * item.qty)}</span>
                 </li>`;
             }).join('');
@@ -477,11 +505,11 @@ function renderOrdersTable() {
                 <!-- Pelanggan -->
                 <div class="d-flex align-items-center gap-2 mb-3 p-2 rounded-3" style="background:#f8fafc; border:1px dashed #e2e8f0;">
                     <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" style="width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);font-size:0.85rem;">
-                        ${(order.customer_name || 'X').charAt(0).toUpperCase()}
+                        ${escHtml((order.customer_name || 'X').charAt(0).toUpperCase())}
                     </div>
                     <div class="flex-grow-1 overflow-hidden">
-                        <div class="fw-bold text-dark text-truncate" style="font-size:0.82rem;">${order.customer_name || '-'}</div>
-                        <div class="text-muted" style="font-size:0.7rem;"><i class="fa-solid fa-mobile-screen me-1"></i>${tipeHp}</div>
+                        <div class="fw-bold text-dark text-truncate" style="font-size:0.82rem;">${escHtml(order.customer_name || '-')}</div>
+                        <div class="text-muted" style="font-size:0.7rem;"><i class="fa-solid fa-mobile-screen me-1"></i>${escHtml(tipeHp)}</div>
                     </div>
                     <a href="https://wa.me/${cleanPhone}" target="_blank" onclick="event.stopPropagation()" class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width:32px;height:32px;background:#25D366;color:#fff;border:none;" title="Chat WA">
                         <i class="fa-brands fa-whatsapp" style="font-size:0.9rem;"></i>
@@ -2498,7 +2526,7 @@ CREATE POLICY "Allow public select visitor_logs" ON visitor_logs FOR SELECT USIN
         applyVisitorFilters();
     } catch(err) {
         console.error("Gagal memuat visitor logs:", err);
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4"><i class="fa-solid fa-triangle-exclamation me-1"></i> Gagal memuat data log: ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-4"><i class="fa-solid fa-triangle-exclamation me-1"></i> Gagal memuat data log pengunjung. Silakan coba lagi.</td></tr>`;
     }
 }
 
@@ -2612,7 +2640,7 @@ function renderVisitorLogsTable() {
 
         // Lokasi & ISP
         const lokasi = (item.city && item.city !== '-') ? `${item.city}, ${item.region || ''}` : (item.region || 'Indonesia');
-        const ispStr = (item.isp && item.isp !== '-') ? `<small class="text-muted d-block" style="font-size:0.72rem;"><i class="fa-solid fa-wifi me-1 text-primary"></i>${item.isp}</small>` : '';
+        const ispStr = (item.isp && item.isp !== '-') ? `<small class="text-muted d-block" style="font-size:0.72rem;"><i class="fa-solid fa-wifi me-1 text-primary"></i>${escHtml(item.isp)}</small>` : '';
 
         // IP Badge
         const ipStr = item.ip_address || '-';
@@ -2630,17 +2658,17 @@ function renderVisitorLogsTable() {
                     ${brandIcon}
                     <div>
                         <div class="fw-bold text-dark">
-                            ${modelStr} ${resStr}
+                            ${escHtml(modelStr)} ${resStr}
                         </div>
                         <small class="text-muted" style="font-size: 0.72rem;">
-                            <span class="badge ${brandBadgeClass} py-0 px-1 me-1" style="font-size: 0.65rem;">${item.device_brand || 'Mobile'}</span>
+                            <span class="badge ${brandBadgeClass} py-0 px-1 me-1" style="font-size: 0.65rem;">${escHtml(item.device_brand || 'Mobile')}</span>
                             ${osStr} • ${browserStr}
                         </small>
                     </div>
                 </div>
             </td>
             <td>
-                <span class="fw-medium text-dark"><i class="fa-solid fa-location-dot text-danger me-1"></i>${lokasi}</span>
+                <span class="fw-medium text-dark"><i class="fa-solid fa-location-dot text-danger me-1"></i>${escHtml(lokasi)}</span>
                 ${ispStr}
             </td>
             <td class="text-nowrap">
@@ -2678,3 +2706,33 @@ document.addEventListener('click', function(e) {
         });
     }
 });
+
+// ==========================================
+// KEAMANAN: RATE LIMITING LOGIN
+// ==========================================
+function cekRateLimitLogin() {
+    var lockKey = 'mp_login_locked_until';
+    var lockedUntil = parseInt(sessionStorage.getItem(lockKey) || '0', 10);
+    if (Date.now() < lockedUntil) {
+        var sisaDetik = Math.ceil((lockedUntil - Date.now()) / 1000);
+        return { locked: true, message: 'Terlalu banyak percobaan gagal. Coba lagi dalam ' + sisaDetik + ' detik.' };
+    }
+    return { locked: false };
+}
+function tambahGagalLogin() {
+    var key = 'mp_login_fails';
+    var lockKey = 'mp_login_locked_until';
+    var fails = parseInt(sessionStorage.getItem(key) || '0', 10) + 1;
+    sessionStorage.setItem(key, String(fails));
+    if (fails >= 5) {
+        sessionStorage.setItem(lockKey, String(Date.now() + 5 * 60 * 1000));
+        sessionStorage.removeItem(key);
+        return true;
+    }
+    return false;
+}
+function resetGagalLogin() {
+    sessionStorage.removeItem('mp_login_fails');
+    sessionStorage.removeItem('mp_login_locked_until');
+}
+

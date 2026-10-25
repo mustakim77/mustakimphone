@@ -19,19 +19,36 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- PROTEKSI ADMIN (Mendukung localStorage & sessionStorage) -->
+    <!-- PROTEKSI ADMIN: Role check + Session Expiry (8 jam) -->
     <script>
-    try {
-        const rawUser = localStorage.getItem('mustakimUser') || sessionStorage.getItem('mustakimUser');
-        const userSession = rawUser ? JSON.parse(rawUser) : null;
-        if (!userSession || (userSession.role && userSession.role.toLowerCase() !== 'admin')) {
-            alert('Akses ditolak! Silakan login sebagai admin.');
-            window.location.href = "./"; 
+    (function() {
+        try {
+            var rawUser = localStorage.getItem('mustakimUser') || sessionStorage.getItem('mustakimUser');
+            var userSession = rawUser ? JSON.parse(rawUser) : null;
+
+            // 1. Cek role admin
+            if (!userSession || !userSession.role || userSession.role.toLowerCase() !== 'admin') {
+                alert('Akses ditolak! Silakan login sebagai admin.');
+                window.location.href = './';
+                return;
+            }
+
+            // 2. Cek session expiry (8 jam = 28800000 ms)
+            if (userSession.loginTime && (Date.now() - userSession.loginTime) > 28800000) {
+                localStorage.removeItem('mustakimUser');
+                sessionStorage.removeItem('mustakimUser');
+                alert('Sesi admin Anda telah berakhir (8 jam). Silakan login kembali.');
+                window.location.href = './';
+                return;
+            }
+
+        } catch (e) {
+            localStorage.removeItem('mustakimUser');
+            sessionStorage.removeItem('mustakimUser');
+            alert('Terjadi kesalahan sesi! Silakan login kembali.');
+            window.location.href = './';
         }
-    } catch (e) {
-        alert('Terjadi kesalahan sesi! Silakan login kembali.');
-        window.location.href = "./";
-    }
+    })();
     </script>
 </head>
 <body>

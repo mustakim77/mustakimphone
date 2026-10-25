@@ -1,11 +1,69 @@
-// ==========================================
+﻿// ==========================================
 // KONEKSI SUPABASE & INITIALIZATION
 // ==========================================
-console.log("File main.js berhasil dimuat dan dioptimalkan!");
+// [PROD] debug log dihapus untuk keamanan
 
 const SUPABASE_URL = 'https://btlxqbebbwtddcpzpaet.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ0bHhxYmViYnd0ZGRjcHpwYWV0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUyODc3NzksImV4cCI6MjEwMDg2Mzc3OX0.UTuPztP57dSbHwt5kJ2u30sSpcE3KQJ6vioPoEM7eEs';
 const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ==========================================
+// KEAMANAN: SANITASI XSS & UTILITAS
+// ==========================================
+/**
+ * escHtml — Escape karakter HTML berbahaya untuk mencegah XSS.
+ * WAJIB dipakai sebelum memasukkan data dari DB/user ke innerHTML.
+ */
+function escHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
+
+/**
+ * hashSha256 — Hash string dengan SHA-256 (untuk password sebelum kirim ke DB).
+ */
+async function hashSha256(str) {
+    const msgBuffer = new TextEncoder().encode(str);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * sanitizeUrlParam — Bersihkan URL parameter sebelum disimpan ke DB.
+ */
+function sanitizeUrlParam(str) {
+    if (!str) return '';
+    return String(str).replace(/[<>"'&;`]/g, '').substring(0, 100);
+}
+
+/**
+ * checkSessionExpiry — Cek apakah sesi login sudah lebih dari 8 jam.
+ */
+function checkSessionExpiry() {
+    try {
+        const rawUser = localStorage.getItem('mustakimUser') || sessionStorage.getItem('mustakimUser');
+        if (!rawUser) return null;
+        const session = JSON.parse(rawUser);
+        const SESSION_MAX_MS = 8 * 60 * 60 * 1000; // 8 jam
+        if (session.loginTime && (Date.now() - session.loginTime) > SESSION_MAX_MS) {
+            localStorage.removeItem('mustakimUser');
+            sessionStorage.removeItem('mustakimUser');
+            if (typeof showToast === 'function') showToast('Sesi Anda telah berakhir. Silakan login kembali.');
+            return null;
+        }
+        return session;
+    } catch (e) {
+        localStorage.removeItem('mustakimUser');
+        sessionStorage.removeItem('mustakimUser');
+        return null;
+    }
+}
 
 let globalData = [];
 let currentFilteredData = [];
@@ -275,7 +333,7 @@ function switchNav(tabName, element) {
                     const capitalizedName = userSession.username.charAt(0).toUpperCase() + userSession.username.slice(1);
                     const badgeRole = (userSession.role && userSession.role.toLowerCase() === 'admin') ? 'Admin' : 'Member';
                     
-                    namaMember.innerHTML = `${capitalizedName} <span class="badge bg-white text-primary ms-2" style="font-size: 0.65rem; font-weight: 600; vertical-align: middle;">${badgeRole}</span>`;
+                    namaMember.innerHTML = `${escHtml(capitalizedName)} <span class="badge bg-white text-primary ms-2" style="font-size: 0.65rem; font-weight: 600; vertical-align: middle;">${escHtml(badgeRole)}</span>`;
                 }
             } else {
                 document.getElementById('memberDashboardView').style.display = 'none';
@@ -1051,7 +1109,7 @@ function showDetail(target) {
     }
     if (ketBadgeEl) {
         if (keterangan) {
-            ketBadgeEl.innerHTML = `<i class="fa-solid fa-tag me-1"></i>${keterangan.toUpperCase()}`;
+            ketBadgeEl.innerHTML = `<i class="fa-solid fa-tag me-1"></i>${escHtml(keterangan.toUpperCase())}`;
             ketBadgeEl.style.display = 'inline-block';
         } else {
             ketBadgeEl.style.display = 'none';
@@ -1610,7 +1668,7 @@ async function verifikasiLogin() {
             pesanLogin.innerText = 'Login Berhasil!';
             showToast('Selamat datang, ' + data.username + '!');
 
-            localStorage.setItem('mustakimUser', JSON.stringify(data));
+            localStorage.setItem('mustakimUser', JSON.stringify({...data, loginTime: Date.now()}));
 
             setTimeout(() => {
                 if (data.role && data.role.toLowerCase() === 'admin') {
@@ -1626,7 +1684,7 @@ async function verifikasiLogin() {
                     const capitalizedName = data.username.charAt(0).toUpperCase() + data.username.slice(1);
                     const badgeRole = data.role.toLowerCase() === 'admin' ? 'Admin' : 'Member';
                     
-                    namaMember.innerHTML = `${capitalizedName} <span class="badge bg-white text-primary ms-2" style="font-size: 0.65rem; font-weight: 600; vertical-align: middle;">${badgeRole}</span>`;
+                    namaMember.innerHTML = `${escHtml(capitalizedName)} <span class="badge bg-white text-primary ms-2" style="font-size: 0.65rem; font-weight: 600; vertical-align: middle;">${escHtml(badgeRole)}</span>`;
                 }
                 
                 document.getElementById('username').value = '';
@@ -1749,7 +1807,7 @@ async function prosesResetPassword() {
         if (updateErr) throw updateErr;
 
         pesanReset.style.color = 'green';
-        pesanReset.innerHTML = `Berhasil! Password diperbarui.<br><small class="text-dark">Username Anda: <strong>${userAccount.username}</strong></small>`;
+        pesanReset.innerHTML = `Berhasil! Password diperbarui.<br><small class="text-dark">Username Anda: <strong>${escHtml(userAccount.username)}</strong></small>`;
         showToast('Password berhasil direset!');
 
         setTimeout(() => {
@@ -1812,7 +1870,7 @@ async function simpanPasswordBaru() {
         showToast('Password berhasil diperbarui');
 
         userSession.password = passBaru;
-        localStorage.setItem('mustakimUser', JSON.stringify(userSession));
+        userSession.loginTime = userSession.loginTime || Date.now(); localStorage.setItem('mustakimUser', JSON.stringify(userSession));
 
         setTimeout(() => {
             tutupFormGantiPassword();
@@ -1984,7 +2042,7 @@ async function prosesCheckoutForm() {
                 namaLengkap = `${item.service} ${item.title}`;
             }
 
-            text += `${idx + 1}. *${namaLengkap}*\n   • ${item.qty} Pcs x ${formatRupiah(item.price)} = ${formatRupiah(subtotal)}\n\n`;
+            text += `${idx + 1}. *${namaLengkap}*\n   â€¢ ${item.qty} Pcs x ${formatRupiah(item.price)} = ${formatRupiah(subtotal)}\n\n`;
         });
 
         text += `==============================\n`;
@@ -2821,8 +2879,8 @@ async function catatKunjunganPengunjung() {
         // Tentukan konteks halaman
         let currentPage = 'Beranda';
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('id')) currentPage = `Detail Produk #${urlParams.get('id')}`;
-        else if (urlParams.get('page')) currentPage = `Halaman ${urlParams.get('page')}`;
+        if (urlParams.get('id')) currentPage = `Detail Produk #${sanitizeUrlParam(urlParams.get('id'))}`;
+        else if (urlParams.get('page')) currentPage = `Halaman ${sanitizeUrlParam(urlParams.get('page'))}`;
 
         const payload = {
             ip_address: ipData.ip,
